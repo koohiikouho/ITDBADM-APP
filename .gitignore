@@ -1,0 +1,24 @@
+# Logs
+itdbadm-frontend/logs
+itdbadm-frontend/*.log
+itdbadm-frontend/npm-debug.log*
+itdbadm-frontend/yarn-debug.log*
+itdbadm-frontend/yarn-error.log*
+itdbadm-frontend/pnpm-debug.log*
+lerna-debug.log*
+
+itdbadm-frontend/node_modules
+itdbadm-frontend/dist
+itdbadm-frontend/dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
