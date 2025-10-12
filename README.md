@@ -41,7 +41,7 @@ Includes a standardized folder structure, README layout, and common configuratio
 
 ### 2.1. Prerequisites
 
-> [fill up]
+Install Python and pnpm
 
 ### 2.2. Installation
 
@@ -49,7 +49,15 @@ Includes a standardized folder structure, README layout, and common configuratio
 
 ### 2.3. Running the Project
 
-> [fill up]
+[Frontend]
+cd into itdbadm-frontend
+run using `pnpm run dev`
+
+[Backend]
+cd into itdbadm
+run using `py manage.py runserver`
+
+Stop both servers using Ctrl+C
 
 ## 3. Usage
 
