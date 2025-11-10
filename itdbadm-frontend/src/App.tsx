@@ -5,6 +5,10 @@ import DocsPage from "@/pages/";
 import BandsPage from "@/pages/bands";
 import BlogPage from "@/pages/blog";
 import AboutPage from "@/pages/about";
+import BandInfo from "@/pages/band/bandinfo";
+import LoginPage from "@/pages/login";
+import SignUpPage from "./pages/signup";
+import ProductPage from "./pages/band/product";
 
 function App() {
   return (
@@ -14,6 +18,10 @@ function App() {
       <Route element={<BandsPage />} path="/bands" />
       <Route element={<BlogPage />} path="/blog" />
       <Route element={<AboutPage />} path="/about" />
+      <Route element={<BandInfo />} path="/bandinfo" />
+      <Route element={<LoginPage />} path="/login" />
+      <Route element={<SignUpPage />} path="/signup" />
+      <Route element={<ProductPage />} path="/product" />
     </Routes>
   );
 }

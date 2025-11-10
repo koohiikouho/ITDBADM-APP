@@ -1,0 +1,31 @@
+/* animatedtext.module.css */
+@import url("https://fonts.googleapis.com/css2?family=Parisienne&display=swap");
+.animated-gradient-elysiajs {
+  background: linear-gradient(45deg, #ff9ff3, #48dbfb);
+  background-size: 400% 400%;
+  animation: gradientShift 30s ease infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: "Parisienne", cursive;
+  font-weight: bold;
+  font-style: normal;
+}
+
+.parisienne-regular {
+  font-family: "Parisienne", cursive;
+  font-weight: 400;
+  font-style: normal;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
