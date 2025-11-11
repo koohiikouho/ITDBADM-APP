@@ -26,7 +26,8 @@ const IndexPageComponent: React.FC = () => {
   const carouselImages = [
     "https://cdn.donmai.us/original/71/23/__gotoh_hitori_kita_ikuyo_ijichi_nijika_and_yamada_ryo_bocchi_the_rock__71232ed5875d888cdd098e77004fcd59.jpg",
     "https://cdn.donmai.us/original/25/9e/__chihaya_anon_nagasaki_soyo_shiina_taki_takamatsu_tomori_and_kaname_raana_bang_dream_and_1_more_drawn_by_bison_cangshu__259eaaefb7e422493ded2c01f8249df1.jpg",
-    "https://cdn.donmai.us/original/5b/13/__gotoh_hitori_kita_ikuyo_ijichi_nijika_and_yamada_ryo_bocchi_the_rock_drawn_by_kerorira__5b13f52bd27d9cb5d8c70430df4cc1f9.jpg",
+    "https://cdn.donmai.us/original/a0/38/__togawa_sakiko_wakaba_mutsumi_yahata_umiri_misumi_uika_mortis_and_5_more_bang_dream_and_1_more_drawn_by_y_o_u_k_a__a03852deeb70a029642b927549c8e34c.png",
+    "https://cdn.donmai.us/original/68/12/__hikawa_sayo_imai_lisa_minato_yukina_shirokane_rinko_and_udagawa_ako_bang_dream_drawn_by_nobusawa_osamu__68129a02a8613c1db14f526777aeb95b.jpg",
     "https://cdn.donmai.us/original/d7/06/__akiyama_mio_hirasawa_yui_tainaka_ritsu_and_kotobuki_tsumugi_k_on_and_1_more_drawn_by_akitake_seiichi__d70613749bb7f145042b4b1175169b2d.jpg",
   ];
 
