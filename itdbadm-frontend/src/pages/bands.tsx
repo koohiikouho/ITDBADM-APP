@@ -8,11 +8,6 @@ export default function DocsPage() {
   return (
     <HeroUIProvider>
       <DefaultLayout>
-        <section className="flex flex-col items-center justify-center gap-4 pb-8 md:pb-10">
-          <div className="inline-block max-w-lg text-center justify-center">
-            <h1 className={title()}>Bands</h1>
-          </div>
-        </section>
         <CardGrid />
       </DefaultLayout>
     </HeroUIProvider>

@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Pagination } from "@heroui/react";
+import { Pagination, Button } from "@heroui/react";
 import {
   Card,
   CardHeader,
   CardBody,
   CardFooter,
   Image,
-  Button,
   Badge,
 } from "@heroui/react";
-import { useNavigate } from "react-router-dom";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface ProductCardProps {
   category: string;
@@ -17,7 +16,6 @@ interface ProductCardProps {
   price: string;
   imageUrl: string;
   isNew?: boolean;
-  onClick?: () => void; // Add onClick prop
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -26,7 +24,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
   price,
   imageUrl,
   isNew,
-  onClick,
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -60,37 +57,38 @@ const ProductCard: React.FC<ProductCardProps> = ({
     <div
       ref={cardRef}
       className={`
-        transition-all duration-700 ease-out
-        ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}
+        transition-all duration-500 ease-out
+        ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
       `}
-      onClick={onClick}
     >
-      <Card className="hover:scale-105 transition-transform duration-200 shadow-lg border cursor-pointer">
+      <Card className="hover:scale-102 transition-transform duration-200 shadow-md border cursor-pointer">
         <CardHeader className="p-0 relative">
           <Image
             src={imageUrl}
             alt={title}
-            className="w-82 h-82 object-cover"
+            className="w-full h-32 object-cover"
             removeWrapper
           />
           {isNew && (
-            <Badge color="primary" className="absolute top-2 right-2">
+            <Badge color="primary" className="absolute top-1 right-1 text-xs">
               NEW
             </Badge>
           )}
         </CardHeader>
 
-        <CardBody className="p-0">
-          <div className="space-ty-2 p-2 pb-0 overflow-hidden">
-            <p className="text-sm text-gray-500 dark:text-gray-200 uppercase tracking-wide">
+        <CardBody className="p-2">
+          <div className="space-y-1">
+            <p className="text-xs text-gray-500 dark:text-gray-200 uppercase tracking-wide truncate">
               {category}
             </p>
-            <h3 className="text-lg font-semibold leading-tight">{title}</h3>
+            <h3 className="text-sm font-semibold leading-tight line-clamp-2 h-10">
+              {title}
+            </h3>
           </div>
         </CardBody>
-        <CardFooter>
-          <div className="flex items-center justify-between pt-0">
-            <span className="text-l text-red-700 dark:text-red-300">
+        <CardFooter className="p-2">
+          <div className="flex items-center justify-between w-full">
+            <span className="text-sm font-bold text-red-700 dark:text-red-300">
               {price}
             </span>
           </div>
@@ -100,51 +98,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
   );
 };
 
-const ProductGrid: React.FC = () => {
+const CompactProductGrid: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 12; // 2 rows of 3 items
+  const productsPerPage = 5;
 
   const products = [
-    {
-      category: "アクリルフィギュア",
-      title: "通常衣装重音テト アクリルフィギュア",
-      price: "2,000 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
-    },
-    {
-      category: "アクリルフィギュア",
-      title: "通常衣装重音テト アクリルフィギュア",
-      price: "2,000 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
-    },
-    {
-      category: "アクリルフィギュア",
-      title: "通常衣装重音テト アクリルフィギュア",
-      price: "2,000 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
-    },
-    {
-      category: "アクリルフィギュア",
-      title: "通常衣装重音テト アクリルフィギュア",
-      price: "2,000 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
-    },
-    {
-      category: "アクリルフィギュア",
-      title: "通常衣装重音テト アクリルフィギュア",
-      price: "2,000 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
-    },
     {
       category: "アクリルフィギュア",
       title: "通常衣装重音テト アクリルフィギュア",
@@ -209,6 +167,22 @@ const ProductGrid: React.FC = () => {
         "https://images.unsplash.com/photo-1635830625698-3b9bd74671ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
       isNew: false,
     },
+    {
+      category: "アクリルフィギュア",
+      title: "雪ミク アクリルフィギュア",
+      price: "2,400 JPY",
+      imageUrl:
+        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+      isNew: true,
+    },
+    {
+      category: "アクリルキーホルダー",
+      title: "重音テト キーホルダー",
+      price: "1,700 JPY",
+      imageUrl:
+        "https://images.unsplash.com/photo-1542744095-fcf48d80b0fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+      isNew: false,
+    },
   ];
 
   // Calculate pagination
@@ -218,44 +192,67 @@ const ProductGrid: React.FC = () => {
     startIndex,
     startIndex + productsPerPage
   );
-  const navigate = useNavigate();
 
-  const handleProductClick = () => {
-    navigate(`/product`);
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
   };
 
   return (
-    <div className="min-h-screen">
-      <div className="">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="w-full">
+      {/* Compact Product Grid with Navigation Overlay */}
+      <div className="relative">
+        {/* Navigation Buttons - Positioned over the grid */}
+        {totalPages > 1 && (
+          <>
+            {/* Left Navigation Button - Aligned with first card */}
+            <Button
+              isIconOnly
+              variant="flat"
+              onPress={goToPreviousPage}
+              isDisabled={currentPage === 1}
+              className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1/2 z-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border shadow-lg hover:bg-white dark:hover:bg-gray-800"
+              size="lg"
+            >
+              <ChevronLeft size={24} />
+            </Button>
+
+            {/* Right Navigation Button - Aligned with last card */}
+            <Button
+              isIconOnly
+              variant="flat"
+              onPress={goToNextPage}
+              isDisabled={currentPage === totalPages}
+              className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-1/2 z-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border shadow-lg hover:bg-white dark:hover:bg-gray-800"
+              size="lg"
+            >
+              <ChevronRight size={24} />
+            </Button>
+          </>
+        )}
+
+        {/* Product Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {currentProducts.map((product, index) => (
             <ProductCard
-              key={index}
+              key={`${currentPage}-${index}`}
               category={product.category}
               title={product.title}
               price={product.price}
               imageUrl={product.imageUrl}
-              isNew={product.isNew}
-              onClick={() => handleProductClick()}
             />
           ))}
         </div>
-
-        {/* Pagination Component */}
-        {totalPages > 1 && (
-          <div className="flex justify-center mt-8">
-            <Pagination
-              total={totalPages}
-              page={currentPage}
-              onChange={setCurrentPage}
-              color="primary"
-              showControls
-            />
-          </div>
-        )}
       </div>
     </div>
   );
 };
 
-export default ProductGrid;
+export default CompactProductGrid;

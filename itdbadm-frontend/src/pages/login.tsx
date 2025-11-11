@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@heroui/use-theme";
-import { ThemeSwitch } from "@/components/theme-switch"; // Adjust path as needed
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);

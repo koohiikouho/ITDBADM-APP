@@ -1,4 +1,8 @@
 import { Image } from "@heroui/react";
+import SeeMore from "./SeeMore";
+import { Link } from "react-router-dom";
+import BookBandButton from "./BookBand";
+import BuyMerchButton from "./BuyMerch";
 
 interface BandProps {
   isDescriptionOn: boolean;
@@ -7,17 +11,8 @@ interface BandProps {
 const BandInfoHead: React.FC<BandProps> = ({ isDescriptionOn = false }) => {
   function descriptionOn(desc: Boolean) {
     if (desc) {
-      return (
-        <p className="text-gray-600 dark:text-gray-400">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed diam
-          lacus, condimentum id mauris at, dignissim dapibus lorem. In quis
-          lectus id arcu pretium pharetra. Integer tellus nunc, facilisis vel
-          justo volutpat, convallis aliquam ipsum. Curabitur blandit turpis ac
-          felis lacinia ultrices. Aenean iaculis mauris bibendum semper
-          fermentum.
-        </p>
-      );
-    }
+      return <BookBandButton theme="music" size="lg" />;
+    } else return <BuyMerchButton theme="merch" size="lg" />;
   }
 
   return (
@@ -33,7 +28,20 @@ const BandInfoHead: React.FC<BandProps> = ({ isDescriptionOn = false }) => {
           ></Image>
         </div>
         <div className="col-span-2">
-          <h1 className="text-7xl font-bold uppercase">kessoku band</h1>
+          <div>
+            <div>
+              <h1 className="text-6xl font-bold uppercase">
+                <Link to={{ pathname: "/bandinfo" }}>kessoku band</Link>
+              </h1>
+            </div>
+
+            <div className="pt-3">
+              <SeeMore
+                maxLines={2}
+                text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin eu magna sit amet risus interdum rutrum. Donec sit amet aliquet tortor. Curabitur nec facilisis velit. Praesent aliquam diam in augue tincidunt, ac aliquam sapien cursus. Nullam molestie mattis nulla, ut porttitor dui pharetra sit amet. Vivamus accumsan facilisis tristique. Ut tempor pellentesque pretium. Donec scelerisque dui justo, in aliquet augue hendrerit tincidunt. Morbi quis nisi vel sem consectetur tristique non et justo. In consectetur nunc hendrerit ligula vulputate, vulputate aliquet nisi pulvinar. "
+              />
+            </div>
+          </div>
         </div>
         <div className="col-start-2 row-start-2 items-start">
           <h2>Band Members:</h2>
@@ -44,9 +52,8 @@ const BandInfoHead: React.FC<BandProps> = ({ isDescriptionOn = false }) => {
             <li>※ (Dr.) Nijika Ijichi</li>
           </ul>
         </div>
-        <div className="col-start-3 row-start-2">Button To Hire Them</div>
-        <div className="col-span-3 row-start-3">
-          {descriptionOn(isDescriptionOn)}
+        <div className="col-start-3 row-start-2 flex items-center">
+          <div className="">{descriptionOn(isDescriptionOn)}</div>
         </div>
       </div>
       <br />

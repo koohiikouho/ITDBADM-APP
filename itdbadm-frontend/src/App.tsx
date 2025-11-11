@@ -9,6 +9,7 @@ import BandInfo from "@/pages/band/bandinfo";
 import LoginPage from "@/pages/login";
 import SignUpPage from "./pages/signup";
 import ProductPage from "./pages/band/product";
+import BookPage from "./pages/band/book";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
       <Route element={<LoginPage />} path="/login" />
       <Route element={<SignUpPage />} path="/signup" />
       <Route element={<ProductPage />} path="/product" />
+      <Route element={<BookPage />} path="/book" />
     </Routes>
   );
 }

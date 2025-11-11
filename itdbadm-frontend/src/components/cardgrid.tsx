@@ -1,12 +1,26 @@
 /* eslint-disable prettier/prettier */
-import React from "react";
-import { Card, CardHeader, CardBody, Image } from "@heroui/react";
+import React, { useState, useMemo } from "react";
+import {
+  Card,
+  CardBody,
+  Input,
+  Pagination,
+  Button,
+  Select,
+  SelectItem,
+} from "@heroui/react";
 import { CardItem } from "../types/types.ts";
 import { useNavigate } from "react-router-dom";
-
-// this part is AI generated but should be tweaked lol
+import { Search, Filter, SlidersHorizontal, Grid3X3, List } from "lucide-react";
 
 const CardGrid: React.FC = () => {
+  const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("name");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const cardsPerPage = 9;
+
   // Your card data with TypeScript typing
   const cardData: CardItem[] = [
     {
@@ -171,41 +185,265 @@ const CardGrid: React.FC = () => {
     },
   ];
 
-  const navigate = useNavigate();
+  // Filter and paginate data
+  const filteredAndPaginatedData = useMemo(() => {
+    // Filter by search query
+    let filtered = cardData.filter((item) =>
+      item.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Sort data
+    filtered = filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "name":
+          return a.title.localeCompare(b.title);
+        case "name-desc":
+          return b.title.localeCompare(a.title);
+        case "newest":
+          return b.id - a.id;
+        case "oldest":
+          return a.id - b.id;
+        default:
+          return 0;
+      }
+    });
+
+    // Calculate pagination
+    const totalPages = Math.ceil(filtered.length / cardsPerPage);
+    const startIndex = (currentPage - 1) * cardsPerPage;
+    const endIndex = startIndex + cardsPerPage;
+    const paginatedData = filtered.slice(startIndex, endIndex);
+
+    return {
+      data: paginatedData,
+      totalPages,
+      totalItems: filtered.length,
+    };
+  }, [cardData, searchQuery, sortBy, currentPage, cardsPerPage]);
 
   const handleCardPress = (itemId: number): void => {
     console.log("Card pressed", itemId);
     navigate("/bandinfo");
   };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  };
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setSortBy("name");
+    setCurrentPage(1);
+  };
+
   return (
     <div className="max-w-7xl mx-auto p-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {cardData.map((item: CardItem) => (
+      {/* Enhanced Search and Filter Bar */}
+      <div className="mb-8">
+        <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
+          {/* Search Bar - Full width on mobile, flexible on desktop */}
+          <div className="flex-1 w-full min-w-0">
+            <Input
+              placeholder="Search bands by name..."
+              value={searchQuery}
+              onValueChange={handleSearchChange}
+              startContent={<Search size={20} className="text-default-400" />}
+              endContent={
+                searchQuery && (
+                  <Button
+                    isIconOnly
+                    variant="light"
+                    size="sm"
+                    onPress={() => setSearchQuery("")}
+                    className="text-default-400 hover:text-default-600 min-w-8 h-8"
+                  >
+                    ×
+                  </Button>
+                )
+              }
+              className="w-full"
+              size="lg"
+              variant="flat"
+              classNames={{
+                input: "text-lg",
+                inputWrapper:
+                  "bg-default-100/50 hover:bg-default-100 border-1 border-default-200 shadow-sm h-12",
+              }}
+            />
+          </div>
+
+          {/* Controls Section - Properly aligned in a row */}
+          <div className="flex items-center gap-2 justify-end flex-wrap">
+            {/* Sort Dropdown */}
+            <Select
+              selectedKeys={[sortBy]}
+              onSelectionChange={(keys) =>
+                setSortBy(Array.from(keys)[0] as string)
+              }
+              className="w-40"
+              size="md"
+              variant="flat"
+              startContent={<Filter size={16} className="text-default-400" />}
+            >
+              <SelectItem key="name" textValue="Name (A-Z)">
+                Name (A-Z)
+              </SelectItem>
+              <SelectItem key="name-desc" textValue="Name (Z-A)">
+                Name (Z-A)
+              </SelectItem>
+              <SelectItem key="newest" textValue="Newest First">
+                Newest First
+              </SelectItem>
+              <SelectItem key="oldest" textValue="Oldest First">
+                Oldest First
+              </SelectItem>
+            </Select>
+
+            {/* View Mode Toggle */}
+            <div className="flex bg-default-100 rounded-lg p-1 border-1 border-default-200">
+              <Button
+                isIconOnly
+                variant={viewMode === "grid" ? "solid" : "light"}
+                size="sm"
+                onPress={() => setViewMode("grid")}
+                className="min-w-9 h-9"
+              >
+                <Grid3X3 size={16} />
+              </Button>
+              <Button
+                isIconOnly
+                variant={viewMode === "list" ? "solid" : "light"}
+                size="sm"
+                onPress={() => setViewMode("list")}
+                className="min-w-9 h-9"
+              >
+                <List size={16} />
+              </Button>
+            </div>
+
+            {/* Clear Filters Button */}
+            {(searchQuery || sortBy !== "name") && (
+              <Button
+                variant="light"
+                size="md"
+                onPress={clearFilters}
+                className="text-default-600 hover:text-default-800 whitespace-nowrap"
+              >
+                Clear All
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Active Filters Indicator */}
+        {(searchQuery || sortBy !== "name") && (
+          <div className="flex flex-wrap gap-2 mt-3 items-center text-sm text-default-500">
+            <SlidersHorizontal size={14} />
+            <span className="text-xs">Active filters:</span>
+            {searchQuery && (
+              <span className="bg-primary-100 text-primary-800 px-2 py-1 rounded-full text-xs font-medium">
+                Search: "{searchQuery}"
+              </span>
+            )}
+            {sortBy !== "name" && (
+              <span className="bg-secondary-100 text-secondary-800 px-2 py-1 rounded-full text-xs font-medium">
+                Sort:{" "}
+                {sortBy === "name-desc"
+                  ? "Name (Z-A)"
+                  : sortBy === "newest"
+                    ? "Newest First"
+                    : sortBy === "oldest"
+                      ? "Oldest First"
+                      : ""}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Results Count */}
+      <div className="mb-6 text-center">
+        <p className="text-default-600">
+          Showing {filteredAndPaginatedData.data.length} of{" "}
+          {filteredAndPaginatedData.totalItems} bands
+          {searchQuery && (
+            <span>
+              {" "}
+              for "<span className="font-semibold">{searchQuery}</span>"
+            </span>
+          )}
+        </p>
+      </div>
+
+      {/* Cards Grid - Updated to support view modes */}
+      <div
+        className={`mb-8 ${
+          viewMode === "grid"
+            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+            : "flex flex-col gap-4"
+        }`}
+      >
+        {filteredAndPaginatedData.data.map((item: CardItem) => (
           <Card
             key={item.id}
             isPressable
-            className="hover:scale-105 transition-transform duration-200 shadow-lg"
+            className={`hover:scale-105 transition-transform duration-200 shadow-lg ${
+              viewMode === "grid" ? "h-64" : "h-32"
+            }`}
             onPress={() => handleCardPress(item.id)}
           >
-            <CardHeader className="p-0">
-              <Image
-                removeWrapper
-                alt={item.title}
-                className="w-full h-48 object-cover"
-                src={item.image}
-              />
-            </CardHeader>
-            <CardBody className="p-4">
-              <h3 className="text-xl font-semibold mb-2 text-gray-800 dark:text-gray-300">
-                {item.title}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-                {item.description}
-              </p>
+            <CardBody
+              className="p-0 relative bg-cover bg-center"
+              style={{ backgroundImage: `url(${item.image})` }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex flex-col justify-end p-4 text-white">
+                <h3
+                  className={`font-semibold ${viewMode === "grid" ? "text-xl mb-1" : "text-lg"}`}
+                >
+                  {item.title}
+                </h3>
+                <p
+                  className={`text-gray-200 ${viewMode === "grid" ? "text-sm line-clamp-2" : "text-xs line-clamp-1"}`}
+                >
+                  {item.description}
+                </p>
+              </div>
             </CardBody>
           </Card>
         ))}
       </div>
+
+      {/* No Results Message */}
+      {filteredAndPaginatedData.data.length === 0 && (
+        <div className="text-center text-default-500 py-16">
+          <Search size={48} className="mx-auto mb-4 text-default-300" />
+          <p className="text-xl font-semibold mb-2">No bands found</p>
+          <p className="text-sm mb-4">
+            Try adjusting your search terms or filters
+          </p>
+          <Button variant="flat" onPress={clearFilters}>
+            Clear All Filters
+          </Button>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {filteredAndPaginatedData.totalPages > 1 && (
+        <div className="flex justify-center">
+          <Pagination
+            total={filteredAndPaginatedData.totalPages}
+            page={currentPage}
+            onChange={setCurrentPage}
+            color="primary"
+            size="lg"
+            showControls
+            classNames={{
+              cursor: "bg-gradient-to-r from-primary-500 to-secondary-500",
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };

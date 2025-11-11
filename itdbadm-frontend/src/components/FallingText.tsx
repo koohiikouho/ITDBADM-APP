@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from "react";
+// eslint-disable-next-line no-console
 import Matter from "matter-js";
 import styles from "./animatedtext.module.css";
 
@@ -37,7 +38,7 @@ const FallingText: React.FC<FallingTextProps> = ({
       .map((word) => {
         const isHighlighted = highlightWords.some((hw) => word.startsWith(hw));
         return `<span
-      class="inline-block mx-[2px] select-none ${isHighlighted ? styles["animated-gradient-elysiajs"] + " font-bold" : ""}"
+      class="inline-block mx-[2px] select-none ${isHighlighted ? styles["animated-gradient-elysiajs"] + " font-bold" : styles["parisienne-regular"]}"
     >
           ${word}
         </span>`;
@@ -219,20 +220,20 @@ const FallingText: React.FC<FallingTextProps> = ({
   return (
     <div
       ref={containerRef}
-      className="relative z-[1] w-full h-full cursor-pointer text-center pt-8 overflow-hidden"
+      className="relative z-[1] w-full h-full cursor-pointer text-center pt-8 overflow-hidden "
       onClick={trigger === "click" ? handleTrigger : undefined}
       onMouseEnter={trigger === "hover" ? handleTrigger : undefined}
     >
       <div
         ref={textRef}
-        className="inline-block"
+        className="inline-block "
         style={{
           fontSize,
           lineHeight: 1.4,
         }}
       />
 
-      <div className="absolute top-0 left-0 z-0" ref={canvasContainerRef} />
+      <div className="absolute top-0 left-0 z-0 " ref={canvasContainerRef} />
     </div>
   );
 };
