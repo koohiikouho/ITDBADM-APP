@@ -25,7 +25,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
   title,
   price,
   imageUrl,
-  isNew,
   onClick,
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -73,11 +72,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
             className="w-82 h-82 object-cover"
             removeWrapper
           />
-          {isNew && (
-            <Badge color="primary" className="absolute top-2 right-2">
-              NEW
-            </Badge>
-          )}
         </CardHeader>
 
         <CardBody className="p-0">

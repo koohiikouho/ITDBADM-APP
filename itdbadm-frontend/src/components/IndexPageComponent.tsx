@@ -132,6 +132,47 @@ const IndexPageComponent: React.FC = () => {
     },
   };
 
+  // Marquee animations with proper infinite loop
+  const topMarqueeVariants = {
+    animate: {
+      x: ["0%", "-100%"],
+      transition: {
+        x: {
+          repeat: Infinity,
+          repeatType: "loop",
+          duration: 30,
+          ease: "linear",
+        },
+      },
+    },
+  };
+
+  const bottomMarqueeVariants = {
+    animate: {
+      x: ["-100%", "0%"],
+      transition: {
+        x: {
+          repeat: Infinity,
+          repeatType: "loop",
+          duration: 30,
+          ease: "linear",
+        },
+      },
+    },
+  };
+
+  // Hover animations for marquee items
+  const marqueeItemVariants = {
+    hover: {
+      scale: 1.2,
+      color: "#93c5fd",
+      transition: {
+        duration: 0.3,
+        ease: "easeOut",
+      },
+    },
+  };
+
   if (!isLoaded) {
     return (
       <div className="h-screen w-full bg-gray-900 flex items-center justify-center">
@@ -144,14 +185,85 @@ const IndexPageComponent: React.FC = () => {
     );
   }
 
+  // Marquee content component with hover effects
+  const MarqueeContent = () => (
+    <>
+      <motion.span
+        className="text-xl font-black mx-6 text-white uppercase tracking-wider cursor-pointer"
+        style={{ fontFamily: "'Inter', sans-serif", fontWeight: 900 }}
+        variants={marqueeItemVariants}
+        whileHover="hover"
+      >
+        Band
+      </motion.span>
+      <motion.span
+        className="text-xl font-black mx-6 text-white uppercase tracking-wider cursor-pointer"
+        style={{ fontFamily: "'Inter', sans-serif", fontWeight: 900 }}
+        variants={marqueeItemVariants}
+        whileHover="hover"
+      >
+        N
+      </motion.span>
+      <motion.span
+        className="text-xl font-black mx-6 text-white uppercase tracking-wider cursor-pointer"
+        style={{ fontFamily: "'Inter', sans-serif", fontWeight: 900 }}
+        variants={marqueeItemVariants}
+        whileHover="hover"
+      >
+        Brand
+      </motion.span>
+      <motion.span
+        className="text-lg text-white mx-4 cursor-pointer"
+        variants={marqueeItemVariants}
+        whileHover="hover"
+      >
+        ✦
+      </motion.span>
+    </>
+  );
+
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-black">
       {/* Import fonts */}
       <style>
         {`
-          @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+          @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         `}
       </style>
+
+      {/* Top Marquee - Sticks to top edge with proper infinite scroll */}
+      <div className="absolute top-0 left-0 w-full z-30 overflow-hidden">
+        <motion.div
+          className="flex whitespace-nowrap items-center py-2"
+          variants={topMarqueeVariants}
+          animate="animate"
+        >
+          {/* Multiple copies for true infinite loop */}
+          <MarqueeContent />
+          <MarqueeContent />
+          <MarqueeContent />
+          <MarqueeContent />
+          <MarqueeContent />
+          <MarqueeContent />
+        </motion.div>
+      </div>
+
+      {/* Bottom Marquee - Sticks to bottom edge with proper infinite scroll */}
+      <div className="absolute bottom-0 left-0 w-full z-30 overflow-hidden">
+        <motion.div
+          className="flex whitespace-nowrap items-center py-2"
+          variants={bottomMarqueeVariants}
+          animate="animate"
+        >
+          {/* Multiple copies for true infinite loop */}
+          <MarqueeContent />
+          <MarqueeContent />
+          <MarqueeContent />
+          <MarqueeContent />
+          <MarqueeContent />
+          <MarqueeContent />
+        </motion.div>
+      </div>
 
       {/* Completely Seamless Carousel - Multiple images stacked with opacity */}
       <div className="relative h-screen w-full z-0">
@@ -232,7 +344,7 @@ const IndexPageComponent: React.FC = () => {
       {/* Up Arrow Button */}
       <motion.button
         onClick={handleUpArrowClick}
-        className="fixed bottom-6 right-6 z-40 p-4 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 transition-all duration-300 border border-white/20"
+        className="fixed bottom-20 right-6 z-40 p-4 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 transition-all duration-300 border border-white/20"
         whileHover="rubber"
         variants={rubberBand}
       >
@@ -252,7 +364,7 @@ const IndexPageComponent: React.FC = () => {
       </motion.button>
 
       {/* Dots */}
-      <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-30 flex space-x-2">
+      <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2 z-30 flex space-x-2">
         {carouselImages.map((_, index) => (
           <button
             key={index}
@@ -336,32 +448,6 @@ const IndexPageComponent: React.FC = () => {
                 Brand
               </motion.span>
             </div>
-          </motion.div>
-
-          {/* Subtitle - Normal white font for "Analog in the Digital Age" */}
-          <motion.div
-            variants={textVariants}
-            initial="hidden"
-            animate="visible"
-            transition={{ delay: 0.8 }}
-            className="mb-8 sm:mb-12 px-2"
-          >
-            <p
-              className="text-xl sm:text-2xl md:text-3xl text-white max-w-2xl mx-auto leading-relaxed py-3 sm:py-4 font-semibold"
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 600,
-                textShadow: `
-                  0 0 25px rgba(0, 0, 0, 0.9),
-                  0 0 50px rgba(0, 0, 0, 0.8),
-                  0 2px 12px rgba(0, 0, 0, 0.9),
-                  0 4px 24px rgba(0, 0, 0, 0.7)
-                `,
-                letterSpacing: "0.5px",
-              }}
-            >
-              Analog, in the Digital Age.
-            </p>
           </motion.div>
 
           {/* CTA Buttons - Normal font */}
