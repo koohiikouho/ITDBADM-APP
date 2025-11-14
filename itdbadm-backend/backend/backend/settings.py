@@ -158,4 +158,4 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 # Uses a custom user model for auth
-AUTH_USER_MODEL = 'api.CustomUser' 
+# AUTH_USER_MODEL = 'api.CustomUser' 

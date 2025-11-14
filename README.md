@@ -41,23 +41,46 @@ Includes a standardized folder structure, README layout, and common configuratio
 
 ### 2.1. Prerequisites
 
-Install Python and pnpm
+#### Install pnpm or npm for the frontend
+
+#### Install Python for the backend
+
+- then install pip using `py -m ensurepip --upgrade` in a Windows terminal
+- you may also opt to download the `get-pip.py` file online and run it with `py get-pip.py` in the directory it's located
 
 ### 2.2. Installation
 
-> [fill up]
+#### Frontend stuff
+
+#### Backend stuff
+
+Activating the venv
+
+- cd into the itdbadm-backend/ folder
+- activate the venv by doing `env/Scripts/activate.bat` on Windows. `source env/bin/activate` for Unix users.
+
+Installing the dependencies
+
+- cd into the itdbadm-backend/backend/ folder
+- do the command `pip install -r requirements.txt`. This will install all the required packages inside the txt file. Feel free to add if needed.
 
 ### 2.3. Running the Project
 
-[Frontend]
-cd into itdbadm-frontend
-run using `pnpm run dev`
+#### Frontend stuff
 
-[Backend]
-cd into itdbadm
-run using `py manage.py runserver`
+- inside itdbadm-frontend run `pnpm run dev` or `npm run dev`
 
+#### Backend stuff
+
+- inside itdbadm-backend/backend/ run `py manage.py runserver`
+
+```http
+  in settings.py, if you want to play with the database and models, remember to change the USER and PASSWORD to your local sql server. DO NOT USE THE CCSCLOUD SERVER CREDENTIALS FOR THIS.
+```
+
+```http
 Stop both servers using Ctrl+C
+```
 
 ## 3. Usage
 
