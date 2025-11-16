@@ -24,6 +24,18 @@ export const siteConfig = {
       label: "About",
       href: "/about",
     },
+    {
+      label: "CreateProduct",
+      href: "/createproduct",
+    },
+    {
+      label: "CreateBand",
+      href: "/createband",
+    },
+    {
+      label: "DeleteProduct",
+      href: "/deleteproduct",
+    },
   ],
   navMenuItems: [
     {

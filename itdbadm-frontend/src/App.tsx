@@ -13,6 +13,12 @@ import BookPage from "./pages/band/book";
 import CartPage from "./pages/cart";
 import MerchandisePage from "./pages/merchandise";
 
+//admin side
+import CreateProductPage from "./pages/admin/createproduct";
+import CreateBandPage from "./pages/admin/createband";
+import DeleteProductPage from "./pages/admin/deleteproduct";
+
+
 function App() {
   return (
     <Routes>
@@ -28,6 +34,9 @@ function App() {
       <Route element={<CartPage />} path="/cart" />
       <Route element={<MerchandisePage />} path="/merchandise" />
       <Route element={<BookPage />} path="/book" />
+      <Route element={<CreateProductPage />} path="/createproduct" />
+      <Route element={<CreateBandPage />} path="/createband" />
+      <Route element={<DeleteProductPage />} path="/deleteproduct" />
     </Routes>
   );
 }
