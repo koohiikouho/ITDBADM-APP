@@ -8,6 +8,7 @@ import "./db"; // Initialize the database pool
 import { cors } from "@elysiajs/cors";
 
 import { authRoutes } from "./auth";
+import { ordersController } from "./controllers/orders";
 
 
 // JWT Middleware Configuration
@@ -16,6 +17,13 @@ import { authRoutes } from "./auth";
 const app = new Elysia()
 .use(authRoutes)
 .use(cors())
+.use(
+  jwt({
+    name: 'jwt',
+    secret: process.env.JWT_SECRET as string,
+    exp: '1d',
+  })
+)
 
   // Define a basic GET route at the root path "/"
   .get("/", () => {
@@ -29,6 +37,7 @@ const app = new Elysia()
   .use(usersController) // Use the users controller
   .use(bandsController) // Use the bands controller
   .use(productsController) // Use the products controller
+  .use(ordersController) // Use the orders controller
   .use(cors())
 
   // Start the server on port 3000
