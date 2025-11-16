@@ -1,4 +1,4 @@
-# template-repo <!-- omit from toc -->
+# Band N Brand <!-- omit from toc -->
 
 ![title](./assets/readme/title.jpg)
 
