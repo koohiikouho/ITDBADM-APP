@@ -1,56 +1,171 @@
-import { Image } from "@heroui/react";
 import SeeMore from "./SeeMore";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import BookBandButton from "./BookBand";
 import BuyMerchButton from "./BuyMerch";
+import { useState, useEffect } from "react";
+
+interface BandMember {
+  band_role: string;
+  member_name: string;
+}
+
+interface BandData {
+  branch_id: number;
+  name: string;
+  genre: string;
+  description: string;
+  iframe_string: string;
+  pfp_string: string;
+  member_list: BandMember[];
+}
 
 interface BandProps {
   isDescriptionOn: boolean;
 }
 
 const BandInfoHead: React.FC<BandProps> = ({ isDescriptionOn = false }) => {
+  const { id } = useParams<{ id: string }>();
+  const [bandData, setBandData] = useState<BandData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Debug log to see what ID we're getting
+  console.log("Current band ID from URL:", id);
+
+  useEffect(() => {
+    const fetchBandData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        if (!id) {
+          throw new Error("No band ID found in URL");
+        }
+
+        console.log("Fetching from:", `http://localhost:3000/bands/${id}`);
+
+        const response = await fetch(`http://localhost:3000/bands/${id}`);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch band data: ${response.status}`);
+        }
+
+        const data: BandData[] = await response.json();
+        console.log("API Response:", data);
+
+        if (data && data.length > 0) {
+          setBandData(data[0]);
+        } else {
+          throw new Error("No band data found for this ID");
+        }
+      } catch (err) {
+        console.error("Error fetching band data:", err);
+        setError(err instanceof Error ? err.message : "An error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBandData();
+  }, [id]);
+
   function descriptionOn(desc: Boolean) {
     if (desc) {
       return <BookBandButton theme="music" size="lg" />;
     } else return <BuyMerchButton theme="merch" size="lg" />;
   }
 
+  // Format members list for SeeMore component with preserved styling
+  const membersText =
+    bandData?.member_list
+      .map((member) => `※ (${member.band_role}) ${member.member_name}`)
+      .join("\n") || "";
+
+  // Render members list with proper line breaks
+  const renderMembersList = () => {
+    return bandData?.member_list.map((member, index) => (
+      <div key={index} className="mb-1 last:mb-0">
+        ※ ({member.band_role}) {member.member_name}
+      </div>
+    ));
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <div className="text-lg">Loading band information...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <div className="text-lg text-red-500">Error: {error}</div>
+        <div className="text-sm text-gray-500 mt-2">
+          Band ID: {id || "Not found"}
+        </div>
+      </div>
+    );
+  }
+
+  if (!bandData) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <div className="text-lg">No band data found</div>
+        <div className="text-sm text-gray-500 mt-2">
+          Band ID: {id || "Not found"}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="grid grid-cols-[auto_1fr] auto-rows-auto gap-5">
-        <div className="row-span-2 justify-items-center max-w-75">
-          <Image
-            isBlurred
-            isZoomed
-            alt="band image"
-            className=""
-            src="https://i.scdn.co/image/ab6761610000517438df323a9b0d7880ae59590b"
-          ></Image>
+        <div className="row-span-2 justify-items-center">
+          {/* Force 1:1 aspect ratio with proper styling */}
+          <div className="w-70 h-70 overflow-hidden rounded-lg bg-gray-200">
+            <img
+              src={bandData.pfp_string}
+              alt="band image"
+              className="w-full h-full object-cover"
+            />
+          </div>
         </div>
         <div className="col-span-2">
           <div>
-            <div>
+            <div className="flex items-center gap-4 mb-2">
               <h1 className="text-6xl font-bold uppercase">
-                <Link to={{ pathname: "/bandinfo" }}>kessoku band</Link>
+                <Link to={{ pathname: `/bandinfo/${bandData.branch_id}` }}>
+                  {bandData.name}
+                </Link>
               </h1>
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-300">
+                {bandData.genre}
+              </span>
             </div>
 
             <div className="pt-3">
-              <SeeMore
-                maxLines={2}
-                text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin eu magna sit amet risus interdum rutrum. Donec sit amet aliquet tortor. Curabitur nec facilisis velit. Praesent aliquam diam in augue tincidunt, ac aliquam sapien cursus. Nullam molestie mattis nulla, ut porttitor dui pharetra sit amet. Vivamus accumsan facilisis tristique. Ut tempor pellentesque pretium. Donec scelerisque dui justo, in aliquet augue hendrerit tincidunt. Morbi quis nisi vel sem consectetur tristique non et justo. In consectetur nunc hendrerit ligula vulputate, vulputate aliquet nisi pulvinar. "
-              />
+              <SeeMore maxLines={2} text={bandData.description} />
             </div>
           </div>
         </div>
         <div className="col-start-2 row-start-2 items-start">
-          <h2>Band Members:</h2>
-          <ul>
-            <li>※ (Vo. & Git.) Ikuyo Kita</li>
-            <li>※ (Gt. & Vo.) Hitori "Bocchi" Gotō</li>
-            <li>※ (Ba.) Ryō Yamada</li>
-            <li>※ (Dr.) Nijika Ijichi</li>
-          </ul>
+          <h2 className="font-semibold text-lg mb-2">Band Members:</h2>
+          {bandData.member_list.length > 4 ? (
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              <SeeMore
+                maxLines={4}
+                text={membersText}
+                className="whitespace-pre-line"
+              />
+            </div>
+          ) : (
+            <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+              {renderMembersList()}
+            </div>
+          )}
         </div>
         <div className="col-start-3 row-start-2 flex items-center">
           <div className="">{descriptionOn(isDescriptionOn)}</div>
@@ -58,15 +173,7 @@ const BandInfoHead: React.FC<BandProps> = ({ isDescriptionOn = false }) => {
       </div>
       <div>
         <br />
-        <iframe
-          src="https://open.spotify.com/embed/artist/2nvl0N9GwyX69RRBMEZ4OD?utm_source=generator"
-          className="rounded-xl"
-          width="100%"
-          height="152"
-          frameBorder="0"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy"
-        ></iframe>
+        <div dangerouslySetInnerHTML={{ __html: bandData.iframe_string }} />
       </div>
       <br />
     </div>

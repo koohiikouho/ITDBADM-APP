@@ -29,7 +29,7 @@ function App() {
       <Route element={<BandsPage />} path="/bands" />
       <Route element={<BlogPage />} path="/blog" />
       <Route element={<AboutPage />} path="/about" />
-      <Route element={<BandInfo />} path="/bandinfo" />
+      <Route element={<BandInfo />} path="/bandinfo/:id" />
       <Route element={<LoginPage />} path="/login" />
       <Route element={<SignUpPage />} path="/signup" />
       <Route element={<ProductPage />} path="/product" />

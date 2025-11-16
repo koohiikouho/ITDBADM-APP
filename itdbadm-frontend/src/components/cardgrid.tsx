@@ -110,7 +110,7 @@ const CardGrid: React.FC = () => {
 
   const handleCardPress = (itemId: number): void => {
     console.log("Card pressed", itemId);
-    navigate("/bandinfo");
+    navigate("/bandinfo/" + itemId);
   };
 
   const handleSearchChange = (value: string) => {
