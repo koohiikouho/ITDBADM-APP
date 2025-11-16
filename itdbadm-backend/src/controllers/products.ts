@@ -8,7 +8,7 @@ export const productsController = new Elysia({ prefix: "/products" })
   .get("/", async ({ set }) => {
     try {
       // SQL Query: Fetch essential details for all non-deleted products
-      const query = `SELECT p.product_id,b.name,p.name,p.description,p.category,p.price,p.image FROM products p LEFT JOIN bands b ON "p.band_id=b.band_id" WHERE p.is_deleted = 0;`;
+      const query = `SELECT p.product_id, b.name as 'band_name',p.name,p.description,p.category,p.price,p.image FROM products p LEFT JOIN bands b ON p.band_id=b.band_id WHERE p.is_deleted = 0;`;
 
       const [rows] = await dbPool.execute<mysql.RowDataPacket[]>(query);
 
@@ -20,7 +20,7 @@ export const productsController = new Elysia({ prefix: "/products" })
       // Map the results to a clean array of product objects
       const productList = rows.map((row) => ({
         id: row.product_id,
-        band_name: row.name,
+        band_name: row.band_name,
         name: row.name,
         description: row.description,
         category: row.category,

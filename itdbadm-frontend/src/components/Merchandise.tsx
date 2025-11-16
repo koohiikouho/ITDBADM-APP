@@ -21,19 +21,23 @@ import {
   List,
   Download,
   Package,
+  Users,
 } from "lucide-react";
 
 interface Product {
   id: number;
+  band_name: string;
+  name: string;
+  description: string;
   category: string;
-  title: string;
   price: string;
-  imageUrl: string;
-  type: "digital" | "physical";
-  description?: string;
+  img: {
+    url: string;
+  };
 }
 
 interface ProductCardProps {
+  bandName: string;
   category: string;
   title: string;
   price: string;
@@ -43,6 +47,7 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
+  bandName,
   category,
   title,
   price,
@@ -120,9 +125,18 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
         <CardBody className="p-4 flex flex-col flex-1">
           <div className="space-y-2 flex-1">
+            {/* Band Name */}
+            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+              <Users size={12} />
+              <span className="font-medium">{bandName}</span>
+            </div>
+
+            {/* Category */}
             <p className="text-sm text-gray-500 dark:text-gray-200 uppercase tracking-wide">
               {category}
             </p>
+
+            {/* Product Title */}
             <h3 className="text-lg font-semibold leading-tight line-clamp-2">
               {title}
             </h3>
@@ -149,195 +163,75 @@ const ProductGrid: React.FC = () => {
   const [productType, setProductType] = useState<
     "all" | "digital" | "physical"
   >("all");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const productsPerPage = 12;
 
-  // Product data with digital and physical types
-  const products: Product[] = [
-    {
-      id: 1,
-      category: "Acrylic Figure",
-      title: "Casual Outfit Kasane Teto Acrylic Figure",
-      price: "2,000 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      type: "physical",
-      description:
-        "High-quality acrylic figure. Faithfully reproduces Kasane Teto's casual outfit.",
-    },
-    {
-      id: 2,
-      category: "Digital Art",
-      title: "Hatsune Miku Digital Illustration Collection",
-      price: "1,500 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1635830625698-3b9bd74671ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      type: "digital",
-      description:
-        "High-resolution digital illustration collection. Available for download in PNG and JPG formats.",
-    },
-    {
-      id: 3,
-      category: "Acrylic Keychain",
-      title: "Kagamine Rin Keychain",
-      price: "1,200 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1542744095-fcf48d80b0fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      type: "physical",
-      description:
-        "Convenient acrylic keychain for carrying. Can be attached to bags or keys.",
-    },
-    {
-      id: 4,
-      category: "Digital Music",
-      title: "Kessoku Band Digital Album",
-      price: "2,500 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      type: "digital",
-      description:
-        "Digital album available for download in MP3 and FLAC formats.",
-    },
-    {
-      id: 5,
-      category: "Acrylic Figure",
-      title: "Sakura Miku Acrylic Figure",
-      price: "2,200 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      type: "physical",
-      description:
-        "Limited edition Sakura Miku acrylic figure with spring theme.",
-    },
-    {
-      id: 6,
-      category: "Digital Stickers",
-      title: "Vocaloid Digital Sticker Set",
-      price: "800 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      type: "digital",
-      description:
-        "PNG sticker set usable on social media and digital devices.",
-    },
-    {
-      id: 7,
-      category: "Acrylic Figure",
-      title: "Kagamine Len Acrylic Figure",
-      price: "2,100 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1635830625698-3b9bd74671ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      type: "physical",
-      description:
-        "Colorful Kagamine Len acrylic figure. Perfect for desktop display.",
-    },
-    {
-      id: 8,
-      category: "Digital Wallpaper",
-      title: "4K Anime Wallpaper Collection",
-      price: "1,000 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      type: "digital",
-      description:
-        "High-resolution 4K wallpaper collection for smartphones and PCs.",
-    },
-    {
-      id: 9,
-      category: "Acrylic Keychain",
-      title: "Megurine Luka Keychain",
-      price: "1,600 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1542744095-fcf48d80b0fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      type: "physical",
-      description:
-        "Limited edition keychain featuring the popular character Megurine Luka.",
-    },
-    {
-      id: 10,
-      category: "Digital Font",
-      title: "Anime Style Japanese Font",
-      price: "3,000 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1511735111819-9a3f7709049c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      type: "digital",
-      description:
-        "Commercially usable anime-style Japanese font. Available in OTF and TTF formats.",
-    },
-    {
-      id: 11,
-      category: "Acrylic Figure",
-      title: "MEIKO Acrylic Figure",
-      price: "2,300 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      type: "physical",
-      description:
-        "MEIKO acrylic figure exuding mature charm. A must-have for collectors.",
-    },
-    {
-      id: 12,
-      category: "Digital Brushes",
-      title: "Clip Studio Paint Brush Set",
-      price: "1,800 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571974599782-87624638275f?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      type: "digital",
-      description: "High-quality digital brush set for professional creators.",
-    },
-    {
-      id: 13,
-      category: "Acrylic Figure",
-      title: "KAITO Acrylic Figure",
-      price: "2,300 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1635830625698-3b9bd74671ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      type: "physical",
-      description:
-        "Acrylic figure expressing the cool KAITO. Limited production item.",
-    },
-    {
-      id: 14,
-      category: "Digital 3D Model",
-      title: "Vocaloid Character 3D Model",
-      price: "5,000 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      type: "digital",
-      description:
-        "High-quality 3D character model compatible with Blender and Maya.",
-    },
-    {
-      id: 15,
-      category: "Acrylic Stand",
-      title: "Oshi no Ko Acrylic Stand",
-      price: "1,800 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      type: "physical",
-      description:
-        "Cute acrylic stand to decorate your desk or shelf. Self-standing.",
-    },
-    {
-      id: 16,
-      category: "Digital Course",
-      title: "Anime Art Digital Painting Course",
-      price: "8,000 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      type: "digital",
-      description:
-        "Online digital painting course to learn professional techniques.",
-    },
-  ];
+  // Fetch products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        console.log("Fetching products from: http://localhost:3000/products");
+
+        const response = await fetch("http://localhost:3000/products");
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch products: ${response.status}`);
+        }
+
+        const data: Product[] = await response.json();
+        console.log("Products API Response:", data);
+
+        setProducts(data);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : "An error occurred while fetching products"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Format price to JPY
+  const formatPrice = (price: string) => {
+    try {
+      const numericPrice = parseFloat(price);
+      return isNaN(numericPrice)
+        ? price
+        : `${numericPrice.toLocaleString("ja-JP")} JPY`;
+    } catch {
+      return price;
+    }
+  };
+
+  // Determine product type based on category
+  const getProductType = (category: string): "digital" | "physical" => {
+    return category.toLowerCase().includes("digital") ? "digital" : "physical";
+  };
 
   // Filter and paginate data
   const filteredAndPaginatedData = useMemo(() => {
     // Filter by search query and product type
     let filtered = products.filter((item) => {
       const matchesSearch =
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.category.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesType = productType === "all" || item.type === productType;
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.band_name.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const itemType = getProductType(item.category);
+      const matchesType = productType === "all" || itemType === productType;
+
       return matchesSearch && matchesType;
     });
 
@@ -345,19 +239,13 @@ const ProductGrid: React.FC = () => {
     filtered = filtered.sort((a, b) => {
       switch (sortBy) {
         case "name":
-          return a.title.localeCompare(b.title);
+          return a.name.localeCompare(b.name);
         case "name-desc":
-          return b.title.localeCompare(a.title);
+          return b.name.localeCompare(a.name);
         case "price-low":
-          return (
-            parseFloat(a.price.replace(/[^0-9.]/g, "")) -
-            parseFloat(b.price.replace(/[^0-9.]/g, ""))
-          );
+          return parseFloat(a.price) - parseFloat(b.price);
         case "price-high":
-          return (
-            parseFloat(b.price.replace(/[^0-9.]/g, "")) -
-            parseFloat(a.price.replace(/[^0-9.]/g, ""))
-          );
+          return parseFloat(b.price) - parseFloat(a.price);
         case "newest":
           return b.id - a.id;
         case "oldest":
@@ -389,7 +277,7 @@ const ProductGrid: React.FC = () => {
 
   const handleProductClick = (productId: number): void => {
     console.log("Product pressed", productId);
-    navigate("/product");
+    navigate(`/product/${productId}`);
   };
 
   const handleSearchChange = (value: string) => {
@@ -404,6 +292,36 @@ const ProductGrid: React.FC = () => {
     setCurrentPage(1);
   };
 
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto p-8">
+        <div className="flex justify-center items-center py-16">
+          <div className="text-lg">Loading products...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto p-8">
+        <div className="flex justify-center items-center py-16">
+          <div className="text-lg text-red-500">Error: {error}</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="max-w-7xl mx-auto p-8">
+        <div className="flex justify-center items-center py-16">
+          <div className="text-lg text-gray-500">No products found</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto p-8">
       {/* Enhanced Search and Filter Bar */}
@@ -412,7 +330,7 @@ const ProductGrid: React.FC = () => {
           {/* Search Bar */}
           <div className="flex-1 w-full min-w-0">
             <Input
-              placeholder="Search by product name or category..."
+              placeholder="Search by product name, band, or category..."
               value={searchQuery}
               onValueChange={handleSearchChange}
               startContent={<Search size={20} className="text-default-400" />}
@@ -586,11 +504,12 @@ const ProductGrid: React.FC = () => {
         {filteredAndPaginatedData.data.map((product: Product) => (
           <ProductCard
             key={product.id}
+            bandName={product.band_name}
             category={product.category}
-            title={product.title}
-            price={product.price}
-            imageUrl={product.imageUrl}
-            type={product.type}
+            title={product.name}
+            price={formatPrice(product.price)}
+            imageUrl={product.img.url}
+            type={getProductType(product.category)}
             onClick={() => handleProductClick(product.id)}
           />
         ))}
