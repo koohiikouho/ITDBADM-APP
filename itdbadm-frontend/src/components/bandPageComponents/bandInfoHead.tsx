@@ -60,6 +60,7 @@ const BandInfoHead: React.FC<BandProps> = ({ isDescriptionOn = false }) => {
         <br />
         <iframe
           src="https://open.spotify.com/embed/artist/2nvl0N9GwyX69RRBMEZ4OD?utm_source=generator"
+          className="rounded-xl"
           width="100%"
           height="152"
           frameBorder="0"
