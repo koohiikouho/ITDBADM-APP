@@ -7,6 +7,38 @@ import mysql from 'mysql2/promise';
 export const usersController = new Elysia({ prefix: '/users' })
 
 
+// GET /users/username/:id
+.get ("/username/:id", async ({ params, body, set }) => {
+
+        const user_id = params.id;
+
+        if (isNaN(Number(user_id))) {
+            set.status = 400;
+            return { error: "Invalid user id." };
+        }
+
+        try {
+            const query = `SELECT username FROM users WHERE user_id = ${user_id};`;
+
+            const [row] = await dbPool.execute<mysql.RowDataPacket[]>(query);
+
+            if (!row) {
+                set.status = 200;
+                return { message: "user not found." };
+            }
+
+            const username = row[0];
+
+            return username;
+
+        } catch (error) {
+            console.error("Error fetching username", error);
+            set.status = 500;
+            return { message: "Internal Server Error while retrieving username." };
+        }
+    })
+
+
 // POST /users/signup
 
 
