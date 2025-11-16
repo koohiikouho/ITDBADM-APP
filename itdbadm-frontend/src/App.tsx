@@ -19,6 +19,7 @@ import MyOrdersPage from "./pages/orders";
 import CreateProductPage from "./pages/admin/createproduct";
 import CreateBandPage from "./pages/admin/createband";
 import DeleteProductPage from "./pages/admin/deleteproduct";
+import SentOffersPage from "@/pages/offers";
 
 function App() {
   return (
@@ -39,6 +40,8 @@ function App() {
       <Route element={<CreateProductPage />} path="/createproduct" />
       <Route element={<CreateBandPage />} path="/createband" />
       <Route element={<DeleteProductPage />} path="/deleteproduct" />
+
+      <Route element={<SentOffersPage />} path="sent-offers" />
       <Route element={<MyOrdersPage />} path="/orders" />
     </Routes>
   );

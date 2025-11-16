@@ -56,6 +56,17 @@ const BandInfoHead: React.FC<BandProps> = ({ isDescriptionOn = false }) => {
           <div className="">{descriptionOn(isDescriptionOn)}</div>
         </div>
       </div>
+      <div>
+        <br />
+        <iframe
+          src="https://open.spotify.com/embed/artist/2nvl0N9GwyX69RRBMEZ4OD?utm_source=generator"
+          width="100%"
+          height="152"
+          frameBorder="0"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"
+        ></iframe>
+      </div>
       <br />
     </div>
   );
