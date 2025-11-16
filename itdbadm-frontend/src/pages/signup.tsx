@@ -15,14 +15,15 @@ import { useTheme } from "@heroui/use-theme";
 export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    userName: "",
     email: "",
     password: "",
     confirmPassword: "",
-    currency: "USD", // Default currency
-    userType: "fan", // 'fan' or 'bandManager'
+    currency: "1", // Default currency (JPY)
+    userType: "3", // '3' for fan or '4' for bandManager
     agreeToTerms: false,
   });
 
@@ -30,43 +31,92 @@ export default function SignUpPage() {
   const { theme } = useTheme();
 
   const currencies = [
-    { value: "USD", label: "US Dollar (USD)", symbol: "$" },
-    { value: "PHP", label: "Philippine Peso (PHP)", symbol: "₱" },
-    { value: "YEN", label: "Japanese Yen (JPY)", symbol: "¥" },
-    { value: "VND", label: "Vietnamese Dong (VND)", symbol: "₫" },
+    { value: "2", label: "US Dollar (USD)", symbol: "$" },
+    { value: "3", label: "Philippine Peso (PHP)", symbol: "₱" },
+    { value: "1", label: "Japanese Yen (JPY)", symbol: "¥" },
+    { value: "4", label: "Vietnamese Dong (VND)", symbol: "₫" },
   ];
 
   const userTypes = [
     {
-      value: "fan",
+      value: "3",
       label: "Music Fan",
       icon: UserIcon,
       description: "I want to discover and support bands",
     },
     {
-      value: "bandManager",
+      value: "4",
       label: "Band Manager",
       icon: Music,
       description: "I manage a band and want to sell merchandise",
     },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
 
     // Basic validation
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords don't match!");
+      setError("Passwords don't match!");
+      setLoading(false);
       return;
     }
 
     if (!formData.agreeToTerms) {
-      alert("Please agree to the terms and conditions");
+      setError("Please agree to the terms and conditions");
+      setLoading(false);
       return;
     }
 
-    console.log("Sign up attempt:", formData);
-    // Handle sign up logic here
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      console.log("Sign up attempt:", formData);
+
+      const response = await fetch("http://localhost:3000/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userName: formData.userName,
+          email: formData.email,
+          password: formData.password,
+          currency: parseInt(formData.currency),
+          userType: parseInt(formData.userType),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Sign up failed");
+      }
+
+      console.log("Sign up successful:", data);
+
+      // Store the token if provided
+      if (data.token) {
+        localStorage.setItem("accessToken", data.token);
+        console.log("Token stored successfully");
+      }
+
+      // Redirect to home page or login page
+      navigate("/", { replace: true });
+    } catch (err) {
+      console.error("Sign up error:", err);
+      setError(
+        err instanceof Error ? err.message : "Sign up failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,6 +125,8 @@ export default function SignUpPage() {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+    // Clear error when user starts typing
+    if (error) setError(null);
   };
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -168,52 +220,36 @@ export default function SignUpPage() {
             </p>
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md text-sm">
+              {error}
+            </div>
+          )}
+
           {/* Sign Up Form */}
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
               {/* Name Fields */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-4">
                 <div>
                   <label
-                    htmlFor="firstName"
+                    htmlFor="userName"
                     className={`block text-sm font-medium ${themeClasses.text.primary} mb-1`}
                   >
-                    First name
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <User className={`h-5 w-5 ${themeClasses.text.muted}`} />
-                    </div>
-                    <input
-                      id="firstName"
-                      name="firstName"
-                      type="text"
-                      required
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      className={`block w-full pl-10 pr-3 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors`}
-                      placeholder="John"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="lastName"
-                    className={`block text-sm font-medium ${themeClasses.text.primary} mb-1`}
-                  >
-                    Last name
+                    Username
                   </label>
                   <div className="relative">
                     <input
-                      id="lastName"
-                      name="lastName"
+                      id="userName"
+                      name="userName"
                       type="text"
                       required
-                      value={formData.lastName}
+                      value={formData.userName}
                       onChange={handleInputChange}
-                      className={`block w-full px-3 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors`}
-                      placeholder="Doe"
+                      disabled={loading}
+                      className={`block w-full px-3 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+                      placeholder="UserName12345"
                     />
                   </div>
                 </div>
@@ -238,7 +274,8 @@ export default function SignUpPage() {
                     required
                     value={formData.email}
                     onChange={handleInputChange}
-                    className={`block w-full pl-10 pr-3 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors`}
+                    disabled={loading}
+                    className={`block w-full pl-10 pr-3 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
                     placeholder="you@example.com"
                   />
                 </div>
@@ -261,16 +298,21 @@ export default function SignUpPage() {
                           formData.userType === type.value
                             ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                             : `${themeClasses.input.border} ${themeClasses.cardHover}`
-                        }`}
-                        onClick={() => handleUserTypeChange(type.value)}
+                        } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+                        onClick={() =>
+                          !loading && handleUserTypeChange(type.value)
+                        }
                       >
                         <input
                           type="radio"
                           name="userType"
                           value={type.value}
                           checked={formData.userType === type.value}
-                          onChange={() => handleUserTypeChange(type.value)}
+                          onChange={() =>
+                            !loading && handleUserTypeChange(type.value)
+                          }
                           className="sr-only"
+                          disabled={loading}
                         />
                         <div className="flex flex-col items-center text-center">
                           <IconComponent
@@ -318,7 +360,8 @@ export default function SignUpPage() {
                   name="currency"
                   value={formData.currency}
                   onChange={handleSelectChange}
-                  className={`block w-full px-3 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors cursor-pointer`}
+                  disabled={loading}
+                  className={`block w-full px-3 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {currencies.map((currency) => (
                     <option key={currency.value} value={currency.value}>
@@ -350,14 +393,16 @@ export default function SignUpPage() {
                     required
                     value={formData.password}
                     onChange={handleInputChange}
-                    className={`block w-full pl-10 pr-10 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors`}
+                    disabled={loading}
+                    className={`block w-full pl-10 pr-10 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
                     placeholder="Enter your password"
                     minLength={6}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className={`absolute inset-y-0 right-0 pr-3 flex items-center ${themeClasses.text.muted} hover:${theme === "dark" ? "text-gray-200" : "text-gray-600"} transition-colors`}
+                    disabled={loading}
+                    className={`absolute inset-y-0 right-0 pr-3 flex items-center ${themeClasses.text.muted} hover:${theme === "dark" ? "text-gray-200" : "text-gray-600"} transition-colors disabled:opacity-50`}
                   >
                     {showPassword ? (
                       <EyeOff className="h-5 w-5" />
@@ -390,13 +435,15 @@ export default function SignUpPage() {
                     required
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    className={`block w-full pl-10 pr-10 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors`}
+                    disabled={loading}
+                    className={`block w-full pl-10 pr-10 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
                     placeholder="Confirm your password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className={`absolute inset-y-0 right-0 pr-3 flex items-center ${themeClasses.text.muted} hover:${theme === "dark" ? "text-gray-200" : "text-gray-600"} transition-colors`}
+                    disabled={loading}
+                    className={`absolute inset-y-0 right-0 pr-3 flex items-center ${themeClasses.text.muted} hover:${theme === "dark" ? "text-gray-200" : "text-gray-600"} transition-colors disabled:opacity-50`}
                   >
                     {showConfirmPassword ? (
                       <EyeOff className="h-5 w-5" />
@@ -417,7 +464,8 @@ export default function SignUpPage() {
                   type="checkbox"
                   checked={formData.agreeToTerms}
                   onChange={handleInputChange}
-                  className={`w-4 h-4 text-blue-600 ${theme === "dark" ? "border-gray-500" : "border-gray-300"} rounded focus:ring-blue-500 mt-0.5`}
+                  disabled={loading}
+                  className={`w-4 h-4 text-blue-600 ${theme === "dark" ? "border-gray-500" : "border-gray-300"} rounded focus:ring-blue-500 mt-0.5 disabled:opacity-50`}
                 />
               </div>
               <div className="ml-3 text-sm">
@@ -428,14 +476,14 @@ export default function SignUpPage() {
                   I agree to the{" "}
                   <a
                     href="#"
-                    className={`${themeClasses.link} transition-colors font-medium`}
+                    className={`${themeClasses.link} transition-colors font-medium ${loading ? "pointer-events-none opacity-50" : ""}`}
                   >
                     Terms and Conditions
                   </a>{" "}
                   and{" "}
                   <a
                     href="#"
-                    className={`${themeClasses.link} transition-colors font-medium`}
+                    className={`${themeClasses.link} transition-colors font-medium ${loading ? "pointer-events-none opacity-50" : ""}`}
                   >
                     Privacy Policy
                   </a>
@@ -446,9 +494,17 @@ export default function SignUpPage() {
             {/* Sign Up Button */}
             <button
               type="submit"
-              className={`cursor-pointer w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${themeClasses.button.primary} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors`}
+              disabled={loading}
+              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${themeClasses.button.primary} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              Create account
+              {loading ? (
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Creating account...
+                </div>
+              ) : (
+                "Create account"
+              )}
             </button>
 
             {/* Login Link */}
@@ -457,7 +513,7 @@ export default function SignUpPage() {
                 Already have an account?{" "}
                 <a
                   href="/login"
-                  className={`${themeClasses.link} transition-colors font-medium`}
+                  className={`${themeClasses.link} transition-colors font-medium ${loading ? "pointer-events-none opacity-50" : ""}`}
                 >
                   Sign in
                 </a>

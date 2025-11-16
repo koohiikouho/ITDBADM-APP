@@ -16,11 +16,11 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     "/signup",
     async ({ body, jwt, set }) => {
       // check if user already exists
-      const { lastName, email, password, currency, userType } = body;
+      const { userName, email, password, currency, userType } = body;
 
       const [rows] = await dbPool.query(
         "SELECT user_id FROM users WHERE username = ?",
-        [lastName]
+        [userName]
       );
       if ((rows as any[]).length > 0) {
         set.status = 409;
@@ -30,7 +30,7 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
       const hashed = await bcrypt.hash(password, 10);
       const [result] = await dbPool.query(
         "INSERT INTO users (username, email, password_hashed, currency_id, role_id) VALUES (?, ?, ?, ?, ?)",
-        [lastName, email, hashed, currency, userType]
+        [userName, email, hashed, currency, userType]
       );
 
       const userId = (result as any).insertId;
@@ -41,7 +41,7 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     },
     {
       body: t.Object({
-        lastName: t.String(),
+        userName: t.String(),
         email: t.String(),
         password: t.String(),
         currency: t
