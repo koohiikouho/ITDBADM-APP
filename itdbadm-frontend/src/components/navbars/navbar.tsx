@@ -16,13 +16,7 @@ import clsx from "clsx";
 
 import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
-import {
-  TwitterIcon,
-  GithubIcon,
-  CartIcon,
-  HeartFilledIcon,
-  SearchIcon,
-} from "@/components/icons";
+import { GithubIcon, CartIcon, SearchIcon } from "@/components/icons";
 import { Logo } from "@/components/icons";
 
 export const Navbar = () => {

@@ -121,7 +121,7 @@ const OffersPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black py-8 transition-colors">
+    <div className="min-h-screen bg-white dark:bg-black transition-colors">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
