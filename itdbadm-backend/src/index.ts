@@ -1,7 +1,14 @@
 import { Elysia } from 'elysia';
+import { jwt } from '@elysiajs/jwt';
+import { usersController } from './controllers/users'; // Import the users controller
+import { bandsController } from './controllers/bands'; // Import the bands controller
+import './db'; // Initialize the database pool
 
-// Create a new Elysia application instance
 const app = new Elysia()
+
+    // JWT Middleware Configuration
+    
+
     // Define a basic GET route at the root path "/"
     .get('/', () => {
         return {
@@ -9,10 +16,26 @@ const app = new Elysia()
             status: "Online"
         };
     })
+
+
+
+
+    // Controllers
+    .use(usersController) // Use the users controller
+    .use(bandsController) // Use the bands controller
+
+
+
+
+
     // Start the server on port 3000
     .listen(3000);
 
-// Log the server status to the console
+
+
+
+
+
 console.log(
-    `🦊 Elysia server is running at ${app.server?.hostname}:${app.server?.port}`
+    `Elysia server is running at ${app.server?.hostname}:${app.server?.port}`
 );
