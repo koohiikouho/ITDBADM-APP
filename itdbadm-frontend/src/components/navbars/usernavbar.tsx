@@ -38,6 +38,7 @@ import {
 } from "@/components/icons";
 import { Logo } from "@/components/icons";
 import { apiClient } from "@/lib/api";
+import { Navigate, useNavigate } from "react-router-dom";
 
 export const UserNavbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -63,7 +64,7 @@ export const UserNavbar = () => {
   }, []);
 
   const checkAuthStatus = async () => {
-    const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem("accessToken");
 
     if (token) {
       try {
@@ -124,9 +125,9 @@ export const UserNavbar = () => {
       type="search"
     />
   );
-
+  const navigate = useNavigate();
   const handleLogout = () => {
-    localStorage.removeItem("authToken");
+    localStorage.removeItem("accessToken");
     localStorage.removeItem("userId");
     localStorage.removeItem("userData");
     setIsLoggedIn(false);
@@ -135,6 +136,7 @@ export const UserNavbar = () => {
       username: "",
       avatar: "",
     });
+    navigate("/");
   };
 
   // Show loading state briefly
