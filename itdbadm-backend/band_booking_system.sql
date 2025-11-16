@@ -163,7 +163,7 @@ CREATE TABLE `bands` (
 
 LOCK TABLES `bands` WRITE;
 /*!40000 ALTER TABLE `bands` DISABLE KEYS */;
-INSERT INTO `bands` VALUES (1,2,1,'Kessoku Band','Rock','Indie rock band from Bocchi the Rock!',0,'','https://i.discogs.com/BMjajOwTBf2TAm2Z-Oe_pSPqFjRvfpnK3AAEJf_rIdo/rs:fit/g:sm/q:90/h:337/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9BLTEyMjgz/NTQ5LTE2NzM1MzIx/MDMtNzM1OS5qcGVn.jpeg'),(2,3,1,'Ho-kago Tea Time','Pop Rock','Light music club band from K-On!',0,'','https://lh3.googleusercontent.com/L2SgucZkIkjqnEvtLBFozDV7m9M___tuujMT3YzsWsHR25dKxhsvIv6WnQbnEjpz7fW-cXcxFEt9ygM=w2880-h1200-p-l90-rj'),(3,4,2,'Poppin’Party','J-Pop','Cheerful band from BanG Dream!',0,'','https://i.scdn.co/image/ab6761610000e5ebffa7657a93aa88492492172b'),(4,5,2,'Roselia','Symphonic Rock','Elegant and intense sound from BanG Dream!',0,'','https://cdn-images.dzcdn.net/images/artist/f34338bc7a51e42027647a98d2cc8fbb/1900x1900-000000-81-0-0.jpg'),(5,6,1,'Afterglow','Alt Rock','Gritty rock band from BanG Dream!',0,'','https://yt3.googleusercontent.com/7yd5xj95hLzCM5SklLGc2vcQDPWc9O3RA3ITUh7GEBlN_BbncN1NnyyCaJ0i-eAuiDQ5If8qNw=s900-c-k-c0x00ffffff-no-rj'),(6,7,2,'μ’s','Idol Pop','School idol group from Love Live!',0,'','https://img.animatetimes.com/news/visual/2012/1355147679_2_5.jpg');
+INSERT INTO `bands` VALUES (1,2,1,'Kessoku Band','Rock','Indie rock band from Bocchi the Rock!',0,'<iframe style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/artist/2nvl0N9GwyX69RRBMEZ4OD?utm_source=generator\" width=\"100%\" height=\"152\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>','https://i.discogs.com/BMjajOwTBf2TAm2Z-Oe_pSPqFjRvfpnK3AAEJf_rIdo/rs:fit/g:sm/q:90/h:337/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9BLTEyMjgz/NTQ5LTE2NzM1MzIx/MDMtNzM1OS5qcGVn.jpeg'),(2,3,1,'Ho-kago Tea Time','Pop Rock','Light music club band from K-On!',0,'<iframe style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/artist/1cXxia1Q2VDTjWe8X2Jydm?utm_source=generator\" width=\"100%\" height=\"152\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>','https://lh3.googleusercontent.com/L2SgucZkIkjqnEvtLBFozDV7m9M___tuujMT3YzsWsHR25dKxhsvIv6WnQbnEjpz7fW-cXcxFEt9ygM=w2880-h1200-p-l90-rj'),(3,4,2,'Poppin’Party','J-Pop','Cheerful band from BanG Dream!',0,'<iframe style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/artist/2XzrQN7hxZibYdVEbl0nO6?utm_source=generator\" width=\"100%\" height=\"152\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>','https://i.scdn.co/image/ab6761610000e5ebffa7657a93aa88492492172b'),(4,5,2,'Roselia','Symphonic Rock','Elegant and intense sound from BanG Dream!',0,'<iframe style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/artist/1bljHdc9g7V7ZLkYuf4yfy?utm_source=generator\" width=\"100%\" height=\"152\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>','https://cdn-images.dzcdn.net/images/artist/f34338bc7a51e42027647a98d2cc8fbb/1900x1900-000000-81-0-0.jpg'),(5,6,1,'Afterglow','Alt Rock','Gritty rock band from BanG Dream!',0,'<iframe style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/artist/2XzrQN7hxZibYdVEbl0nO6?utm_source=generator\" width=\"100%\" height=\"152\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>','https://yt3.googleusercontent.com/7yd5xj95hLzCM5SklLGc2vcQDPWc9O3RA3ITUh7GEBlN_BbncN1NnyyCaJ0i-eAuiDQ5If8qNw=s900-c-k-c0x00ffffff-no-rj'),(6,7,2,'μ’s','Idol Pop','School idol group from Love Live!',0,'<iframe style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/artist/2hYjPkmTry3LYVVSymws5i?utm_source=generator\" width=\"100%\" height=\"152\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>','https://img.animatetimes.com/news/visual/2012/1355147679_2_5.jpg');
 /*!40000 ALTER TABLE `bands` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -948,6 +948,59 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `sp_get_band_products` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb3 */ ;
+/*!50003 SET character_set_results = utf8mb3 */ ;
+/*!50003 SET collation_connection  = utf8mb3_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_AUTO_VALUE_ON_ZERO' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_get_band_products`(IN bandId INT)
+BEGIN
+SELECT product_id, name, price, description, category, image
+FROM products
+WHERE band_id = bandId AND is_deleted is false;
+
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `sp_get_band_schedule` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb3 */ ;
+/*!50003 SET character_set_results = utf8mb3 */ ;
+/*!50003 SET collation_connection  = utf8mb3_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_AUTO_VALUE_ON_ZERO' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_get_band_schedule`(IN bandId INT)
+BEGIN
+SELECT 
+	JSON_OBJECT(
+		'monday', monday,
+        'tuesday', tuesday,
+        'wednesday', wednesday,
+        'thursday', thursday,
+        'friday', friday,
+        'saturday', saturday,
+        'sunday', sunday,
+        'vacation', vacation
+    ) AS schedule
+FROM schedule
+WHERE band_id = bandId;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `sp_like_product` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -1077,4 +1130,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-16 22:23:41
+-- Dump completed on 2025-11-16 22:57:04

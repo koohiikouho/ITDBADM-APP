@@ -50,6 +50,7 @@ export const bandsController = new Elysia({ prefix: "/bands" })
 
         set.status = 200;
         return bandList;
+
       } catch (error) {
         console.error("Error fetching all bands:", error);
         set.status = 500;
@@ -94,5 +95,76 @@ export const bandsController = new Elysia({ prefix: "/bands" })
             return { message: "Internal Server Error while retrieving band details." };
         }
     }
-  );
+  )
+
+
+  // GET /bands/schedule/:id
+  .get(
+    "/schedule/:id", async ({ params, set }) => {
+        //getting the id from the params
+        const bandId = params.id;
+
+        if (isNaN(Number(bandId))) {
+            set.status = 400;
+            return { error: "Invalid band ID." };
+        }
+
+        try {
+            const query = `CALL sp_get_band_schedule(${bandId});`;
+
+            const [rows] = await dbPool.execute<mysql.RowDataPacket[]>(query);
+
+            if (rows.length === 0) {
+                set.status = 200;
+                return { message: "No schedules found for this band."};
+            }
+
+            const bandSchedule = rows[0]; // First result set
+
+            return bandSchedule; // Return the band schedule array
+
+        } catch (error) {
+            console.error("Error fetching band schedule:", error);
+            set.status = 500;
+            return { message: "Internal Server Error while retrieving band schedule." };
+        }
+    }
+  )
+
+  // GET /bands/products/:id
+  // gets all products offered by a band
+    .get(
+        "/products/:id", async ({ params, set }) => {
+            //getting the id from the params
+            const bandId = params.id;
+
+            if (isNaN(Number(bandId))) {
+                set.status = 400;
+                return { error: "Invalid band ID." };
+            }
+
+            try {
+                const query = `CALL sp_get_band_products(${bandId});`;
+
+                const [rows] = await dbPool.execute<mysql.RowDataPacket[]>(query);
+
+                if (rows.length === 0) {
+                    set.status = 200;
+                    return { message: "No products found for this band."};
+                }
+
+
+                const bandProductsList = rows[0]; // First result set
+
+                return bandProductsList; // Return the band products array
+
+
+            } catch (error) {
+                console.error("Error fetching band products:", error);
+                set.status = 500;
+                return { message: "Internal Server Error while retrieving band products." };
+            }
+
+        }
+    );
 
