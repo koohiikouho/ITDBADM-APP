@@ -1,14 +1,21 @@
 import { Elysia } from "elysia";
 import { jwt } from "@elysiajs/jwt";
+
 import { usersController } from "./controllers/users"; // Import the users controller
 import { bandsController } from "./controllers/bands"; // Import the bands controller
 import { productsController } from "./controllers/products"; // Import the products controller
 import "./db"; // Initialize the database pool
 import { cors } from "@elysiajs/cors";
 
-const app = new Elysia()
+import { authRoutes } from "./auth";
 
-  // JWT Middleware Configuration
+
+// JWT Middleware Configuration
+
+
+const app = new Elysia()
+.use(authRoutes)
+
 
   // Define a basic GET route at the root path "/"
   .get("/", () => {
@@ -26,6 +33,7 @@ const app = new Elysia()
 
   // Start the server on port 3000
   .listen(3000);
+  
 
 console.log(
   `Elysia server is running at ${app.server?.hostname}:${app.server?.port}`
