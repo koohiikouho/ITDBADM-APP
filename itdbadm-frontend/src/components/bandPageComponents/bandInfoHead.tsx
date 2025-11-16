@@ -8,19 +8,33 @@ interface BandProps {
   isDescriptionOn: boolean;
   bandData: BandData;
   bandId: string | number;
+  enableSpotify?: boolean;
 }
 
 const BandInfoHead: React.FC<BandProps> = ({
   isDescriptionOn = false,
   bandData,
   bandId,
+  enableSpotify = false,
 }) => {
   function descriptionOn(desc: Boolean) {
     if (desc) {
       var { bandId } = useParams<{ bandId: string }>();
       bandId?.toString();
       return <BookBandButton theme="music" size="lg" bandId={bandId} />;
-    } else return <BuyMerchButton theme="merch" size="lg" bandId={bandId} />;
+    } else {
+      var { bandId } = useParams<{ bandId: string }>();
+      bandId?.toString();
+      return <BuyMerchButton theme="merch" size="lg" bandId={bandId} />;
+    }
+  }
+
+  function enableIFrame(iframe: Boolean) {
+    if (iframe) {
+      return (
+        <div dangerouslySetInnerHTML={{ __html: bandData.iframe_string }} />
+      );
+    }
   }
 
   // Format members list for SeeMore component with preserved styling
@@ -91,7 +105,7 @@ const BandInfoHead: React.FC<BandProps> = ({
       </div>
       <div>
         <br />
-        <div dangerouslySetInnerHTML={{ __html: bandData.iframe_string }} />
+        <div>{enableIFrame(enableSpotify)}</div>
       </div>
       <br />
     </div>

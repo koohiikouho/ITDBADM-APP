@@ -1,4 +1,3 @@
-// usernavbar.tsx
 import { Button } from "@heroui/button";
 import { Kbd } from "@heroui/kbd";
 import { Link } from "@heroui/link";
@@ -21,7 +20,6 @@ import {
 import { Avatar } from "@heroui/avatar";
 import { link as linkStyles } from "@heroui/theme";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
 
 import { siteConfig } from "@/config/user";
 import { ThemeSwitch } from "@/components/theme-switch";
@@ -39,63 +37,12 @@ import {
 import { Logo } from "@/components/icons";
 
 export const UserNavbar = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState({
-    name: "",
-    username: "",
-    avatar: "",
-  });
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Check for token and fetch user data
-  useEffect(() => {
-    checkAuthStatus();
-
-    const handleStorageChange = () => {
-      checkAuthStatus();
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, []);
-
-  const checkAuthStatus = async () => {
-    const token = localStorage.getItem("authToken");
-    const userId = localStorage.getItem("userId");
-
-    if (token && userId) {
-      try {
-        // Fetch user data from your API route
-        const response = await fetch(`/users/username/${userId}`);
-
-        if (response.ok) {
-          const userData = await response.json();
-          setIsLoggedIn(true);
-          setUser({
-            name: userData.name || userData.username,
-            username: userData.username,
-            avatar: userData.avatar || "",
-          });
-        } else {
-          // If API call fails, clear invalid token
-          handleLogout();
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        handleLogout();
-      }
-    } else {
-      setIsLoggedIn(false);
-      setUser({
-        name: "",
-        username: "",
-        avatar: "",
-      });
-    }
-    setIsLoading(false);
+  // Mock user data - replace with actual authentication state
+  const isLoggedIn = true; // Change this based on actual auth state
+  const user = {
+    name: "John Doe",
+    username: "john_doe",
+    avatar: "", // Leave empty for default avatar
   };
 
   const searchInput = (
@@ -120,46 +67,10 @@ export const UserNavbar = () => {
   );
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("userData");
-    setIsLoggedIn(false);
-    setUser({
-      name: "",
-      username: "",
-      avatar: "",
-    });
-    // Optional: Redirect to login page or home page
-    // window.location.href = '/';
+    // Add logout logic here
+    console.log("Logging out...");
+    localStorage.clear();
   };
-
-  // Show loading state briefly
-  if (isLoading) {
-    return (
-      <HeroUINavbar maxWidth="xl" position="sticky">
-        <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
-          <NavbarBrand className="gap-3 max-w-fit">
-            <Link
-              className="flex justify-start items-center gap-1"
-              color="foreground"
-              href="/"
-            >
-              <Logo />
-              <p className="font-bold text-inherit">Band N Brand</p>
-            </Link>
-          </NavbarBrand>
-        </NavbarContent>
-        <NavbarContent
-          className="sm:flex basis-1/5 sm:basis-full"
-          justify="end"
-        >
-          <NavbarItem className="hidden sm:flex gap-2">
-            <ThemeSwitch />
-          </NavbarItem>
-        </NavbarContent>
-      </HeroUINavbar>
-    );
-  }
 
   return (
     <HeroUINavbar maxWidth="xl" position="sticky">
@@ -259,7 +170,7 @@ export const UserNavbar = () => {
             <Button
               as={Link}
               className="text-sm font-normal text-default-600 bg-default-100"
-              href="/login" // Update this to your actual login route
+              href={siteConfig.links.sponsor}
               variant="ghost"
             >
               Login
@@ -304,7 +215,7 @@ export const UserNavbar = () => {
           <Button
             as={Link}
             className="text-sm font-normal text-default-600"
-            href="/login" // Update this to your actual login route
+            href={siteConfig.links.sponsor}
             variant="light"
           >
             Login

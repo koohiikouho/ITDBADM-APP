@@ -56,38 +56,41 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     }
   )
 
-  .post (
-    "/signin", async ({ body, jwt, set }) => {
-        const { username, password } = body;
+  .post(
+    "/signin",
+    async ({ body, jwt, set }) => {
+      const { username, password } = body;
 
-        const [rows] = await dbPool.query(
-            "SELECT user_id, password_hashed FROM users WHERE username = ?",
-            [username]
-        );
+      const [rows] = await dbPool.query(
+        "SELECT user_id, password_hashed FROM users WHERE username = ?",
+        [username]
+      );
 
-        const user = (rows as any[])[0];
-        if (!user) {
-            set.status = 400;
-            return { error: "invalid username or password" };
-        }
+      const user = (rows as any[])[0];
+      if (!user) {
+        set.status = 400;
+        return { error: "Invalid username or password" };
+      }
 
-         const valid = await bcrypt.compare(password, user.password);
-        if (!valid) {
-            set.status = 400;
-            return { error: "Invalid username or password" };
-        }
+      // FIX: Use password_hashed instead of password
+      const valid = await bcrypt.compare(password, user.password_hashed);
+      if (!valid) {
+        set.status = 400;
+        return { error: "Invalid username or password" };
+      }
 
-        const token = await jwt.sign({ id: user.id });
-        return { message: "signed in successfully", token };
+      // FIX: Use user_id instead of id
+      const token = await jwt.sign({ id: user.user_id });
+      return { message: "Signed in successfully", accessToken: token };
     },
     {
-        body: t.Object({
-            username: t.String(),
-            password: t.String()
-        }),
+      body: t.Object({
+        username: t.String(),
+        password: t.String(),
+      }),
     }
   )
 
-  .post ("/signout", () => ({
-        message: "Signed out successfully",
+  .post("/signout", () => ({
+    message: "Signed out successfully",
   }));

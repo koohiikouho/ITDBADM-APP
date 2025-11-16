@@ -1,15 +1,16 @@
 import { useState } from "react";
-import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, User, Lock, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@heroui/use-theme";
 import { JWTManager } from "@/lib/jwtUtils";
+import { apiClient } from "@/lib/api";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: "",
     rememberMe: false,
   });
@@ -23,16 +24,16 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      console.log("Login attempt:", { email: formData.email });
+      console.log("Login attempt:", { username: formData.username });
 
       // API call to login endpoint
-      const response = await fetch("http://localhost:3000/auth/login", {
+      const response = await fetch(apiClient.baseURL + "/auth/signin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: formData.email,
+          username: formData.username,
           password: formData.password,
         }),
       });
@@ -164,28 +165,28 @@ export default function LoginPage() {
           {/* Login Form */}
           <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
-              {/* Email Input */}
+              {/* Username Input */}
               <div>
                 <label
-                  htmlFor="email"
+                  htmlFor="username"
                   className={`block text-sm font-medium ${themeClasses.text.primary} mb-1`}
                 >
-                  Email address
+                  Username
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className={`h-5 w-5 ${themeClasses.text.muted}`} />
+                    <User className={`h-5 w-5 ${themeClasses.text.muted}`} />
                   </div>
                   <input
-                    id="email"
-                    name="email"
-                    type="email"
+                    id="username"
+                    name="username"
+                    type="text"
                     required
-                    value={formData.email}
+                    value={formData.username}
                     onChange={handleChange}
                     disabled={loading}
                     className={`block w-full pl-10 pr-3 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
-                    placeholder="you@example.com"
+                    placeholder="Enter your username"
                   />
                 </div>
               </div>

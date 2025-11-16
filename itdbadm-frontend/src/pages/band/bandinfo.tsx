@@ -127,7 +127,12 @@ export default function BandInfo() {
           threshold={0.2}
           delay={0.1}
         >
-          <BandInfoHead isDescriptionOn bandData={bandData} bandId={bandId} />
+          <BandInfoHead
+            isDescriptionOn
+            bandData={bandData}
+            bandId={bandId}
+            enableSpotify
+          />
         </AnimatedContent>
 
         <AnimatedContent

@@ -107,10 +107,27 @@ const ProductGrid: React.FC<ProductGridProps> = ({ bandId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const productsPerPage = 12;
+  const [gridVisible, setGridVisible] = useState(false);
 
   const navigate = useNavigate();
 
   console.log("ProductGrid - Received bandId prop:", bandId);
+
+  // Simple timeout to show content after everything is loaded
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setGridVisible(true);
+    }, 300); // Short delay to ensure DOM is ready
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Also show when products are loaded
+  useEffect(() => {
+    if (!loading && products.length > 0) {
+      setGridVisible(true);
+    }
+  }, [loading, products.length]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -207,7 +224,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ bandId }) => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-16">
+      <div className="flex justify-center items-center py-16 transition-all duration-700 ease-out opacity-100 translate-y-0">
         <div className="text-lg">Loading products...</div>
         <div className="text-sm text-gray-500 mt-2">
           Band ID: {bandId || "Not provided"}
@@ -218,7 +235,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ bandId }) => {
 
   if (error) {
     return (
-      <div className="flex justify-center items-center py-16">
+      <div className="flex justify-center items-center py-16 transition-all duration-700 ease-out opacity-100 translate-y-0">
         <div className="text-lg text-red-500">Error: {error}</div>
         <div className="text-sm text-gray-500 mt-2">
           Band ID: {bandId || "Not provided"}
@@ -229,7 +246,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ bandId }) => {
 
   if (products.length === 0) {
     return (
-      <div className="flex justify-center items-center py-16">
+      <div className="flex justify-center items-center py-16 transition-all duration-700 ease-out opacity-100 translate-y-0">
         <div className="text-lg text-gray-500">
           No products found for this band
         </div>
@@ -241,7 +258,12 @@ const ProductGrid: React.FC<ProductGridProps> = ({ bandId }) => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div
+      className={`
+      min-h-screen transition-all duration-1000 ease-out
+      ${gridVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}
+    `}
+    >
       <div className="">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {currentProducts.map((product) => (
@@ -258,7 +280,12 @@ const ProductGrid: React.FC<ProductGridProps> = ({ bandId }) => {
 
         {/* Pagination Component */}
         {totalPages > 1 && (
-          <div className="flex justify-center mt-8">
+          <div
+            className={`
+            flex justify-center mt-8 transition-all duration-700 ease-out delay-300
+            ${gridVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}
+          `}
+          >
             <Pagination
               total={totalPages}
               page={currentPage}
