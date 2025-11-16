@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  User,
+  ArrowLeft,
+  Music,
+  User as UserIcon,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@heroui/use-theme";
 
@@ -12,11 +21,35 @@ export default function SignUpPage() {
     email: "",
     password: "",
     confirmPassword: "",
+    currency: "USD", // Default currency
+    userType: "fan", // 'fan' or 'bandManager'
     agreeToTerms: false,
   });
 
   const navigate = useNavigate();
   const { theme } = useTheme();
+
+  const currencies = [
+    { value: "USD", label: "US Dollar (USD)", symbol: "$" },
+    { value: "PHP", label: "Philippine Peso (PHP)", symbol: "₱" },
+    { value: "YEN", label: "Japanese Yen (JPY)", symbol: "¥" },
+    { value: "VND", label: "Vietnamese Dong (VND)", symbol: "₫" },
+  ];
+
+  const userTypes = [
+    {
+      value: "fan",
+      label: "Music Fan",
+      icon: UserIcon,
+      description: "I want to discover and support bands",
+    },
+    {
+      value: "bandManager",
+      label: "Band Manager",
+      icon: Music,
+      description: "I manage a band and want to sell merchandise",
+    },
+  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,11 +69,26 @@ export default function SignUpPage() {
     // Handle sign up logic here
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleUserTypeChange = (userType: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      userType,
     }));
   };
 
@@ -85,6 +133,7 @@ export default function SignUpPage() {
       theme === "dark"
         ? "text-blue-400 hover:text-blue-300"
         : "text-blue-600 hover:text-blue-500",
+    cardHover: theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-50",
   };
 
   return (
@@ -141,7 +190,7 @@ export default function SignUpPage() {
                       type="text"
                       required
                       value={formData.firstName}
-                      onChange={handleChange}
+                      onChange={handleInputChange}
                       className={`block w-full pl-10 pr-3 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors`}
                       placeholder="John"
                     />
@@ -162,7 +211,7 @@ export default function SignUpPage() {
                       type="text"
                       required
                       value={formData.lastName}
-                      onChange={handleChange}
+                      onChange={handleInputChange}
                       className={`block w-full px-3 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors`}
                       placeholder="Doe"
                     />
@@ -188,11 +237,98 @@ export default function SignUpPage() {
                     type="email"
                     required
                     value={formData.email}
-                    onChange={handleChange}
+                    onChange={handleInputChange}
                     className={`block w-full pl-10 pr-3 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors`}
                     placeholder="you@example.com"
                   />
                 </div>
+              </div>
+
+              {/* User Type Selection */}
+              <div>
+                <label
+                  className={`block text-sm font-medium ${themeClasses.text.primary} mb-3`}
+                >
+                  I am a...
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  {userTypes.map((type) => {
+                    const IconComponent = type.icon;
+                    return (
+                      <div
+                        key={type.value}
+                        className={`relative cursor-pointer border-2 rounded-lg p-3 transition-all duration-200 ${
+                          formData.userType === type.value
+                            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                            : `${themeClasses.input.border} ${themeClasses.cardHover}`
+                        }`}
+                        onClick={() => handleUserTypeChange(type.value)}
+                      >
+                        <input
+                          type="radio"
+                          name="userType"
+                          value={type.value}
+                          checked={formData.userType === type.value}
+                          onChange={() => handleUserTypeChange(type.value)}
+                          className="sr-only"
+                        />
+                        <div className="flex flex-col items-center text-center">
+                          <IconComponent
+                            className={`h-6 w-6 mb-2 ${
+                              formData.userType === type.value
+                                ? "text-blue-600"
+                                : themeClasses.text.muted
+                            }`}
+                          />
+                          <span
+                            className={`text-sm font-medium ${
+                              formData.userType === type.value
+                                ? "text-blue-600"
+                                : themeClasses.text.primary
+                            }`}
+                          >
+                            {type.label}
+                          </span>
+                          <span
+                            className={`text-xs mt-1 ${
+                              formData.userType === type.value
+                                ? "text-blue-500"
+                                : themeClasses.text.muted
+                            }`}
+                          >
+                            {type.description}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Currency Selection */}
+              <div>
+                <label
+                  htmlFor="currency"
+                  className={`block text-sm font-medium ${themeClasses.text.primary} mb-1`}
+                >
+                  Preferred currency
+                </label>
+                <select
+                  id="currency"
+                  name="currency"
+                  value={formData.currency}
+                  onChange={handleSelectChange}
+                  className={`block w-full px-3 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors cursor-pointer`}
+                >
+                  {currencies.map((currency) => (
+                    <option key={currency.value} value={currency.value}>
+                      {currency.label}
+                    </option>
+                  ))}
+                </select>
+                <p className={`text-xs ${themeClasses.text.muted} mt-1`}>
+                  This will be your default currency for purchases
+                </p>
               </div>
 
               {/* Password Input */}
@@ -213,7 +349,7 @@ export default function SignUpPage() {
                     type={showPassword ? "text" : "password"}
                     required
                     value={formData.password}
-                    onChange={handleChange}
+                    onChange={handleInputChange}
                     className={`block w-full pl-10 pr-10 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors`}
                     placeholder="Enter your password"
                     minLength={6}
@@ -253,7 +389,7 @@ export default function SignUpPage() {
                     type={showConfirmPassword ? "text" : "password"}
                     required
                     value={formData.confirmPassword}
-                    onChange={handleChange}
+                    onChange={handleInputChange}
                     className={`block w-full pl-10 pr-10 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors`}
                     placeholder="Confirm your password"
                   />
@@ -280,7 +416,7 @@ export default function SignUpPage() {
                   name="agreeToTerms"
                   type="checkbox"
                   checked={formData.agreeToTerms}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                   className={`w-4 h-4 text-blue-600 ${theme === "dark" ? "border-gray-500" : "border-gray-300"} rounded focus:ring-blue-500 mt-0.5`}
                 />
               </div>
