@@ -1,10 +1,12 @@
 // src/controllers/bands.ts
 import { Elysia, t } from "elysia";
-import { dbPool } from "../db"; // Assuming db.ts is now in the src/ directory
+import { dbPool } from "../db"; 
 import mysql from "mysql2/promise";
 
 export const bandsController = new Elysia({ prefix: "/bands" })
-  // GET /bands
+    
+
+// GET /bands
   .get(
     "/",
     async ({ set }) => {
@@ -59,6 +61,38 @@ export const bandsController = new Elysia({ prefix: "/bands" })
         summary: "Get a list overview of all available bands",
       },
     }
+  )
+
+  // GET /bands/:id
+  .get(
+    "/:id", async ({ params, set}) => {
+        //getting the id from the params
+        const bandId = params.id;
+
+        if (isNaN(Number(bandId))) {
+            set.status = 400;
+            return { error: "Invalid band ID." };
+        }
+
+        try {
+            const query = `CALL sp_get_band_details(${bandId});`;
+
+            const [rows] = await dbPool.execute<mysql.RowDataPacket[]>(query);
+
+            if (rows.length === 0) {
+                set.status = 200;
+                return { message: "Band not found."};
+            }
+
+            const bandDetails = rows[0]; // First result set, first row
+
+            return bandDetails; // Return the band details object
+
+        } catch (error) {
+            console.error("Error fetching band details:", error);
+            set.status = 500;
+            return { message: "Internal Server Error while retrieving band details." };
+        }
+    }
   );
 
-// GET /bands/:bandId route here later.
