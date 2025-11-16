@@ -7,11 +7,13 @@ import { BandData } from "@/pages/band/bandinfo";
 interface BandProps {
   isDescriptionOn: boolean;
   bandData: BandData;
+  bandId: string | undefined;
 }
 
 const BandInfoHead: React.FC<BandProps> = ({
   isDescriptionOn = false,
   bandData,
+  bandId,
 }) => {
   function descriptionOn(desc: Boolean) {
     if (desc) {
@@ -53,7 +55,7 @@ const BandInfoHead: React.FC<BandProps> = ({
           <div>
             <div className="flex items-center gap-4 mb-2">
               <h1 className="text-6xl font-bold uppercase">
-                <Link to={{ pathname: `/bandinfo/${bandData.branch_id}` }}>
+                <Link to={{ pathname: `/bandinfo/${bandId}` }}>
                   {bandData.name}
                 </Link>
               </h1>

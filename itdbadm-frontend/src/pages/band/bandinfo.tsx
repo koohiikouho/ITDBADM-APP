@@ -20,7 +20,6 @@ export interface BandData {
   pfp_string: string;
   member_list: BandMember[];
 }
-
 export default function BandInfo() {
   const { bandId } = useParams<{ bandId: string }>();
   const [bandData, setBandData] = useState<BandData | null>(null);
@@ -63,10 +62,17 @@ export default function BandInfo() {
       }
     };
 
-    fetchBandData();
+    // Only fetch if bandId exists
+    if (bandId) {
+      fetchBandData();
+    } else {
+      setLoading(false);
+      setError("No band ID found in URL");
+    }
   }, [bandId]);
 
-  if (loading) {
+  // Show loading/error states including when bandId is undefined
+  if (loading || !bandId) {
     return (
       <DefaultLayout>
         <div className="flex justify-center items-center py-8">
@@ -95,13 +101,15 @@ export default function BandInfo() {
         <div className="flex justify-center items-center py-8">
           <div className="text-lg">No band data found</div>
           <div className="text-sm text-gray-500 mt-2">
-            Band bandId: {bandId || "Not found"}
+            Band bandId: {bandId}
           </div>
         </div>
       </DefaultLayout>
     );
   }
 
+  // At this point, TypeScript knows bandId is definitely a string
+  // and bandData is definitely not null
   console.log("BandInfo - Passing bandId to BandInfoBody:", bandId);
 
   return (
@@ -119,7 +127,7 @@ export default function BandInfo() {
           threshold={0.2}
           delay={0.1}
         >
-          <BandInfoHead isDescriptionOn bandData={bandData} />
+          <BandInfoHead isDescriptionOn bandData={bandData} bandId={bandId} />
         </AnimatedContent>
 
         <AnimatedContent
