@@ -37,6 +37,7 @@ import {
   LogoutIcon,
 } from "@/components/icons";
 import { Logo } from "@/components/icons";
+import { apiClient } from "@/lib/api";
 
 export const UserNavbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -47,7 +48,6 @@ export const UserNavbar = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check for token and fetch user data
   useEffect(() => {
     checkAuthStatus();
 
@@ -64,23 +64,29 @@ export const UserNavbar = () => {
 
   const checkAuthStatus = async () => {
     const token = localStorage.getItem("authToken");
-    const userId = localStorage.getItem("userId");
 
-    if (token && userId) {
+    if (token) {
       try {
-        // Fetch user data from your API route
-        const response = await fetch(`/users/username/${userId}`);
+        const response = await fetch(apiClient.baseURL + `/users/username`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
 
         if (response.ok) {
           const userData = await response.json();
+
           setIsLoggedIn(true);
           setUser({
-            name: userData.name || userData.username,
+            name: userData.username,
             username: userData.username,
-            avatar: userData.avatar || "",
+            avatar: "",
           });
+        } else if (response.status === 401) {
+          // Token is invalid or expired
+          handleLogout();
         } else {
-          // If API call fails, clear invalid token
           handleLogout();
         }
       } catch (error) {
@@ -129,8 +135,6 @@ export const UserNavbar = () => {
       username: "",
       avatar: "",
     });
-    // Optional: Redirect to login page or home page
-    // window.location.href = '/';
   };
 
   // Show loading state briefly
@@ -259,7 +263,7 @@ export const UserNavbar = () => {
             <Button
               as={Link}
               className="text-sm font-normal text-default-600 bg-default-100"
-              href="/login" // Update this to your actual login route
+              href="/login"
               variant="ghost"
             >
               Login
@@ -304,7 +308,7 @@ export const UserNavbar = () => {
           <Button
             as={Link}
             className="text-sm font-normal text-default-600"
-            href="/login" // Update this to your actual login route
+            href="/login"
             variant="light"
           >
             Login
