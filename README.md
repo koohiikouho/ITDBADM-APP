@@ -41,11 +41,19 @@ Includes a standardized folder structure, README layout, and common configuratio
 
 ### 2.1. Prerequisites
 
-Install Python and pnpm
+Install bun and pnpm
 
 ### 2.2. Installation
 
 > [fill up]
+
+install bun via powershell -c "irm bun.sh/install.ps1|iex"
+
+verify bun installed via bun --version
+
+install elysiaJS and mysql client
+
+bun add elysia mysql2
 
 ### 2.3. Running the Project
 
@@ -55,7 +63,7 @@ run using `pnpm run dev`
 
 [Backend]
 cd into itdbadm
-run using `py manage.py runserver`
+run using `bun run dev`
 
 Stop both servers using Ctrl+C
 
