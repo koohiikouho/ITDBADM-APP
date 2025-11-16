@@ -37,4 +37,32 @@ export const productsController = new Elysia({ prefix: "/products" })
         message: "Internal Server Error while retrieving product list.",
       };
     }
+  })
+
+  // GET /products/:id
+  .get("/:id", async ({ params, set }) => {
+    try {
+
+      const productId = params.id;
+
+      // SQL Query: Fetch detailed info for a specific product by ID
+      const query = `SELECT band_id, name, price, description, category, image FROM products WHERE product_id = ${productId} AND is_deleted = 0;`;
+
+      const [rows] = await dbPool.execute<mysql.RowDataPacket[]>(query);
+
+      if (rows.length === 0) {
+        set.status = 404;
+        return { message: "Product not found." };
+      }
+
+      const product = rows[0];
+      set.status = 200;
+
+      return product;
+
+    } catch (error) {
+      console.error("Error fetching product by ID:", error);
+      set.status = 500;
+      return { message: "Internal Server Error while retrieving product." };
+    }
   });
