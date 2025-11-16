@@ -1,16 +1,16 @@
 import { Elysia, t } from "elysia";
 import bcrypt from "bcrypt";
 import { dbPool } from "./db";
-import { jwt } from "@elysiajs/jwt";
+// import { jwt } from "@elysiajs/jwt";
 
 export const authRoutes = new Elysia({ prefix: "/auth" })
-  .use(
-    jwt({
-      name: "jwt",
-      secret: process.env.JWT_SECRET as string,
-      exp: "1d",
-    })
-  )
+  // .use(
+  //   jwt({
+  //     name: "jwt",
+  //     secret: process.env.JWT_SECRET as string,
+  //     exp: "1d",
+  //   })
+  // )
 
   .post(
     "/signup",
