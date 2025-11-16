@@ -23,6 +23,7 @@ import {
   Package,
   Users,
 } from "lucide-react";
+import { apiClient } from "@/lib/api";
 
 interface Product {
   id: number;
@@ -175,9 +176,11 @@ const ProductGrid: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        console.log("Fetching products from: http://localhost:3000/products");
+        console.log(
+          "Fetching products from: " + apiClient.baseURL + " /products"
+        );
 
-        const response = await fetch("http://localhost:3000/products");
+        const response = await fetch(apiClient.baseURL + "/products");
 
         if (!response.ok) {
           throw new Error(`Failed to fetch products: ${response.status}`);

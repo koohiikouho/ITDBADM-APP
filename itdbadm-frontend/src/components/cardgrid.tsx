@@ -12,6 +12,7 @@ import {
 import { CardItem } from "../types/types.ts";
 import { useNavigate } from "react-router-dom";
 import { Search, Filter, SlidersHorizontal, Grid3X3, List } from "lucide-react";
+import { apiClient } from "@/lib/api.ts";
 
 // Define the API response type
 interface Band {
@@ -40,7 +41,7 @@ const CardGrid: React.FC = () => {
     const fetchCardData = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:3000/bands");
+        const response = await fetch(apiClient.baseURL + "/bands");
 
         if (!response.ok) {
           throw new Error(`Failed to fetch bands: ${response.status}`);

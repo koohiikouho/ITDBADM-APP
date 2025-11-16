@@ -2,9 +2,12 @@ import { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@heroui/use-theme";
+import { JWTManager } from "@/lib/jwtUtils";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -14,10 +17,54 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { theme } = useTheme();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login attempt:", formData);
-    // Handle login logic here
+    setLoading(true);
+    setError(null);
+
+    try {
+      console.log("Login attempt:", { email: formData.email });
+
+      // API call to login endpoint
+      const response = await fetch("http://localhost:3000/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
+      }
+
+      if (!data.accessToken) {
+        throw new Error("No access token received");
+      }
+
+      // Store the JWT token
+      JWTManager.setToken(data.accessToken);
+
+      console.log("Login successful, token stored");
+
+      // Optional: Store user data if provided
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+
+      // Redirect to home page or previous page
+      navigate("/", { replace: true });
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(err instanceof Error ? err.message : "Login failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,6 +73,8 @@ export default function LoginPage() {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+    // Clear error when user starts typing
+    if (error) setError(null);
   };
 
   const handleBack = () => {
@@ -75,7 +124,7 @@ export default function LoginPage() {
     <div
       className={`min-h-screen ${themeClasses.background} flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-colors duration-200`}
     >
-      {/* Header with Back Button and Theme Switch */}
+      {/* Header with Back Button */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex items-center justify-between mb-6">
           <button
@@ -105,8 +154,15 @@ export default function LoginPage() {
             </p>
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md text-sm">
+              {error}
+            </div>
+          )}
+
           {/* Login Form */}
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
               {/* Email Input */}
               <div>
@@ -127,7 +183,8 @@ export default function LoginPage() {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className={`block w-full pl-10 pr-3 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors`}
+                    disabled={loading}
+                    className={`block w-full pl-10 pr-3 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
                     placeholder="you@example.com"
                   />
                 </div>
@@ -152,13 +209,15 @@ export default function LoginPage() {
                     required
                     value={formData.password}
                     onChange={handleChange}
-                    className={`block w-full pl-10 pr-10 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors`}
+                    disabled={loading}
+                    className={`block w-full pl-10 pr-10 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
                     placeholder="Enter your password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className={`absolute inset-y-0 right-0 pr-3 flex items-center ${themeClasses.text.muted} hover:${theme === "dark" ? "text-gray-200" : "text-gray-600"} transition-colors`}
+                    disabled={loading}
+                    className={`absolute inset-y-0 right-0 pr-3 flex items-center ${themeClasses.text.muted} hover:${theme === "dark" ? "text-gray-200" : "text-gray-600"} transition-colors disabled:opacity-50`}
                   >
                     {showPassword ? (
                       <EyeOff className="h-5 w-5" />
@@ -178,7 +237,8 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={formData.rememberMe}
                   onChange={handleChange}
-                  className={`w-4 h-4 text-blue-600 ${theme === "dark" ? "border-gray-500" : "border-gray-300"} rounded focus:ring-blue-500`}
+                  disabled={loading}
+                  className={`w-4 h-4 text-blue-600 ${theme === "dark" ? "border-gray-500" : "border-gray-300"} rounded focus:ring-blue-500 disabled:opacity-50`}
                 />
                 <span className={`ml-2 text-sm ${themeClasses.text.secondary}`}>
                   Remember me
@@ -186,7 +246,7 @@ export default function LoginPage() {
               </label>
               <a
                 href="#"
-                className={`text-sm ${themeClasses.link} transition-colors`}
+                className={`text-sm ${themeClasses.link} transition-colors ${loading ? "pointer-events-none opacity-50" : ""}`}
               >
                 Forgot password?
               </a>
@@ -195,9 +255,17 @@ export default function LoginPage() {
             {/* Login Button */}
             <button
               type="submit"
-              className={`cursor-pointer w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${themeClasses.button.primary} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors`}
+              disabled={loading}
+              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${themeClasses.button.primary} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              Sign in
+              {loading ? (
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Signing in...
+                </div>
+              ) : (
+                "Sign in"
+              )}
             </button>
 
             {/* Sign Up Link */}
@@ -206,7 +274,7 @@ export default function LoginPage() {
                 Don't have an account?{" "}
                 <a
                   href="/signup"
-                  className={`${themeClasses.link} transition-colors font-medium`}
+                  className={`${themeClasses.link} transition-colors font-medium ${loading ? "pointer-events-none opacity-50" : ""}`}
                 >
                   Sign up
                 </a>

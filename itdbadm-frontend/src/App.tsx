@@ -20,30 +20,33 @@ import CreateProductPage from "./pages/admin/createproduct";
 import CreateBandPage from "./pages/admin/createband";
 import DeleteProductPage from "./pages/admin/deleteproduct";
 import SentOffersPage from "@/pages/offers";
+import { AuthProvider } from "./lib/authContext";
 
 function App() {
   return (
-    <Routes>
-      <Route element={<IndexPage />} path="/" />
-      <Route element={<DocsPage />} path="/docs" />
-      <Route element={<BandsPage />} path="/bands" />
-      <Route element={<BlogPage />} path="/blog" />
-      <Route element={<AboutPage />} path="/about" />
-      <Route element={<BandInfo />} path="/bandinfo/:bandId" />
-      <Route element={<LoginPage />} path="/login" />
-      <Route element={<SignUpPage />} path="/signup" />
-      <Route element={<ProductPage />} path="/product/:productId" />
-      <Route element={<CartPage />} path="/cart" />
-      <Route element={<MerchandisePage />} path="/merchandise" />
-      <Route element={<MePage />} path="/me" />
-      <Route element={<BookPage />} path="/book/:bandId" />
-      <Route element={<CreateProductPage />} path="/createproduct" />
-      <Route element={<CreateBandPage />} path="/createband" />
-      <Route element={<DeleteProductPage />} path="/deleteproduct" />
+    <AuthProvider>
+      <Routes>
+        <Route element={<IndexPage />} path="/" />
+        <Route element={<DocsPage />} path="/docs" />
+        <Route element={<BandsPage />} path="/bands" />
+        <Route element={<BlogPage />} path="/blog" />
+        <Route element={<AboutPage />} path="/about" />
+        <Route element={<BandInfo />} path="/bandinfo/:bandId" />
+        <Route element={<LoginPage />} path="/login" />
+        <Route element={<SignUpPage />} path="/signup" />
+        <Route element={<ProductPage />} path="/product/:productId" />
+        <Route element={<CartPage />} path="/cart" />
+        <Route element={<MerchandisePage />} path="/merchandise" />
+        <Route element={<MePage />} path="/me" />
+        <Route element={<BookPage />} path="/book/:bandId" />
+        <Route element={<CreateProductPage />} path="/createproduct" />
+        <Route element={<CreateBandPage />} path="/createband" />
+        <Route element={<DeleteProductPage />} path="/deleteproduct" />
 
-      <Route element={<SentOffersPage />} path="sent-offers" />
-      <Route element={<MyOrdersPage />} path="/orders" />
-    </Routes>
+        <Route element={<SentOffersPage />} path="sent-offers" />
+        <Route element={<MyOrdersPage />} path="/orders" />
+      </Routes>
+    </AuthProvider>
   );
 }
 

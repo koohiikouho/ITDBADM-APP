@@ -4,6 +4,7 @@ import BandInfoHead from "@/components/bandPageComponents/bandInfoHead";
 import DefaultLayout from "@/layouts/default";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { apiClient } from "@/lib/api";
 
 interface BandMember {
   band_role: string;
@@ -38,9 +39,9 @@ export default function BandInfo() {
           throw new Error("No band bandId found in URL");
         }
 
-        console.log("Fetching from:", `http://localhost:3000/bands/${bandId}`);
+        console.log("Fetching from:", apiClient.baseURL + `/bands/${bandId}`);
 
-        const response = await fetch(`http://localhost:3000/bands/${bandId}`);
+        const response = await fetch(apiClient.baseURL + `/bands/${bandId}`);
 
         if (!response.ok) {
           throw new Error(`Failed to fetch band data: ${response.status}`);

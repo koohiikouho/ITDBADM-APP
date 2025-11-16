@@ -1,15 +1,8 @@
 import SeeMore from "./SeeMore";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import BookBandButton from "./BookBand";
 import BuyMerchButton from "./BuyMerch";
-import { BandData } from "./bandinfo";
-import {
-  ReactElement,
-  JSXElementConstructor,
-  ReactNode,
-  ReactPortal,
-  Key,
-} from "react";
+import { BandData } from "@/pages/band/bandinfo";
 
 interface BandProps {
   isDescriptionOn: boolean;
@@ -22,50 +15,25 @@ const BandInfoHead: React.FC<BandProps> = ({
 }) => {
   function descriptionOn(desc: Boolean) {
     if (desc) {
-      return <BookBandButton theme="music" size="lg" />;
+      var { bandId } = useParams<{ bandId: string }>();
+      bandId?.toString();
+      return <BookBandButton theme="music" size="lg" bandId={bandId} />;
     } else return <BuyMerchButton theme="merch" size="lg" />;
   }
 
   // Format members list for SeeMore component with preserved styling
   const membersText =
     bandData?.member_list
-      .map(
-        (member: { band_role: any; member_name: any }) =>
-          `※ (${member.band_role}) ${member.member_name}`
-      )
+      .map((member) => `※ (${member.band_role}) ${member.member_name}`)
       .join("\n") || "";
 
   // Render members list with proper line breaks
   const renderMembersList = () => {
-    return bandData?.member_list.map(
-      (
-        member: {
-          band_role:
-            | string
-            | number
-            | boolean
-            | ReactElement<any, string | JSXElementConstructor<any>>
-            | Iterable<ReactNode>
-            | ReactPortal
-            | null
-            | undefined;
-          member_name:
-            | string
-            | number
-            | boolean
-            | ReactElement<any, string | JSXElementConstructor<any>>
-            | Iterable<ReactNode>
-            | ReactPortal
-            | null
-            | undefined;
-        },
-        index: Key | null | undefined
-      ) => (
-        <div key={index} className="mb-1 last:mb-0">
-          ※ ({member.band_role}) {member.member_name}
-        </div>
-      )
-    );
+    return bandData?.member_list.map((member, index) => (
+      <div key={index} className="mb-1 last:mb-0">
+        ※ ({member.band_role}) {member.member_name}
+      </div>
+    ));
   };
 
   return (

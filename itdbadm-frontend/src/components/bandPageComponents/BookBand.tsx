@@ -8,6 +8,7 @@ interface BookBandButtonProps {
   size?: "sm" | "md" | "lg";
   className?: string;
   theme?: "default" | "music" | "premium";
+  bandId?: string;
 }
 
 const BookBandButton: React.FC<BookBandButtonProps> = ({
@@ -15,11 +16,12 @@ const BookBandButton: React.FC<BookBandButtonProps> = ({
   size = "md",
   className,
   theme = "default",
+  bandId = "",
 }) => {
   const navigate = useNavigate();
-  const { bandId } = useParams<{ bandId: string }>();
+
   const handleBookBand = () => {
-    navigate("/book/bandId");
+    navigate("/book/" + bandId);
   };
 
   const getButtonStyles = () => {
