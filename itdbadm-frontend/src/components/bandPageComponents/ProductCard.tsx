@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Pagination } from "@heroui/react";
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
-  Image,
-  Button,
-  Badge,
-} from "@heroui/react";
+import { Card, CardHeader, CardBody, CardFooter, Image } from "@heroui/react";
 import { useNavigate } from "react-router-dom";
+
+interface Product {
+  product_id: number;
+  name: string;
+  price: string;
+  description: string;
+  category: string;
+  image: {
+    url: string;
+  };
+}
 
 interface ProductCardProps {
   category: string;
@@ -17,7 +20,11 @@ interface ProductCardProps {
   price: string;
   imageUrl: string;
   isNew?: boolean;
-  onClick?: () => void; // Add onClick prop
+  onClick?: () => void;
+}
+
+interface ProductGridProps {
+  bandId: string | undefined;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -94,116 +101,97 @@ const ProductCard: React.FC<ProductCardProps> = ({
   );
 };
 
-const ProductGrid: React.FC = () => {
+const ProductGrid: React.FC<ProductGridProps> = ({ bandId }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 12; // 2 rows of 3 items
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const productsPerPage = 12;
 
-  const products = [
-    {
-      category: "アクリルフィギュア",
-      title: "通常衣装重音テト アクリルフィギュア",
-      price: "2,000 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
-    },
-    {
-      category: "アクリルフィギュア",
-      title: "通常衣装重音テト アクリルフィギュア",
-      price: "2,000 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
-    },
-    {
-      category: "アクリルフィギュア",
-      title: "通常衣装重音テト アクリルフィギュア",
-      price: "2,000 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
-    },
-    {
-      category: "アクリルフィギュア",
-      title: "通常衣装重音テト アクリルフィギュア",
-      price: "2,000 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
-    },
-    {
-      category: "アクリルフィギュア",
-      title: "通常衣装重音テト アクリルフィギュア",
-      price: "2,000 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
-    },
-    {
-      category: "アクリルフィギュア",
-      title: "通常衣装重音テト アクリルフィギュア",
-      price: "2,000 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
-    },
-    {
-      category: "アクリルフィギュア",
-      title: "桜ミク アクリルフィギュア",
-      price: "2,200 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1635830625698-3b9bd74671ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: false,
-    },
-    {
-      category: "アクリルキーホルダー",
-      title: "初音ミク キーホルダー",
-      price: "1,500 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1542744095-fcf48d80b0fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
-    },
-    {
-      category: "アクリルフィギュア",
-      title: "鏡音リン アクリルフィギュア",
-      price: "2,100 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: false,
-    },
-    {
-      category: "アクリルフィギュア",
-      title: "鏡音レン アクリルフィギュア",
-      price: "2,100 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1635830625698-3b9bd74671ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
-    },
-    {
-      category: "アクリルキーホルダー",
-      title: "巡音ルカ キーホルダー",
-      price: "1,600 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1542744095-fcf48d80b0fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: false,
-    },
-    {
-      category: "アクリルフィギュア",
-      title: "MEIKO アクリルフィギュア",
-      price: "2,300 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
-    },
-    {
-      category: "アクリルフィギュア",
-      title: "KAITO アクリルフィギュア",
-      price: "2,300 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1635830625698-3b9bd74671ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: false,
-    },
-  ];
+  const navigate = useNavigate();
+
+  console.log("ProductGrid - Received bandId prop:", bandId);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        console.log("ProductGrid - Starting fetch with bandId:", bandId);
+
+        if (!bandId) {
+          console.error("ProductGrid - No bandId provided");
+          throw new Error("No band ID provided");
+        }
+
+        // Clean up bandId
+        const cleanBandId = bandId.trim();
+
+        console.log(
+          "Fetching products from:",
+          `http://localhost:3000/bands/products/${cleanBandId}`
+        );
+
+        const response = await fetch(
+          `http://localhost:3000/bands/products/${cleanBandId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        console.log("Response status:", response.status);
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch products: ${response.status} ${response.statusText}`
+          );
+        }
+
+        const data: Product[] = await response.json();
+        console.log("Products API Response:", data);
+
+        if (Array.isArray(data)) {
+          setProducts(data);
+        } else {
+          console.error("Unexpected response format:", data);
+          throw new Error("Invalid response format from server");
+        }
+      } catch (err) {
+        console.error("Error fetching products:", err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : "An error occurred while fetching products"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (bandId) {
+      fetchProducts();
+    } else {
+      console.log("ProductGrid - No bandId, setting loading to false");
+      setLoading(false);
+      setError("No band ID provided");
+    }
+  }, [bandId]);
+
+  // Format price to JPY
+  const formatPrice = (price: string) => {
+    try {
+      const numericPrice = parseFloat(price);
+      return isNaN(numericPrice)
+        ? price
+        : `${numericPrice.toLocaleString("ja-JP")} JPY`;
+    } catch {
+      return price;
+    }
+  };
 
   // Calculate pagination
   const totalPages = Math.ceil(products.length / productsPerPage);
@@ -212,25 +200,58 @@ const ProductGrid: React.FC = () => {
     startIndex,
     startIndex + productsPerPage
   );
-  const navigate = useNavigate();
 
-  const handleProductClick = () => {
-    navigate(`/product`);
+  const handleProductClick = (productId: number) => {
+    navigate(`/product/${productId}`);
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-16">
+        <div className="text-lg">Loading products...</div>
+        <div className="text-sm text-gray-500 mt-2">
+          Band ID: {bandId || "Not provided"}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center py-16">
+        <div className="text-lg text-red-500">Error: {error}</div>
+        <div className="text-sm text-gray-500 mt-2">
+          Band ID: {bandId || "Not provided"}
+        </div>
+      </div>
+    );
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="flex justify-center items-center py-16">
+        <div className="text-lg text-gray-500">
+          No products found for this band
+        </div>
+        <div className="text-sm text-gray-500 mt-2">
+          Band ID: {bandId || "Not provided"}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
       <div className="">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {currentProducts.map((product, index) => (
+          {currentProducts.map((product) => (
             <ProductCard
-              key={index}
+              key={product.product_id}
               category={product.category}
-              title={product.title}
-              price={product.price}
-              imageUrl={product.imageUrl}
-              isNew={product.isNew}
-              onClick={() => handleProductClick()}
+              title={product.name}
+              price={formatPrice(product.price)}
+              imageUrl={product.image.url}
+              onClick={() => handleProductClick(product.product_id)}
             />
           ))}
         </div>

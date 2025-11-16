@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, cn } from "@heroui/react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Music, Calendar, Guitar } from "lucide-react";
 
 interface BookBandButtonProps {
@@ -17,9 +17,9 @@ const BookBandButton: React.FC<BookBandButtonProps> = ({
   theme = "default",
 }) => {
   const navigate = useNavigate();
-
+  const { bandId } = useParams<{ bandId: string }>();
   const handleBookBand = () => {
-    navigate("/book");
+    navigate("/book/bandId");
   };
 
   const getButtonStyles = () => {

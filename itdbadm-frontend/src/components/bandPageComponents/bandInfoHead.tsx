@@ -1,74 +1,25 @@
 import SeeMore from "./SeeMore";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import BookBandButton from "./BookBand";
 import BuyMerchButton from "./BuyMerch";
-import { useState, useEffect } from "react";
-
-interface BandMember {
-  band_role: string;
-  member_name: string;
-}
-
-interface BandData {
-  branch_id: number;
-  name: string;
-  genre: string;
-  description: string;
-  iframe_string: string;
-  pfp_string: string;
-  member_list: BandMember[];
-}
+import { BandData } from "./bandinfo";
+import {
+  ReactElement,
+  JSXElementConstructor,
+  ReactNode,
+  ReactPortal,
+  Key,
+} from "react";
 
 interface BandProps {
   isDescriptionOn: boolean;
+  bandData: BandData;
 }
 
-const BandInfoHead: React.FC<BandProps> = ({ isDescriptionOn = false }) => {
-  const { id } = useParams<{ id: string }>();
-  const [bandData, setBandData] = useState<BandData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Debug log to see what ID we're getting
-  console.log("Current band ID from URL:", id);
-
-  useEffect(() => {
-    const fetchBandData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        if (!id) {
-          throw new Error("No band ID found in URL");
-        }
-
-        console.log("Fetching from:", `http://localhost:3000/bands/${id}`);
-
-        const response = await fetch(`http://localhost:3000/bands/${id}`);
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch band data: ${response.status}`);
-        }
-
-        const data: BandData[] = await response.json();
-        console.log("API Response:", data);
-
-        if (data && data.length > 0) {
-          setBandData(data[0]);
-        } else {
-          throw new Error("No band data found for this ID");
-        }
-      } catch (err) {
-        console.error("Error fetching band data:", err);
-        setError(err instanceof Error ? err.message : "An error occurred");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBandData();
-  }, [id]);
-
+const BandInfoHead: React.FC<BandProps> = ({
+  isDescriptionOn = false,
+  bandData,
+}) => {
   function descriptionOn(desc: Boolean) {
     if (desc) {
       return <BookBandButton theme="music" size="lg" />;
@@ -78,47 +29,44 @@ const BandInfoHead: React.FC<BandProps> = ({ isDescriptionOn = false }) => {
   // Format members list for SeeMore component with preserved styling
   const membersText =
     bandData?.member_list
-      .map((member) => `※ (${member.band_role}) ${member.member_name}`)
+      .map(
+        (member: { band_role: any; member_name: any }) =>
+          `※ (${member.band_role}) ${member.member_name}`
+      )
       .join("\n") || "";
 
   // Render members list with proper line breaks
   const renderMembersList = () => {
-    return bandData?.member_list.map((member, index) => (
-      <div key={index} className="mb-1 last:mb-0">
-        ※ ({member.band_role}) {member.member_name}
-      </div>
-    ));
+    return bandData?.member_list.map(
+      (
+        member: {
+          band_role:
+            | string
+            | number
+            | boolean
+            | ReactElement<any, string | JSXElementConstructor<any>>
+            | Iterable<ReactNode>
+            | ReactPortal
+            | null
+            | undefined;
+          member_name:
+            | string
+            | number
+            | boolean
+            | ReactElement<any, string | JSXElementConstructor<any>>
+            | Iterable<ReactNode>
+            | ReactPortal
+            | null
+            | undefined;
+        },
+        index: Key | null | undefined
+      ) => (
+        <div key={index} className="mb-1 last:mb-0">
+          ※ ({member.band_role}) {member.member_name}
+        </div>
+      )
+    );
   };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center py-8">
-        <div className="text-lg">Loading band information...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex justify-center items-center py-8">
-        <div className="text-lg text-red-500">Error: {error}</div>
-        <div className="text-sm text-gray-500 mt-2">
-          Band ID: {id || "Not found"}
-        </div>
-      </div>
-    );
-  }
-
-  if (!bandData) {
-    return (
-      <div className="flex justify-center items-center py-8">
-        <div className="text-lg">No band data found</div>
-        <div className="text-sm text-gray-500 mt-2">
-          Band ID: {id || "Not found"}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div>

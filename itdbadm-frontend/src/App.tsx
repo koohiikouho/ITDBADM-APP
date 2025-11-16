@@ -29,14 +29,14 @@ function App() {
       <Route element={<BandsPage />} path="/bands" />
       <Route element={<BlogPage />} path="/blog" />
       <Route element={<AboutPage />} path="/about" />
-      <Route element={<BandInfo />} path="/bandinfo/:id" />
+      <Route element={<BandInfo />} path="/bandinfo/:bandId" />
       <Route element={<LoginPage />} path="/login" />
       <Route element={<SignUpPage />} path="/signup" />
-      <Route element={<ProductPage />} path="/product" />
+      <Route element={<ProductPage />} path="/product/:bandId" />
       <Route element={<CartPage />} path="/cart" />
       <Route element={<MerchandisePage />} path="/merchandise" />
       <Route element={<MePage />} path="/me" />
-      <Route element={<BookPage />} path="/book" />
+      <Route element={<BookPage />} path="/book/:bandId" />
       <Route element={<CreateProductPage />} path="/createproduct" />
       <Route element={<CreateBandPage />} path="/createband" />
       <Route element={<DeleteProductPage />} path="/deleteproduct" />

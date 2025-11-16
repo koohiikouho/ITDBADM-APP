@@ -1,9 +1,15 @@
 import ProductGrid from "./ProductCard";
 
-export default function BandInfoBody() {
+interface BandInfoBodyProps {
+  bandId: string | undefined;
+}
+
+export default function BandInfoBody({ bandId }: BandInfoBodyProps) {
+  console.log("BandInfoBody - Received bandId:", bandId);
+
   return (
     <div>
-      <ProductGrid />
+      <ProductGrid bandId={bandId} />
     </div>
   );
 }
