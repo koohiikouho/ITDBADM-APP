@@ -71,6 +71,12 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
             return { error: "invalid username or password" };
         }
 
+         const valid = await bcrypt.compare(password, user.password);
+        if (!valid) {
+            set.status = 400;
+            return { error: "Invalid username or password" };
+        }
+
         const token = await jwt.sign({ id: user.id });
         return { message: "signed in successfully", token };
     },
