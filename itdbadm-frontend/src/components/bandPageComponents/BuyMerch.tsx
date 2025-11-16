@@ -8,6 +8,7 @@ interface BuyMerchButtonProps {
   size?: "sm" | "md" | "lg";
   className?: string;
   theme?: "default" | "merch" | "premium" | "rock" | "limited";
+  bandId?: string;
 }
 
 const BuyMerchButton: React.FC<BuyMerchButtonProps> = ({
@@ -15,11 +16,12 @@ const BuyMerchButton: React.FC<BuyMerchButtonProps> = ({
   size = "md",
   className,
   theme = "default",
+  bandId = "",
 }) => {
   const navigate = useNavigate();
 
   const handleBuyMerch = () => {
-    navigate("/bandinfo");
+    navigate("/bandinfo/" + bandId);
   };
 
   const getButtonStyles = () => {

@@ -6,6 +6,7 @@ interface BandAvailabilityProps {
   unavailableDays?: string[];
   className?: string;
   variant?: "simple" | "calendar";
+  isOnVacation?: boolean;
 }
 
 const BandAvailability: React.FC<BandAvailabilityProps> = ({
@@ -20,6 +21,7 @@ const BandAvailability: React.FC<BandAvailabilityProps> = ({
   ],
   className,
   variant = "simple",
+  isOnVacation = false,
 }) => {
   const daysOfWeek = [
     { key: "monday", label: "Mon", fullLabel: "Monday" },

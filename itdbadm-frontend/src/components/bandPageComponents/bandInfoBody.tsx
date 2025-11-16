@@ -6,7 +6,6 @@ interface BandInfoBodyProps {
 
 export default function BandInfoBody({ bandId }: BandInfoBodyProps) {
   console.log("BandInfoBody - Received bandId:", bandId);
-
   return (
     <div>
       <ProductGrid bandId={bandId} />

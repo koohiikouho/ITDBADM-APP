@@ -130,7 +130,11 @@ export default function ProductPage() {
         delay={0.1}
       >
         <div className="mx-30">
-          <BandInfoHead isDescriptionOn bandData={bandData} />
+          <BandInfoHead
+            isDescriptionOn
+            bandData={bandData}
+            bandId={productData.band_id}
+          />
           <ProductBody productData={productData} bandData={bandData} />
           <div className="flex content-center flex-col items-center">
             <div className="font-bold mb-3">Other {bandData.name} Merch</div>

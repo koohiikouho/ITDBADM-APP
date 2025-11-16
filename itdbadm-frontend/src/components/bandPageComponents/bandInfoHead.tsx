@@ -7,7 +7,7 @@ import { BandData } from "@/pages/band/bandinfo";
 interface BandProps {
   isDescriptionOn: boolean;
   bandData: BandData;
-  bandId: string | undefined;
+  bandId: string | number;
 }
 
 const BandInfoHead: React.FC<BandProps> = ({
@@ -20,7 +20,7 @@ const BandInfoHead: React.FC<BandProps> = ({
       var { bandId } = useParams<{ bandId: string }>();
       bandId?.toString();
       return <BookBandButton theme="music" size="lg" bandId={bandId} />;
-    } else return <BuyMerchButton theme="merch" size="lg" />;
+    } else return <BuyMerchButton theme="merch" size="lg" bandId={bandId} />;
   }
 
   // Format members list for SeeMore component with preserved styling
