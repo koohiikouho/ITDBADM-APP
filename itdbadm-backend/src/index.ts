@@ -2,6 +2,7 @@ import { Elysia } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import { usersController } from "./controllers/users"; // Import the users controller
 import { bandsController } from "./controllers/bands"; // Import the bands controller
+import { productsController } from "./controllers/products"; // Import the products controller
 import "./db"; // Initialize the database pool
 import { cors } from "@elysiajs/cors";
 
@@ -20,6 +21,7 @@ const app = new Elysia()
   // Controllers
   .use(usersController) // Use the users controller
   .use(bandsController) // Use the bands controller
+  .use(productsController) // Use the products controller
   .use(cors())
 
   // Start the server on port 3000
