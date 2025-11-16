@@ -15,7 +15,7 @@ import { authRoutes } from "./auth";
 
 const app = new Elysia()
 .use(authRoutes)
-
+.use(cors())
 
   // Define a basic GET route at the root path "/"
   .get("/", () => {

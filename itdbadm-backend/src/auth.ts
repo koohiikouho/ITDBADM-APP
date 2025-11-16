@@ -54,4 +54,34 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
           .Encode((value) => value),
       }),
     }
-  );
+  )
+
+  .post (
+    "/signin", async ({ body, jwt, set }) => {
+        const { username, password } = body;
+
+        const [rows] = await dbPool.query(
+            "SELECT user_id, password_hashed FROM users WHERE username = ?",
+            [username]
+        );
+
+        const user = (rows as any[])[0];
+        if (!user) {
+            set.status = 400;
+            return { error: "invalid username or password" };
+        }
+
+        const token = await jwt.sign({ id: user.id });
+        return { message: "signed in successfully", token };
+    },
+    {
+        body: t.Object({
+            username: t.String(),
+            password: t.String()
+        }),
+    }
+  )
+
+  .post ("/signout", () => ({
+        message: "Signed out successfully",
+  }));
