@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   Card,
@@ -30,7 +29,6 @@ interface Product {
   title: string;
   price: string;
   imageUrl: string;
-  isNew?: boolean;
   type: "digital" | "physical";
   description?: string;
 }
@@ -40,7 +38,6 @@ interface ProductCardProps {
   title: string;
   price: string;
   imageUrl: string;
-  isNew?: boolean;
   type: "digital" | "physical";
   onClick?: () => void;
 }
@@ -50,7 +47,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
   title,
   price,
   imageUrl,
-  isNew,
   type,
   onClick,
 }) => {
@@ -118,11 +114,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
             removeWrapper
           />
           <div className="absolute top-2 right-2 flex flex-col gap-1">
-            {isNew && (
-              <Badge color="primary" size="sm">
-                NEW
-              </Badge>
-            )}
             {getTypeBadge()}
           </div>
         </CardHeader>
@@ -169,7 +160,6 @@ const ProductGrid: React.FC = () => {
       price: "2,000 JPY",
       imageUrl:
         "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
       type: "physical",
       description:
         "High-quality acrylic figure. Faithfully reproduces Kasane Teto's casual outfit.",
@@ -181,7 +171,6 @@ const ProductGrid: React.FC = () => {
       price: "1,500 JPY",
       imageUrl:
         "https://images.unsplash.com/photo-1635830625698-3b9bd74671ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
       type: "digital",
       description:
         "High-resolution digital illustration collection. Available for download in PNG and JPG formats.",
@@ -193,7 +182,6 @@ const ProductGrid: React.FC = () => {
       price: "1,200 JPY",
       imageUrl:
         "https://images.unsplash.com/photo-1542744095-fcf48d80b0fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: false,
       type: "physical",
       description:
         "Convenient acrylic keychain for carrying. Can be attached to bags or keys.",
@@ -205,7 +193,6 @@ const ProductGrid: React.FC = () => {
       price: "2,500 JPY",
       imageUrl:
         "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
       type: "digital",
       description:
         "Digital album available for download in MP3 and FLAC formats.",
@@ -217,7 +204,6 @@ const ProductGrid: React.FC = () => {
       price: "2,200 JPY",
       imageUrl:
         "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: false,
       type: "physical",
       description:
         "Limited edition Sakura Miku acrylic figure with spring theme.",
@@ -229,7 +215,6 @@ const ProductGrid: React.FC = () => {
       price: "800 JPY",
       imageUrl:
         "https://images.unsplash.com/photo-1511379938547-c1f69419868d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
       type: "digital",
       description:
         "PNG sticker set usable on social media and digital devices.",
@@ -241,7 +226,6 @@ const ProductGrid: React.FC = () => {
       price: "2,100 JPY",
       imageUrl:
         "https://images.unsplash.com/photo-1635830625698-3b9bd74671ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
       type: "physical",
       description:
         "Colorful Kagamine Len acrylic figure. Perfect for desktop display.",
@@ -253,7 +237,6 @@ const ProductGrid: React.FC = () => {
       price: "1,000 JPY",
       imageUrl:
         "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: false,
       type: "digital",
       description:
         "High-resolution 4K wallpaper collection for smartphones and PCs.",
@@ -265,7 +248,6 @@ const ProductGrid: React.FC = () => {
       price: "1,600 JPY",
       imageUrl:
         "https://images.unsplash.com/photo-1542744095-fcf48d80b0fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: false,
       type: "physical",
       description:
         "Limited edition keychain featuring the popular character Megurine Luka.",
@@ -277,7 +259,6 @@ const ProductGrid: React.FC = () => {
       price: "3,000 JPY",
       imageUrl:
         "https://images.unsplash.com/photo-1511735111819-9a3f7709049c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
       type: "digital",
       description:
         "Commercially usable anime-style Japanese font. Available in OTF and TTF formats.",
@@ -289,7 +270,6 @@ const ProductGrid: React.FC = () => {
       price: "2,300 JPY",
       imageUrl:
         "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
       type: "physical",
       description:
         "MEIKO acrylic figure exuding mature charm. A must-have for collectors.",
@@ -301,7 +281,6 @@ const ProductGrid: React.FC = () => {
       price: "1,800 JPY",
       imageUrl:
         "https://images.unsplash.com/photo-1571974599782-87624638275f?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: false,
       type: "digital",
       description: "High-quality digital brush set for professional creators.",
     },
@@ -312,7 +291,6 @@ const ProductGrid: React.FC = () => {
       price: "2,300 JPY",
       imageUrl:
         "https://images.unsplash.com/photo-1635830625698-3b9bd74671ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: false,
       type: "physical",
       description:
         "Acrylic figure expressing the cool KAITO. Limited production item.",
@@ -324,7 +302,6 @@ const ProductGrid: React.FC = () => {
       price: "5,000 JPY",
       imageUrl:
         "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
       type: "digital",
       description:
         "High-quality 3D character model compatible with Blender and Maya.",
@@ -336,7 +313,6 @@ const ProductGrid: React.FC = () => {
       price: "1,800 JPY",
       imageUrl:
         "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
       type: "physical",
       description:
         "Cute acrylic stand to decorate your desk or shelf. Self-standing.",
@@ -348,7 +324,6 @@ const ProductGrid: React.FC = () => {
       price: "8,000 JPY",
       imageUrl:
         "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: false,
       type: "digital",
       description:
         "Online digital painting course to learn professional techniques.",
@@ -615,7 +590,6 @@ const ProductGrid: React.FC = () => {
             title={product.title}
             price={product.price}
             imageUrl={product.imageUrl}
-            isNew={product.isNew}
             type={product.type}
             onClick={() => handleProductClick(product.id)}
           />
