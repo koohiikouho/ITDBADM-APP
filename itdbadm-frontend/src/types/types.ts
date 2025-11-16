@@ -1,5 +1,9 @@
+import { ReactNode } from "react";
+
 // types.ts
 export interface CardItem {
+  genre: ReactNode;
+  members: ReactNode;
   id: number;
   title: string;
   description: string;

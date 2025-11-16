@@ -1,41 +1,30 @@
-import { Elysia } from 'elysia';
-import { jwt } from '@elysiajs/jwt';
-import { usersController } from './controllers/users'; // Import the users controller
-import { bandsController } from './controllers/bands'; // Import the bands controller
-import './db'; // Initialize the database pool
+import { Elysia } from "elysia";
+import { jwt } from "@elysiajs/jwt";
+import { usersController } from "./controllers/users"; // Import the users controller
+import { bandsController } from "./controllers/bands"; // Import the bands controller
+import "./db"; // Initialize the database pool
+import { cors } from "@elysiajs/cors";
 
 const app = new Elysia()
 
-    // JWT Middleware Configuration
-    
+  // JWT Middleware Configuration
 
-    // Define a basic GET route at the root path "/"
-    .get('/', () => {
-        return {
-            message: "Band N' Brand API is running!",
-            status: "Online"
-        };
-    })
+  // Define a basic GET route at the root path "/"
+  .get("/", () => {
+    return {
+      message: "Band N' Brand API is running!",
+      status: "Online",
+    };
+  })
 
+  // Controllers
+  .use(usersController) // Use the users controller
+  .use(bandsController) // Use the bands controller
+  .use(cors())
 
-
-
-    // Controllers
-    .use(usersController) // Use the users controller
-    .use(bandsController) // Use the bands controller
-
-
-
-
-
-    // Start the server on port 3000
-    .listen(3000);
-
-
-
-
-
+  // Start the server on port 3000
+  .listen(3000);
 
 console.log(
-    `Elysia server is running at ${app.server?.hostname}:${app.server?.port}`
+  `Elysia server is running at ${app.server?.hostname}:${app.server?.port}`
 );

@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Card,
   CardBody,
@@ -13,177 +13,64 @@ import { CardItem } from "../types/types.ts";
 import { useNavigate } from "react-router-dom";
 import { Search, Filter, SlidersHorizontal, Grid3X3, List } from "lucide-react";
 
+// Define the API response type
+interface Band {
+  id: number;
+  name: string;
+  genre: string;
+  img: string;
+  description_short: string;
+  branch: string;
+  members: number;
+}
+
 const CardGrid: React.FC = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [cardData, setCardData] = useState<CardItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const cardsPerPage = 9;
 
-  // Your card data with TypeScript typing
-  const cardData: CardItem[] = [
-    {
-      id: 1,
-      title: "Kessoku Band",
-      description:
-        "From Bocchi the Rock! - A high school band featuring the socially anxious Hitori Gotō as lead guitarist.",
-      image:
-        "https://i.discogs.com/BMjajOwTBf2TAm2Z-Oe_pSPqFjRvfpnK3AAEJf_rIdo/rs:fit/g:sm/q:90/h:337/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9BLTEyMjgz/NTQ5LTE2NzM1MzIx/MDMtNzM1OS5qcGVn.jpeg",
-    },
-    {
-      id: 2,
-      title: "Girls Dead Monster",
-      description:
-        "From Angel Beats! - A band formed in the afterlife, performing rock music to reach the hearts of students.",
-      image:
-        "https://i.discogs.com/60rBt_Ogu736vgrrTjgBg-tGV1NVraqhihFNl1Ca52k/rs:fit/g:sm/q:90/h:353/w:500/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9BLTQ0Mzg4/MzMtMTQzNjIwOTg1/NS0yODI5LmpwZWc.jpeg",
-    },
-    {
-      id: 3,
-      title: "Afterglow",
-      description:
-        "From BanG Dream! - A band of childhood friends who play powerful rock music together.",
-      image:
-        "https://i.bandori.party/u/asset/Q0lA5TBedroom-Afterglow-aMfppm.png",
-    },
-    {
-      id: 4,
-      title: "Poppin'Party",
-      description:
-        "From BanG Dream! - The main band known for their cheerful pop-rock sound and energetic performances.",
-      image:
-        "https://espguitars.co.jp/wp-content/uploads/2020/08/poppinparty_202303.jpg",
-    },
-    {
-      id: 5,
-      title: "Roselia",
-      description:
-        "From BanG Dream! - A gothic-style band known for their professional-level skills and dramatic performances.",
-      image:
-        "https://upload.wikimedia.org/wikipedia/en/d/d3/Roselia_BanG_Dream_Girls_Band_Party.png",
-    },
-    {
-      id: 6,
-      title: "RAISE A SUILEN",
-      description:
-        "From BanG Dream! - An intense electronic rock band known for their powerful sound and technical proficiency.",
-      image:
-        "https://bang-dream.bushimo.jp/raise-a-suilen/assets/images/common/ogp_01.png",
-    },
-    {
-      id: 7,
-      title: "Morfonica",
-      description:
-        "From BanG Dream! - A band that incorporates violin into their rock sound, creating a unique musical style.",
-      image:
-        "https://upload.wikimedia.org/wikipedia/en/4/49/Morfonica_BanG_Dream_art.jpg",
-    },
-    {
-      id: 8,
-      title: "MyGO!!!!!",
-      description:
-        "From BanG Dream! - A band formed through complicated relationships, known for their emotional performances.",
-      image:
-        "https://lh3.googleusercontent.com/Atk5OqGN7c0rncsz6FWt6ct0yK0MEji3m8VkYFq4v1V3jp9vjRw-T43L4xs1J8FA18Y8sg1fs0L0ot4=w2880-h1200-p-l90-rj",
-    },
-    {
-      id: 9,
-      title: "Ave Mujica",
-      description:
-        "From BanG Dream! - A mysterious band with a dark, theatrical style and occult themes.",
-      image:
-        "https://i.bandori.party/u/asset/r2hkX7Anime-Key-Visual-Ave-Mujica-ZdfRoG.jfif",
-    },
-    {
-      id: 10,
-      title: "Ho-kago Tea Time",
-      description:
-        "From K-ON! - The iconic light music club band known for their fun, pop-oriented songs and slice-of-life adventures.",
-      image:
-        "https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-    },
-    {
-      id: 11,
-      title: "SOS Brigade Band",
-      description:
-        "From The Melancholy of Haruhi Suzumiya - The unofficial band formed by Haruhi and friends for the school festival.",
-      image:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-    },
-    {
-      id: 12,
-      title: "Black Heaven",
-      description:
-        "From Detroit Metal City - A death metal band with an outrageous stage persona contrasting their normal daily lives.",
-      image:
-        "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-    },
-    {
-      id: 13,
-      title: "The Girls' Rock Club",
-      description:
-        "From Show by Rock!! - Bands of girl musicians in a world where music has magical powers.",
-      image:
-        "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-    },
-    {
-      id: 14,
-      title: "Fukashigi no Carte",
-      description:
-        "From Rascal Does Not Dream of Bunny Girl Senpai - The band that performs the series' iconic ending theme.",
-      image:
-        "https://images.unsplash.com/photo-1511735111819-9a3f7709049c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-    },
-    {
-      id: 15,
-      title: "Crescent Moon Band",
-      description:
-        "From Carole & Tuesday - A band formed by two girls from different backgrounds creating music on Mars.",
-      image:
-        "https://images.unsplash.com/photo-1571974599782-87624638275f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-    },
-    {
-      id: 16,
-      title: "The Zodiac Signs",
-      description:
-        "From Given - Bands featured in this BL anime about music, relationships, and emotional healing through rock.",
-      image:
-        "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-    },
-    {
-      id: 17,
-      title: "Togenashi Togeari",
-      description:
-        "From Nana - Bands in the story of two women both named Nana and their connections to the music world.",
-      image:
-        "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-    },
-    {
-      id: 18,
-      title: "Rin!",
-      description:
-        "From Tari Tari - A choir club that evolves into performing band arrangements with passionate energy.",
-      image:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-    },
-    {
-      id: 19,
-      title: "ST☆RISH",
-      description:
-        "From Uta no Prince-sama - An idol band of handsome male singers competing in the music industry.",
-      image:
-        "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-    },
-    {
-      id: 20,
-      title: "Plasmagica",
-      description:
-        "From Show by Rock!! - A rookie band consisting of a cat, dog, sheep, and alien working toward their dreams.",
-      image:
-        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-    },
-  ];
+  // Fetch data from API
+  useEffect(() => {
+    const fetchCardData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("http://localhost:3000/bands");
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch bands: ${response.status}`);
+        }
+
+        const data: Band[] = await response.json();
+
+        // Transform API data to match CardItem type
+        const transformedData: CardItem[] = data.map((band: Band) => ({
+          id: band.id,
+          title: band.name,
+          description: band.description_short,
+          image: band.img, // Use the image URL from the API
+          genre: band.genre,
+          members: band.members,
+          branch: band.branch,
+        }));
+
+        setCardData(transformedData);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load bands");
+        console.error("Error fetching bands:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCardData();
+  }, []);
 
   // Filter and paginate data
   const filteredAndPaginatedData = useMemo(() => {
@@ -236,6 +123,33 @@ const CardGrid: React.FC = () => {
     setSortBy("name");
     setCurrentPage(1);
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto p-8">
+        <div className="text-center py-16">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
+          <p className="text-default-600">Loading bands...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto p-8">
+        <div className="text-center text-danger-500 py-16">
+          <p className="text-xl font-semibold mb-2">Error loading bands</p>
+          <p className="text-sm mb-4">{error}</p>
+          <Button variant="flat" onPress={() => window.location.reload()}>
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto p-8">
@@ -403,6 +317,17 @@ const CardGrid: React.FC = () => {
                 >
                   {item.title}
                 </h3>
+                {/* Genre and Members info */}
+                <div
+                  className={`flex items-center gap-2 mb-1 ${viewMode === "grid" ? "text-xs" : "text-xs"}`}
+                >
+                  <span className="bg-white/20 px-2 py-1 rounded-full font-medium">
+                    {item.genre}
+                  </span>
+                  <span className="text-gray-300">
+                    {item.members} {item.members === 1 ? "member" : "members"}
+                  </span>
+                </div>
                 <p
                   className={`text-gray-200 ${viewMode === "grid" ? "text-sm line-clamp-2" : "text-xs line-clamp-1"}`}
                 >
