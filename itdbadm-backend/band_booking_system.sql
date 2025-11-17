@@ -1,10 +1,10 @@
 CREATE DATABASE  IF NOT EXISTS `band_booking_system` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `band_booking_system`;
--- MySQL dump 10.13  Distrib 8.0.43, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.4.7, for Linux (x86_64)
 --
--- Host: localhost    Database: band_booking_system
+-- Host: 127.0.0.1    Database: band_booking_system
 -- ------------------------------------------------------
--- Server version	8.0.43
+-- Server version	8.4.7
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -35,7 +35,7 @@ CREATE TABLE `audit_product_log` (
   `image` json DEFAULT NULL,
   `changed_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`audit_product_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -44,6 +44,7 @@ CREATE TABLE `audit_product_log` (
 
 LOCK TABLES `audit_product_log` WRITE;
 /*!40000 ALTER TABLE `audit_product_log` DISABLE KEYS */;
+INSERT INTO `audit_product_log` VALUES (1,1,1,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}','2025-11-16 17:32:27'),(2,8,1,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"album.jpg\"}','2025-11-16 17:33:46'),(3,15,1,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}','2025-11-16 17:33:46'),(4,8,1,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"https://m.media-amazon.com/images/I/91tiRtwMXsL._UF1000,1000_QL80_.jpg\"}','2025-11-16 17:34:46'),(5,15,1,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"https://preview.redd.it/official-poster-for-kessoku-band-live-kousei-in-zepp-haneda-v0-alc1xdd77mva1.png?auto=webp&s=7a4ca22e509e3ba2cf9f298e0480ca467223cbc6\"}','2025-11-16 17:34:46'),(6,1,1,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"https://i.etsystatic.com/39412186/r/il/5fe648/4488598606/il_fullxfull.4488598606_sg8k.jpg\"}','2025-11-16 20:37:42'),(7,2,2,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}','2025-11-16 20:43:29'),(8,8,1,'\"Kessoku Band\" Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"https://m.media-amazon.com/images/I/91tiRtwMXsL._UF1000,1000_QL80_.jpg\"}','2025-11-16 20:43:29'),(9,15,1,'Zepp Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"https://preview.redd.it/official-poster-for-kessoku-band-live-kousei-in-zepp-haneda-v0-alc1xdd77mva1.png?auto=webp&s=7a4ca22e509e3ba2cf9f298e0480ca467223cbc6\"}','2025-11-16 21:44:47'),(10,5,5,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}','2025-11-16 22:17:11'),(11,6,6,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}','2025-11-16 22:17:22'),(12,6,6,'Official T-Shirt',2500.00,'BanG Dream! Girls Band Party! Graphic T-Shirt ver. \"Afterglow\"','Physical','{\"url\": \"shirt.jpg\"}','2025-11-16 22:17:40'),(13,5,5,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": [\"https://bushiroad-global-online-store.com/cdn/shop/products/unisex-basic-softstyle-t-shirt-black-front-620da797b0833_750x.jpg?v=1645062046\"]}','2025-11-16 22:18:25'),(14,12,5,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"album.jpg\"}','2025-11-16 22:20:35'),(15,2,2,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": [\"shirt.jpg\"]}','2025-11-16 22:22:23'),(16,4,4,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}','2025-11-16 22:22:23'),(17,9,2,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"album.jpg\"}','2025-11-16 22:23:21'),(18,19,5,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}','2025-11-16 22:25:19'),(19,19,5,'Bang Dream! Official Piano Score Afterglow',800.00,'Piano Score','Physical','{\"url\": [\"https://s.pacn.ws/1/p/ym/bang-dream-official-piano-score-afterglow-623369.1.jpg?v=q6prxm\", \"https://s.pacn.ws/1/p/ym/bang-dream-official-piano-score-afterglow-623369.2.jpg?v=q6prxm\", \"https://s.pacn.ws/1/p/ym/bang-dream-official-piano-score-afterglow-623369.4.jpg?v=q6przd\"]}','2025-11-16 22:25:22'),(20,17,3,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}','2025-11-16 22:25:47'),(21,1,1,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": [\"https://i.etsystatic.com/39412186/r/il/5fe648/4488598606/il_fullxfull.4488598606_sg8k.jpg\", \"https://i.etsystatic.com/39412186/r/il/badcce/4535967723/il_340x270.4535967723_prz9.jpg\", \"https://img.lazcdn.com/collect/social-img/7ebb54c871a74b19af68e03820301e97_4f727b1b900a4324bf190dd9a03e22e0.png_720x720q80.png\"]}','2025-11-17 01:44:45'),(22,16,2,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}','2025-11-17 01:58:46'),(23,20,6,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}','2025-11-17 01:59:34'),(24,16,2,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": [\"https://m.media-amazon.com/images/I/81FDlgl2LsL.jpg\"]}','2025-11-17 02:00:01');
 /*!40000 ALTER TABLE `audit_product_log` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -94,7 +95,7 @@ CREATE TABLE `audit_user_log` (
   `action` varchar(10) DEFAULT NULL,
   `changed_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`user_log_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -103,6 +104,7 @@ CREATE TABLE `audit_user_log` (
 
 LOCK TABLES `audit_user_log` WRITE;
 /*!40000 ALTER TABLE `audit_user_log` DISABLE KEYS */;
+INSERT INTO `audit_user_log` VALUES (1,10,3,0,'CREATE','2025-11-16 18:02:47'),(2,11,3,0,'CREATE','2025-11-16 18:17:16');
 /*!40000 ALTER TABLE `audit_user_log` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -188,7 +190,7 @@ CREATE TABLE `booking_offers` (
   KEY `band_id` (`band_id`),
   CONSTRAINT `booking_offers_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
   CONSTRAINT `booking_offers_ibfk_2` FOREIGN KEY (`band_id`) REFERENCES `bands` (`band_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -197,7 +199,7 @@ CREATE TABLE `booking_offers` (
 
 LOCK TABLES `booking_offers` WRITE;
 /*!40000 ALTER TABLE `booking_offers` DISABLE KEYS */;
-INSERT INTO `booking_offers` VALUES (1,9,1,'2025-12-20 19:00:00','Requesting live performance for winter event.',500000.00,'Pending','2025-11-15 16:55:12');
+INSERT INTO `booking_offers` VALUES (3,11,5,'2025-11-20 00:00:00','I want to marry Nijika',2500.00,'Pending','2025-11-17 00:28:23');
 /*!40000 ALTER TABLE `booking_offers` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -276,7 +278,6 @@ CREATE TABLE `carts` (
 
 LOCK TABLES `carts` WRITE;
 /*!40000 ALTER TABLE `carts` DISABLE KEYS */;
-INSERT INTO `carts` VALUES (8,1,2),(8,2,1);
 /*!40000 ALTER TABLE `carts` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -315,7 +316,7 @@ CREATE TABLE `currencies` (
   `currency_code` varchar(10) NOT NULL,
   `currency_name` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`currency_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -324,7 +325,7 @@ CREATE TABLE `currencies` (
 
 LOCK TABLES `currencies` WRITE;
 /*!40000 ALTER TABLE `currencies` DISABLE KEYS */;
-INSERT INTO `currencies` VALUES (1,'JPY','Japanese Yen'),(2,'USD','US Dollar'),(3,'PHP','Philippine Peso');
+INSERT INTO `currencies` VALUES (1,'JPY','Japanese Yen'),(2,'USD','US Dollar'),(3,'PHP','Philippine Peso'),(4,'VND','Vietnamese Dong');
 /*!40000 ALTER TABLE `currencies` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -352,7 +353,7 @@ CREATE TABLE `inventory` (
 
 LOCK TABLES `inventory` WRITE;
 /*!40000 ALTER TABLE `inventory` DISABLE KEYS */;
-INSERT INTO `inventory` VALUES (1,1,56),(1,2,16),(1,3,58),(1,4,54),(1,5,42),(1,6,49),(1,8,49),(1,9,45),(1,10,35),(1,11,10),(1,12,10),(1,13,28),(1,15,39),(1,16,55),(1,17,52),(1,18,20),(1,19,11),(1,20,40),(2,1,31),(2,2,50),(2,3,35),(2,4,37),(2,5,21),(2,6,21),(2,8,20),(2,9,31),(2,10,56),(2,11,23),(2,12,46),(2,13,50),(2,15,37),(2,16,55),(2,17,20),(2,18,57),(2,19,37),(2,20,47),(3,1,29),(3,2,26),(3,3,52),(3,4,41),(3,5,18),(3,6,33),(3,8,30),(3,9,18),(3,10,28),(3,11,49),(3,12,36),(3,13,21),(3,15,29),(3,16,20),(3,17,47),(3,18,19),(3,19,56),(3,20,28);
+INSERT INTO `inventory` VALUES (1,1,55),(1,2,16),(1,3,58),(1,4,54),(1,5,42),(1,6,49),(1,8,49),(1,9,45),(1,10,35),(1,11,10),(1,12,10),(1,13,28),(1,15,39),(1,16,55),(1,17,52),(1,18,20),(1,19,11),(1,20,40);
 /*!40000 ALTER TABLE `inventory` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -432,12 +433,13 @@ CREATE TABLE `orders` (
   `price` decimal(10,2) NOT NULL,
   `offer_id` int DEFAULT NULL,
   `description` text,
+  `shipping_id` int DEFAULT NULL,
   PRIMARY KEY (`order_id`),
   KEY `user_id` (`user_id`),
   KEY `offer_id` (`offer_id`),
   CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`offer_id`) REFERENCES `booking_offers` (`offer_id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -446,7 +448,7 @@ CREATE TABLE `orders` (
 
 LOCK TABLES `orders` WRITE;
 /*!40000 ALTER TABLE `orders` DISABLE KEYS */;
-INSERT INTO `orders` VALUES (1,8,'2025-11-15 16:55:12','Ongoing',NULL,3500.00,NULL,'Sample merch order');
+INSERT INTO `orders` VALUES (1,11,'2025-11-15 16:55:12','Ongoing',NULL,3500.00,NULL,'Sample merch order',NULL),(2,11,'2025-11-17 01:44:45','Ongoing',NULL,2500.00,NULL,'Order placed by Ron Alonzo',1),(3,11,'2025-11-17 01:49:41','Ongoing',NULL,4851.00,NULL,'Order placed by Ron Alonzo',2);
 /*!40000 ALTER TABLE `orders` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -474,7 +476,7 @@ CREATE TABLE `orders_products` (
 
 LOCK TABLES `orders_products` WRITE;
 /*!40000 ALTER TABLE `orders_products` DISABLE KEYS */;
-INSERT INTO `orders_products` VALUES (1,1,1),(1,2,1);
+INSERT INTO `orders_products` VALUES (1,1,2),(1,2,1),(2,1,1),(3,22,1);
 /*!40000 ALTER TABLE `orders_products` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -535,7 +537,7 @@ CREATE TABLE `products` (
   PRIMARY KEY (`product_id`),
   KEY `band_id` (`band_id`),
   CONSTRAINT `products_ibfk_1` FOREIGN KEY (`band_id`) REFERENCES `bands` (`band_id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -544,7 +546,7 @@ CREATE TABLE `products` (
 
 LOCK TABLES `products` WRITE;
 /*!40000 ALTER TABLE `products` DISABLE KEYS */;
-INSERT INTO `products` VALUES (1,1,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}',0),(2,2,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}',0),(3,3,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}',0),(4,4,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}',0),(5,5,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}',0),(6,6,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}',0),(8,1,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"album.jpg\"}',0),(9,2,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"album.jpg\"}',0),(10,3,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"album.jpg\"}',0),(11,4,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"album.jpg\"}',0),(12,5,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"album.jpg\"}',0),(13,6,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"album.jpg\"}',0),(15,1,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}',0),(16,2,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}',0),(17,3,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}',0),(18,4,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}',0),(19,5,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}',0),(20,6,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}',0);
+INSERT INTO `products` VALUES (1,1,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": [\"https://i.etsystatic.com/39412186/r/il/5fe648/4488598606/il_fullxfull.4488598606_sg8k.jpg\", \"https://i.etsystatic.com/39412186/r/il/badcce/4535967723/il_340x270.4535967723_prz9.jpg\", \"https://img.lazcdn.com/collect/social-img/7ebb54c871a74b19af68e03820301e97_4f727b1b900a4324bf190dd9a03e22e0.png_720x720q80.png\"]}',0),(2,2,'Ho-kago Tea Time Essential T-Shirt',2800.00,'Band merchandise shirt','Physical','{\"url\": [\"https://ih1.redbubble.net/image.71286523.8107/ssrco,essential_tee,mens_01,fafafa:ca443f4786,back,close_portrait,x1000.jpg\"]}',0),(3,3,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}',0),(4,4,'Official T-Shirtc',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}',0),(5,5,'BanG Dream! Girls Band Party! Graphic T-Shirt ver. \"Afterglow\"',2500.00,'\nThis item is made-to-order!\nThe estimated fulfillment time for this item is 1 ~ 2 weeks.\nMade-to-order items will be shipped separately from other items in your order. \nPlease be aware that this item may incur an additional shipping fee if purchased alongside other items. Please check your shipping price carefully.\n\n[Product Specifications]\n\n• US Sizing. \n• 100% ring-spun cotton.\n• Pre-shrunk.\n• Shoulder-to-shoulder taping.\n\nNote:\n■ There may be some slight differences with the Japanese version of this T-shirt, such as size and location of print. Please be aware of this before purchasing!\n','Physical','{\"url\": [\"https://bushiroad-global-online-store.com/cdn/shop/products/unisex-basic-softstyle-t-shirt-black-front-620da797b0833_750x.jpg?v=1645062046\"]}',0),(6,6,'BanG Dream! Girls Band Party! Graphic T-Shirt ver. \"Afterglow\"',2500.00,'\nThis item is made-to-order!\nThe estimated fulfillment time for this item is 1 ~ 2 weeks.\nMade-to-order items will be shipped separately from other items in your order. \nPlease be aware that this item may incur an additional shipping fee if purchased alongside other items. Please check your shipping price carefully.\n\n[Product Specifications]\n\n• US Sizing. \n• 100% ring-spun cotton.\n• Pre-shrunk.\n• Shoulder-to-shoulder taping.\n\nNote:\n■ There may be some slight differences with the Japanese version of this T-shirt, such as size and location of print. Please be aware of this before purchasing!\n','Physical','{\"url\": \"shirt.jpg\"}',0),(8,1,'\"Kessoku Band\" Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": [\"https://m.media-amazon.com/images/I/91tiRtwMXsL._UF1000,1000_QL80_.jpg\"]}',0),(9,2,'TV Anime \"K-On!\" Original Soundtrack',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": [\"https://i.scdn.co/image/ab67616d0000b273cbeeb2fe6bb796bc1bff133d\"]}',0),(10,3,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"album.jpg\"}',0),(11,4,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"album.jpg\"}',0),(12,5,'Afterglow 2nd Album「STAY GLOW」',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": [\"https://s3-ap-northeast-1.amazonaws.com/bang-dream-portal/0da80398-0f1e-4e10-8b41-c715fcdcbe60.jpg\", \"https://s3-ap-northeast-1.amazonaws.com/bang-dream-portal/1c46a572-19cd-4e55-9c55-e56921bdf5be.jpg\"]}',0),(13,6,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"album.jpg\"}',0),(15,1,'Zepp Live Poster',800.00,'Limited edition poster','Physical','{\"url\": [\"https://preview.redd.it/official-poster-for-kessoku-band-live-kousei-in-zepp-haneda-v0-alc1xdd77mva1.png?auto=webp&s=7a4ca22e509e3ba2cf9f298e0480ca467223cbc6\"]}',0),(16,2,'12\" x 17\" K-On! But don! Keion! Anime Poster',800.00,'\n    High quality image professionally printed on durable paper\n    UV fade resistant inks for long lasting image life\n    All posters come with adhesive backing for easy hanging\n    Made in USA\n    Fast and Safe Shipping with Protected Cardboard Tube\n','Physical','{\"url\": [\"https://m.media-amazon.com/images/I/81FDlgl2LsL.jpg\"]}',0),(17,3,'Live Poster',5500.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}',0),(18,4,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}',0),(19,5,'Bang Dream! Official Piano Score Afterglow',800.00,'Piano Score','Physical','{\"url\": [\"https://s.pacn.ws/1/p/ym/bang-dream-official-piano-score-afterglow-623369.1.jpg?v=q6prxm\", \"https://s.pacn.ws/1/p/ym/bang-dream-official-piano-score-afterglow-623369.2.jpg?v=q6prxm\", \"https://s.pacn.ws/1/p/ym/bang-dream-official-piano-score-afterglow-623369.4.jpg?v=q6przd\"]}',0),(20,6,'12\" x 17\" K-On! But don! Keion! Anime Poster',800.00,'\n    High quality image professionally printed on durable paper\n    UV fade resistant inks for long lasting image life\n    All posters come with adhesive backing for easy hanging\n    Made in USA\n    Fast and Safe Shipping with Protected Cardboard Tube\n','Physical','{\"url\": \"poster.jpg\"}',0),(21,1,'TENITOL BOCCHI THE ROCK! Ryo Yamada Cafe Style ver. Complete Figure(Released)',4851.00,'*This product cannot be shipped to the following area: Azerbaijan, Afghanistan, United Arab Emirates, Algeria, Armenia, Yemen, Iraq, Iran, India, Ukraine, Egypt, Oman, Qatar, Cyprus, Cuba, Kuwait, Saudi Arabia, Djibouti, Georgia, Syria, Sudan, Sri Lanka, Somalia, Chad, Tunisia, Turkey, Nepal, Bahrain, Pakistan, Palestine, Bangladesh, Bhutan, Venezuela, Belarus, Mauritania, Maldives, Morocco, Jordan, Libya, Lebanon, Russia, Western Sahara, Japan','Physical','{\"url\": [\"https://img.amiami.com/images/product/main/243/FIGURE-175155.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175155_01.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175155_02.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175155_03.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175155_04.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175155_05.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175155_06.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175155_07.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175155_08.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175155_09.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175155_10.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175155_11.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175155_12.jpg\"]}',0),(22,1,'TENITOL BOCCHI THE ROCK! Ikuyo Kita Cafe Style ver. Complete Figure(Released)',4851.00,'*This product cannot be shipped to the following area: Azerbaijan, Afghanistan, United Arab Emirates, Algeria, Armenia, Yemen, Iraq, Iran, India, Ukraine, Egypt, Oman, Qatar, Cyprus, Cuba, Kuwait, Saudi Arabia, Djibouti, Georgia, Syria, Sudan, Sri Lanka, Somalia, Chad, Tunisia, Turkey, Nepal, Bahrain, Pakistan, Palestine, Bangladesh, Bhutan, Venezuela, Belarus, Mauritania, Maldives, Morocco, Jordan, Libya, Lebanon, Russia, Western Sahara, Japan','Physical','{\"url\": [\"https://img.amiami.com/images/product/main/243/FIGURE-175156.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175156_01.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175156_02.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175156_03.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175156_04.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175156_05.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175156_06.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175156_07.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175156_08.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175156_09.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175156_10.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175156_11.jpg\", \"https://img.amiami.com/images/product/review/243/FIGURE-175156_12.jpg\"]}',0);
 /*!40000 ALTER TABLE `products` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -645,6 +647,40 @@ DELIMITER ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
+-- Table structure for table `shipping_information`
+--
+
+DROP TABLE IF EXISTS `shipping_information`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `shipping_information` (
+  `shipping_id` int NOT NULL AUTO_INCREMENT,
+  `order_id` int DEFAULT NULL,
+  `contact_information` varchar(45) DEFAULT NULL,
+  `first_name` varchar(45) DEFAULT NULL,
+  `last_name` varchar(45) DEFAULT NULL,
+  `address` varchar(64) DEFAULT NULL,
+  `city` varchar(45) DEFAULT NULL,
+  `country` varchar(45) DEFAULT NULL,
+  `postal_code` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`shipping_id`),
+  UNIQUE KEY `shipping_id_UNIQUE` (`shipping_id`),
+  KEY `order_id` (`order_id`),
+  CONSTRAINT `shipping_information_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `shipping_information`
+--
+
+LOCK TABLES `shipping_information` WRITE;
+/*!40000 ALTER TABLE `shipping_information` DISABLE KEYS */;
+INSERT INTO `shipping_information` VALUES (1,2,'+63 09398699687','Ron','Alonzo','The Block','Las Pinas City','Philippines','1742'),(2,3,'+639398699867','Ron','Alonzo','Albania\'s Strongest House','Albania','Albania','3213');
+/*!40000 ALTER TABLE `shipping_information` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `user_likes`
 --
 
@@ -654,7 +690,6 @@ DROP TABLE IF EXISTS `user_likes`;
 CREATE TABLE `user_likes` (
   `user_id` int NOT NULL,
   `product_id` int NOT NULL,
-  `is_liked` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`user_id`,`product_id`),
   KEY `product_id` (`product_id`),
   CONSTRAINT `user_likes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -668,6 +703,7 @@ CREATE TABLE `user_likes` (
 
 LOCK TABLES `user_likes` WRITE;
 /*!40000 ALTER TABLE `user_likes` DISABLE KEYS */;
+INSERT INTO `user_likes` VALUES (11,9),(11,21);
 /*!40000 ALTER TABLE `user_likes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -684,7 +720,6 @@ CREATE TABLE `users` (
   `username` varchar(50) NOT NULL,
   `email` varchar(100) NOT NULL,
   `password_hashed` varchar(255) NOT NULL,
-  `genre` varchar(50) DEFAULT NULL,
   `currency_id` int DEFAULT NULL,
   `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`user_id`),
@@ -694,7 +729,7 @@ CREATE TABLE `users` (
   KEY `currency_id` (`currency_id`),
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`role_id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `users_ibfk_2` FOREIGN KEY (`currency_id`) REFERENCES `currencies` (`currency_id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -703,7 +738,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,1,'admin_master','admin@example.com','hashed_pw',NULL,3,0),(2,4,'ikuyo_kita_mgr','kita@kessoku.jp','hashed_pw','Rock',1,0),(3,4,'yui_mgr','yui@htt.jp','hashed_pw','Pop Rock',1,0),(4,4,'kasumi_mgr','kasumi@pparty.jp','hashed_pw','J-Pop',1,0),(5,4,'yukina_mgr','yukina@roselia.jp','hashed_pw','Symphonic Rock',1,0),(6,4,'ran_mgr','ran@afterglow.jp','hashed_pw','Alt Rock',1,0),(7,4,'honoka_mgr','honoka@muse.jp','hashed_pw','Idol Pop',1,0),(8,3,'otaku_fan1','fan1@example.com','hashed_pw',NULL,3,0),(9,3,'otaku_fan2','fan2@example.com','hashed_pw',NULL,1,0);
+INSERT INTO `users` VALUES (1,1,'admin_master','admin@example.com','hashed_pw',3,0),(2,4,'ikuyo_kita_mgr','kita@kessoku.jp','hashed_pw',1,0),(3,4,'yui_mgr','yui@htt.jp','hashed_pw',1,0),(4,4,'kasumi_mgr','kasumi@pparty.jp','hashed_pw',1,0),(5,4,'yukina_mgr','yukina@roselia.jp','hashed_pw',1,0),(6,4,'ran_mgr','ran@afterglow.jp','hashed_pw',1,0),(7,4,'honoka_mgr','honoka@muse.jp','hashed_pw',1,0),(8,3,'otaku_fan1','fan1@example.com','hashed_pw',3,0),(9,3,'otaku_fan2','fan2@example.com','hashed_pw',1,0),(10,3,'ulol','ulol@umail.com','$2b$10$umUyvXpWDn6zmgDKAWtfo.DXzH8BLDjJ99.Y/XGtRI99Z6FER01jy',1,0),(11,3,'wow2123','ronfourieralonzo@gmail.com','$2b$10$qokda6eJ2LjQ0RGSZ.CATuXse0eCfF5GjOA5nHPdRmP.gZn.lafZ2',1,0);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -1130,4 +1165,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-16 22:57:04
+-- Dump completed on 2025-11-17 10:54:02
