@@ -770,8 +770,8 @@ DELIMITER ;
 DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_auto_create_band` AFTER INSERT ON `users` FOR EACH ROW BEGIN
     IF NEW.role_id = (SELECT role_id FROM roles WHERE role_type = 'BandManager') THEN
-        INSERT INTO bands (manager_id, name, genre)
-        VALUES (NEW.user_id, CONCAT(NEW.username, ' Band'), NEW.genre);
+        INSERT INTO bands (manager_id, name)
+        VALUES (NEW.user_id, CONCAT(NEW.username, ' Band'));
     END IF;
 END */;;
 DELIMITER ;
