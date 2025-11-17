@@ -186,4 +186,65 @@ export const bandsController = new Elysia({ prefix: "/bands" })
         message: "Internal Server Error while retrieving band products.",
       };
     }
+  })
+
+  .get("/products/:id/max10", async ({ params, set }) => {
+    //getting the id from the params
+    const bandId = params.id;
+
+    if (isNaN(Number(bandId))) {
+      set.status = 400;
+      return { error: "Invalid band ID." };
+    }
+
+    try {
+      const query = `CALL sp_get_band_products(${bandId});`;
+
+      const [rows] = await dbPool.execute<mysql.RowDataPacket[]>(query);
+
+      if (rows.length === 0) {
+        set.status = 200;
+        return { message: "No products found for this band." };
+      }
+
+      const bandProductsList = rows[0]; // First result set
+
+      // Process each product to return only one image in the array
+      const processedProducts = bandProductsList.map((product: any) => {
+        // Handle different image formats to return only one image in array
+        let singleImageUrl;
+
+        // Use the 'image' field instead of 'img'
+        if (product.image && product.image.url) {
+          if (Array.isArray(product.image.url)) {
+            // If it's an array, take the first image
+            singleImageUrl = product.image.url[0];
+          } else {
+            // If it's already a single string, use it directly
+            singleImageUrl = product.image.url;
+          }
+        } else {
+          // Fallback if no image is available
+          singleImageUrl = null;
+        }
+
+        // Return the product with processed image field (remove the duplicate img field)
+        const { img, ...productWithoutImg } = product;
+        return {
+          ...productWithoutImg,
+          image: {
+            url: singleImageUrl ? [singleImageUrl] : [],
+          },
+        };
+      });
+
+      // Return only the first 10 results
+      return processedProducts.slice(0, 10);
+    } catch (error) {
+      console.error("Error fetching band products:", error);
+      set.status = 500;
+      return {
+        message: "Internal Server Error while retrieving band products.",
+      };
+    }
   });

@@ -9,6 +9,19 @@ import {
   Badge,
 } from "@heroui/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { apiClient } from "@/lib/api";
+import { useNavigate } from "react-router-dom";
+
+interface Product {
+  product_id: number;
+  name: string;
+  price: string;
+  description: string;
+  category: string;
+  image: {
+    url: string[];
+  };
+}
 
 interface ProductCardProps {
   category: string;
@@ -16,6 +29,12 @@ interface ProductCardProps {
   price: string;
   imageUrl: string;
   isNew?: boolean;
+  productId: number;
+  onProductClick: (productId: number) => void;
+}
+
+interface CompactProductGridProps {
+  bandId: string;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -24,6 +43,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
   price,
   imageUrl,
   isNew,
+  productId,
+  onProductClick,
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -53,6 +74,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
     };
   }, []);
 
+  const handleClick = () => {
+    console.log("Product card clicked, productId:", productId); // Debug log
+    onProductClick(productId);
+  };
+
   return (
     <div
       ref={cardRef}
@@ -60,6 +86,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         transition-all duration-500 ease-out
         ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
       `}
+      onClick={handleClick} // Move onClick to the div wrapper
     >
       <Card className="hover:scale-102 transition-transform duration-200 shadow-md border cursor-pointer">
         <CardHeader className="p-0 relative">
@@ -98,92 +125,74 @@ const ProductCard: React.FC<ProductCardProps> = ({
   );
 };
 
-const CompactProductGrid: React.FC = () => {
+const CompactProductGrid: React.FC<CompactProductGridProps> = ({ bandId }) => {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const productsPerPage = 5;
 
-  const products = [
-    {
-      category: "アクリルフィギュア",
-      title: "通常衣装重音テト アクリルフィギュア",
-      price: "2,000 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
-    },
-    {
-      category: "アクリルフィギュア",
-      title: "桜ミク アクリルフィギュア",
-      price: "2,200 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1635830625698-3b9bd74671ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: false,
-    },
-    {
-      category: "アクリルキーホルダー",
-      title: "初音ミク キーホルダー",
-      price: "1,500 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1542744095-fcf48d80b0fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
-    },
-    {
-      category: "アクリルフィギュア",
-      title: "鏡音リン アクリルフィギュア",
-      price: "2,100 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: false,
-    },
-    {
-      category: "アクリルフィギュア",
-      title: "鏡音レン アクリルフィギュア",
-      price: "2,100 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1635830625698-3b9bd74671ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
-    },
-    {
-      category: "アクリルキーホルダー",
-      title: "巡音ルカ キーホルダー",
-      price: "1,600 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1542744095-fcf48d80b0fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: false,
-    },
-    {
-      category: "アクリルフィギュア",
-      title: "MEIKO アクリルフィギュア",
-      price: "2,300 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
-    },
-    {
-      category: "アクリルフィギュア",
-      title: "KAITO アクリルフィギュア",
-      price: "2,300 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1635830625698-3b9bd74671ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: false,
-    },
-    {
-      category: "アクリルフィギュア",
-      title: "雪ミク アクリルフィギュア",
-      price: "2,400 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: true,
-    },
-    {
-      category: "アクリルキーホルダー",
-      title: "重音テト キーホルダー",
-      price: "1,700 JPY",
-      imageUrl:
-        "https://images.unsplash.com/photo-1542744095-fcf48d80b0fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      isNew: false,
-    },
-  ];
+  // Fetch products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (!bandId) return;
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch(
+          apiClient.baseURL + `/bands/products/${bandId}/max10`
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Handle different response formats
+        if (Array.isArray(data)) {
+          // Direct array of products from API
+          setProducts(data);
+        } else if (data.message && !Array.isArray(data)) {
+          // No products found message
+          setProducts([]);
+        } else if (data.error) {
+          // Error response
+          throw new Error(data.error);
+        } else {
+          // Unexpected format
+          setProducts([]);
+        }
+      } catch (err) {
+        console.error("Error fetching products:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch products"
+        );
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [bandId]);
+
+  // Handle product click
+  const handleProductClick = (productId: number) => {
+    console.log("Navigating to product:", productId); // Debug log
+    navigate(`/product/${productId}`);
+  };
+
+  // Format price to JPY
+  const formatPrice = (price: string) => {
+    const numericPrice = parseFloat(price);
+    return isNaN(numericPrice)
+      ? price
+      : `${numericPrice.toLocaleString("ja-JP")} JPY`;
+  };
 
   // Calculate pagination
   const totalPages = Math.ceil(products.length / productsPerPage);
@@ -204,6 +213,35 @@ const CompactProductGrid: React.FC = () => {
       setCurrentPage(currentPage + 1);
     }
   };
+
+  // Reset to page 1 when products change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [products]);
+
+  if (loading) {
+    return (
+      <div className="w-full flex justify-center items-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full text-center py-8 text-red-500">
+        <p>Error: {error}</p>
+      </div>
+    );
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="w-full text-center py-8 text-gray-500">
+        <p>No products found for this band.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
@@ -240,13 +278,16 @@ const CompactProductGrid: React.FC = () => {
 
         {/* Product Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-          {currentProducts.map((product, index) => (
+          {currentProducts.map((product) => (
             <ProductCard
-              key={`${currentPage}-${index}`}
+              key={product.product_id}
               category={product.category}
-              title={product.title}
-              price={product.price}
-              imageUrl={product.imageUrl}
+              title={product.name}
+              price={formatPrice(product.price)}
+              imageUrl={product.image.url[0] || "/placeholder-image.jpg"}
+              productId={product.product_id}
+              onProductClick={handleProductClick}
+              isNew={false}
             />
           ))}
         </div>

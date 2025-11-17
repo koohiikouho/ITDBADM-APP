@@ -138,7 +138,7 @@ export default function ProductPage() {
           <ProductBody productData={productData} bandData={bandData} />
           <div className="flex content-center flex-col items-center">
             <div className="font-bold mb-3">Other {bandData.name} Merch</div>
-            <CompactProductGrid />
+            <CompactProductGrid bandId={productData.band_id.toString()} />
           </div>
         </div>
       </AnimatedContent>
