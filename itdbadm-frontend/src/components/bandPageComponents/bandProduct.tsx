@@ -14,7 +14,7 @@ interface ProductData {
   description: string;
   category: string;
   image: {
-    url: string;
+    url: string[]; // Changed from string to string[]
   };
 }
 
@@ -24,13 +24,8 @@ interface ProductBodyProps {
 }
 
 const ProductBody: React.FC<ProductBodyProps> = ({ productData, bandData }) => {
-  // Use the product image as the main image, and create sample variations
-  const productImages = [
-    productData.image.url,
-    productData.image.url, // In a real app, you'd have multiple images
-    productData.image.url,
-    productData.image.url,
-  ];
+  // Use the product images array directly from the API response
+  const productImages = productData.image.url;
 
   // Format price to JPY
   const formatPrice = (price: string) => {
@@ -81,8 +76,8 @@ const ProductBody: React.FC<ProductBodyProps> = ({ productData, bandData }) => {
         {productData.description}
       </div>
 
-      <div className="row-span-1 col-start-2 row-start-2 items-end content-end mb-2">
-        <div className="flex flex-col gap-4 items-end content-end">
+      <div className="row-span-1 col-start-2 row-start-2 items-start content-start mb-4">
+        <div className="flex flex-col gap-4 items-start content-start">
           <AddToCartButton price={formatPrice(productData.price)} />
           <br />
           <BuyNowButton

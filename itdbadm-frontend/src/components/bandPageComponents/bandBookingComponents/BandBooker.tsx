@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { today, getLocalTimeZone } from "@internationalized/date";
 import type { DateValue } from "@internationalized/date";
+import { useParams } from "react-router-dom"; // Import useParams
+import { apiClient } from "@/lib/api";
 
 interface OfferFormProps {
   className?: string;
@@ -32,7 +34,7 @@ interface OfferFormData {
   date: DateValue | null;
   price: string;
   description: string;
-  currency: string; // Add currency to the interface
+  currency: string;
 }
 
 const OfferForm: React.FC<OfferFormProps> = ({
@@ -41,13 +43,16 @@ const OfferForm: React.FC<OfferFormProps> = ({
   bandName = "the band",
   currency = "USD",
 }) => {
+  const { bandId } = useParams(); // Get bandId from URL params
   const [formData, setFormData] = useState<OfferFormData>({
     date: null,
     price: "",
     description: "",
-    currency: currency, // Include currency in initial state
+    currency: currency,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const currencies = {
     USD: {
@@ -86,22 +91,80 @@ const OfferForm: React.FC<OfferFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setSuccess(null);
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      // Validate band ID from URL
+      if (!bandId) {
+        throw new Error("Band ID is required");
+      }
 
-    // Now formData includes currency, so no need to spread it in
-    onSubmit?.(formData);
-    setIsSubmitting(false);
+      // Validate date
+      if (!formData.date) {
+        throw new Error("Event date is required");
+      }
 
-    // Reset form (keep the currency prop)
-    setFormData({
-      date: null,
-      price: "",
-      description: "",
-      currency: currency,
-    });
+      // Convert DateValue to string for API
+      const eventDateString = formData.date.toString();
+
+      // Get JWT token
+      const token = localStorage.getItem("accessToken");
+
+      if (!token) {
+        throw new Error("Authentication required. Please log in.");
+      }
+
+      // Prepare request data
+      const requestData = {
+        band_id: parseInt(bandId),
+        event_date: eventDateString,
+        offer_amount: parseFloat(formData.price),
+        event_details: formData.description,
+      };
+
+      // Make API call
+      const response = await fetch(apiClient.baseURL + "/bookings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.error || result.message || "Failed to create booking offer"
+        );
+      }
+
+      // Success
+      setSuccess(result.message || "Booking offer created successfully!");
+
+      // Call the original onSubmit prop if provided
+      onSubmit?.(formData);
+
+      // Reset form
+      setFormData({
+        date: null,
+        price: "",
+        description: "",
+        currency: currency,
+      });
+    } catch (error) {
+      console.error("Error creating booking offer:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to create booking offer"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleInputChange = (field: keyof OfferFormData, value: any) => {
@@ -109,6 +172,8 @@ const OfferForm: React.FC<OfferFormProps> = ({
       ...prev,
       [field]: value,
     }));
+    // Clear errors when user starts typing
+    if (error) setError(null);
   };
 
   const isFormValid = formData.date && formData.price && formData.description;
@@ -128,6 +193,20 @@ const OfferForm: React.FC<OfferFormProps> = ({
       </CardHeader>
 
       <CardBody className="gap-6">
+        {/* Success Message */}
+        {success && (
+          <div className="p-3 bg-success-50 border border-success-200 rounded-lg">
+            <p className="text-success-700 text-sm">{success}</p>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="p-3 bg-danger-50 border border-danger-200 rounded-lg">
+            <p className="text-danger-700 text-sm">{error}</p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-1">
           {/* Date Picker */}
           <DatePicker

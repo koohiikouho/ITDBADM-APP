@@ -1,3 +1,4 @@
+import DefaultLayout from "@/layouts/default";
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   Card,
@@ -22,6 +23,7 @@ import {
   Download,
   Package,
   Users,
+  Heart,
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
 
@@ -36,6 +38,7 @@ interface Product {
   img: {
     url: string[];
   };
+  is_liked?: boolean;
 }
 
 interface ProductCardProps {
@@ -45,6 +48,8 @@ interface ProductCardProps {
   price: string;
   imageUrl: string;
   type: "digital" | "physical";
+  isLiked: boolean;
+  onLikeToggle: (productId: number, liked: boolean) => void;
   onClick?: () => void;
 }
 
@@ -55,10 +60,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
   price,
   imageUrl,
   type,
+  isLiked,
+  onLikeToggle,
   onClick,
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [localIsLiked, setLocalIsLiked] = useState(isLiked);
+
+  useEffect(() => {
+    setLocalIsLiked(isLiked);
+  }, [isLiked]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -84,6 +96,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
       }
     };
   }, []);
+
+  const handleLikeClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the card click
+    const newLikedState = !localIsLiked;
+    setLocalIsLiked(newLikedState);
+    onLikeToggle(parseInt(title), newLikedState);
+  };
 
   const getTypeBadge = () => {
     if (type === "digital") {
@@ -123,6 +142,20 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <div className="absolute top-2 right-2 flex flex-col gap-1">
             {getTypeBadge()}
           </div>
+          {/* Heart Button */}
+          <button
+            onClick={handleLikeClick}
+            className={`
+              absolute top-2 left-2 rounded-full p-2 hover:scale-110 transition-transform duration-200
+              ${
+                localIsLiked
+                  ? "bg-red-500/20 text-red-500"
+                  : "bg-white/90 dark:bg-black/90 text-gray-600 hover:bg-red-500/20 hover:text-red-500"
+              }
+            `}
+          >
+            <Heart size={20} className={localIsLiked ? "fill-red-500" : ""} />
+          </button>
         </CardHeader>
 
         <CardBody className="p-4 flex flex-col flex-1">
@@ -156,7 +189,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   );
 };
 
-const ProductGrid: React.FC = () => {
+const LikedProducts: React.FC = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -178,10 +211,7 @@ const ProductGrid: React.FC = () => {
       setSelectedBranch(savedBranch || "");
     };
 
-    // Set initial branch
     updateSelectedBranch();
-
-    // Listen for storage changes
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "selectedBranch") {
         updateSelectedBranch();
@@ -189,8 +219,6 @@ const ProductGrid: React.FC = () => {
     };
 
     window.addEventListener("storage", handleStorageChange);
-
-    // Also check periodically
     const interval = setInterval(updateSelectedBranch, 1000);
 
     return () => {
@@ -199,41 +227,115 @@ const ProductGrid: React.FC = () => {
     };
   }, []);
 
-  // Fetch products from API
+  // Fetch liked products from API
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchLikedProducts = async () => {
       try {
         setLoading(true);
         setError(null);
 
         console.log(
-          "Fetching products from: " + apiClient.baseURL + " /products"
+          "Fetching liked products from: " +
+            apiClient.baseURL +
+            "/like/my-likes"
         );
 
-        const response = await fetch(apiClient.baseURL + "/products");
+        // First, get the user's liked products
+        const likesResponse = await fetch(
+          apiClient.baseURL + "/like/my-likes",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            },
+          }
+        );
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch products: ${response.status}`);
+        if (!likesResponse.ok) {
+          throw new Error(
+            `Failed to fetch liked products: ${likesResponse.status}`
+          );
         }
 
-        const data: Product[] = await response.json();
-        console.log("Products API Response:", data);
+        const likedProductIds = await likesResponse.json();
+        console.log("Liked product IDs:", likedProductIds);
 
-        setProducts(data);
+        // Then fetch all products and filter only the liked ones
+        const productsResponse = await fetch(apiClient.baseURL + "/products");
+
+        if (!productsResponse.ok) {
+          throw new Error(
+            `Failed to fetch products: ${productsResponse.status}`
+          );
+        }
+
+        const allProducts: Product[] = await productsResponse.json();
+
+        // Filter and mark liked products
+        const likedProducts = allProducts
+          .filter((product) => likedProductIds.includes(product.id))
+          .map((product) => ({
+            ...product,
+            is_liked: true,
+          }));
+
+        console.log("Liked products:", likedProducts);
+        setProducts(likedProducts);
       } catch (err) {
-        console.error("Error fetching products:", err);
+        console.error("Error fetching liked products:", err);
         setError(
           err instanceof Error
             ? err.message
-            : "An error occurred while fetching products"
+            : "An error occurred while fetching liked products"
         );
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
+    fetchLikedProducts();
   }, []);
+
+  // Handle like/unlike action
+  const handleLikeToggle = async (productId: number, liked: boolean) => {
+    try {
+      const endpoint = liked ? "/like" : "/like"; // Use the same endpoint for toggling
+      const method = "POST";
+
+      const response = await fetch(
+        `${apiClient.baseURL}${endpoint}/${productId}`,
+        {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to ${liked ? "like" : "unlike"} product`);
+      }
+
+      // Update local state - remove product if unliked
+      if (!liked) {
+        setProducts((prevProducts) =>
+          prevProducts.filter((product) => product.id !== productId)
+        );
+      }
+
+      console.log(
+        `Product ${productId} ${liked ? "liked" : "unliked"} successfully`
+      );
+    } catch (err) {
+      console.error(`Error ${liked ? "liking" : "unliking"} product:`, err);
+      // Revert the local state if the API call fails
+      setProducts((prevProducts) =>
+        prevProducts.map((product) =>
+          product.id === productId ? { ...product, is_liked: !liked } : product
+        )
+      );
+    }
+  };
 
   // Format price based on selected currency
   const formatPrice = (price: string) => {
@@ -373,7 +475,7 @@ const ProductGrid: React.FC = () => {
     return (
       <div className="max-w-7xl mx-auto p-8">
         <div className="flex justify-center items-center py-16">
-          <div className="text-lg">Loading products...</div>
+          <div className="text-lg">Loading your liked products...</div>
         </div>
       </div>
     );
@@ -392,8 +494,20 @@ const ProductGrid: React.FC = () => {
   if (products.length === 0) {
     return (
       <div className="max-w-7xl mx-auto p-8">
-        <div className="flex justify-center items-center py-16">
-          <div className="text-lg text-gray-500">No products found</div>
+        <div className="text-center py-16">
+          <Heart size={64} className="mx-auto mb-4 text-gray-400" />
+          <h2 className="text-2xl font-bold mb-4">No Liked Products Yet</h2>
+          <p className="text-gray-600 mb-8">
+            Products you like will appear here. Start exploring and add some
+            favorites!
+          </p>
+          <Button
+            color="primary"
+            onPress={() => navigate("/products")}
+            size="lg"
+          >
+            Browse Products
+          </Button>
         </div>
       </div>
     );
@@ -401,13 +515,21 @@ const ProductGrid: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-8">
+      {/* Page Header */}
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold mb-2">Your Liked Products</h1>
+        <p className="text-gray-600">
+          Products you've liked. Click the heart to remove them from your list.
+        </p>
+      </div>
+
       {/* Enhanced Search and Filter Bar */}
       <div className="mb-8">
         <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
           {/* Search Bar */}
           <div className="flex-1 w-full min-w-0">
             <Input
-              placeholder="Search by product name, band, or category..."
+              placeholder="Search your liked products..."
               value={searchQuery}
               onValueChange={handleSearchChange}
               startContent={<Search size={20} className="text-default-400" />}
@@ -574,7 +696,7 @@ const ProductGrid: React.FC = () => {
       <div className="mb-6 text-center">
         <p className="text-default-600">
           Showing {filteredAndPaginatedData.data.length} of{" "}
-          {filteredAndPaginatedData.totalItems} products
+          {filteredAndPaginatedData.totalItems} liked products
           {selectedBranch && (
             <span>
               {" "}
@@ -608,6 +730,8 @@ const ProductGrid: React.FC = () => {
             price={formatPrice(product.price)}
             imageUrl={getFirstImageUrl(product.img.url)}
             type={getProductType(product.category)}
+            isLiked={product.is_liked || false}
+            onLikeToggle={handleLikeToggle}
             onClick={() => handleProductClick(product.id)}
           />
         ))}
@@ -619,8 +743,8 @@ const ProductGrid: React.FC = () => {
           <Search size={48} className="mx-auto mb-4 text-default-300" />
           <p className="text-xl font-semibold mb-2">
             {selectedBranch
-              ? "No products found in this branch"
-              : "No products found"}
+              ? "No liked products found in this branch"
+              : "No liked products found"}
           </p>
           <p className="text-sm mb-4">
             {selectedBranch
@@ -666,4 +790,10 @@ const ProductGrid: React.FC = () => {
   );
 };
 
-export default ProductGrid;
+export default function LikesPage() {
+  return (
+    <DefaultLayout>
+      <LikedProducts />
+    </DefaultLayout>
+  );
+}

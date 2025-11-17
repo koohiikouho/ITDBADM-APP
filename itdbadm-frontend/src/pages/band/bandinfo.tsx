@@ -135,20 +135,7 @@ export default function BandInfo() {
           />
         </AnimatedContent>
 
-        <AnimatedContent
-          distance={150}
-          direction="vertical"
-          reverse={false}
-          duration={0.5}
-          ease="power3.out"
-          initialOpacity={0.2}
-          animateOpacity
-          scale={1}
-          threshold={0.2}
-          delay={0.1}
-        >
-          <BandInfoBody bandId={bandId} />
-        </AnimatedContent>
+        <BandInfoBody bandId={bandId} />
       </div>
     </DefaultLayout>
   );

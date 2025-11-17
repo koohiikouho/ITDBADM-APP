@@ -21,7 +21,7 @@ interface Band {
   genre: string;
   img: string;
   description_short: string;
-  branch: string;
+  branch: number;
   members: number;
 }
 
@@ -34,7 +34,36 @@ const CardGrid: React.FC = () => {
   const [cardData, setCardData] = useState<CardItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedBranch, setSelectedBranch] = useState<string>("");
   const cardsPerPage = 9;
+
+  // Get selected branch from localStorage on component mount and when storage changes
+  useEffect(() => {
+    const updateSelectedBranch = () => {
+      const savedBranch = localStorage.getItem("selectedBranch");
+      setSelectedBranch(savedBranch || "");
+    };
+
+    // Set initial branch
+    updateSelectedBranch();
+
+    // Listen for storage changes (in case branch is changed in another component)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "selectedBranch") {
+        updateSelectedBranch();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    // Also check periodically in case the event doesn't fire (same tab)
+    const interval = setInterval(updateSelectedBranch, 1000);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
 
   // Fetch data from API
   useEffect(() => {
@@ -54,7 +83,7 @@ const CardGrid: React.FC = () => {
           id: band.id,
           title: band.name,
           description: band.description_short,
-          image: band.img, // Use the image URL from the API
+          image: band.img,
           genre: band.genre,
           members: band.members,
           branch: band.branch,
@@ -75,10 +104,21 @@ const CardGrid: React.FC = () => {
 
   // Filter and paginate data
   const filteredAndPaginatedData = useMemo(() => {
-    // Filter by search query
-    let filtered = cardData.filter((item) =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // First filter by selected branch
+    let filtered = cardData;
+
+    if (selectedBranch) {
+      filtered = cardData.filter(
+        (item) => item.branch.toString() === selectedBranch
+      );
+    }
+
+    // Then filter by search query
+    if (searchQuery) {
+      filtered = filtered.filter((item) =>
+        item.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
 
     // Sort data
     filtered = filtered.sort((a, b) => {
@@ -107,7 +147,14 @@ const CardGrid: React.FC = () => {
       totalPages,
       totalItems: filtered.length,
     };
-  }, [cardData, searchQuery, sortBy, currentPage, cardsPerPage]);
+  }, [
+    cardData,
+    selectedBranch,
+    searchQuery,
+    sortBy,
+    currentPage,
+    cardsPerPage,
+  ]);
 
   const handleCardPress = (itemId: number): void => {
     console.log("Card pressed", itemId);
@@ -123,6 +170,21 @@ const CardGrid: React.FC = () => {
     setSearchQuery("");
     setSortBy("name");
     setCurrentPage(1);
+  };
+
+  // Get current branch name for display
+  const getCurrentBranchName = () => {
+    if (!selectedBranch) return "All Branches";
+
+    // In a real app, you might want to fetch branch names from your API
+    // For now, we'll use a simple mapping
+    const branchNames: { [key: string]: string } = {
+      "1": "Shibuya Music Hub",
+      "2": "Akihabara Idol Center",
+      "3": "Yokohama Livehouse",
+    };
+
+    return branchNames[selectedBranch] || `Branch ${selectedBranch}`;
   };
 
   // Loading state
@@ -252,10 +314,15 @@ const CardGrid: React.FC = () => {
         </div>
 
         {/* Active Filters Indicator */}
-        {(searchQuery || sortBy !== "name") && (
+        {(searchQuery || sortBy !== "name" || selectedBranch) && (
           <div className="flex flex-wrap gap-2 mt-3 items-center text-sm text-default-500">
             <SlidersHorizontal size={14} />
             <span className="text-xs">Active filters:</span>
+            {selectedBranch && (
+              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                Branch: {getCurrentBranchName()}
+              </span>
+            )}
             {searchQuery && (
               <span className="bg-primary-100 text-primary-800 px-2 py-1 rounded-full text-xs font-medium">
                 Search: "{searchQuery}"
@@ -282,6 +349,13 @@ const CardGrid: React.FC = () => {
         <p className="text-default-600">
           Showing {filteredAndPaginatedData.data.length} of{" "}
           {filteredAndPaginatedData.totalItems} bands
+          {selectedBranch && (
+            <span>
+              {" "}
+              from{" "}
+              <span className="font-semibold">{getCurrentBranchName()}</span>
+            </span>
+          )}
           {searchQuery && (
             <span>
               {" "}
@@ -289,6 +363,12 @@ const CardGrid: React.FC = () => {
             </span>
           )}
         </p>
+        {selectedBranch && (
+          <p className="text-sm text-default-500 mt-1">
+            Change branch in the navigation bar to see bands from other
+            locations
+          </p>
+        )}
       </div>
 
       {/* Cards Grid - Updated to support view modes */}
@@ -344,13 +424,32 @@ const CardGrid: React.FC = () => {
       {filteredAndPaginatedData.data.length === 0 && (
         <div className="text-center text-default-500 py-16">
           <Search size={48} className="mx-auto mb-4 text-default-300" />
-          <p className="text-xl font-semibold mb-2">No bands found</p>
-          <p className="text-sm mb-4">
-            Try adjusting your search terms or filters
+          <p className="text-xl font-semibold mb-2">
+            {selectedBranch
+              ? "No bands found in this branch"
+              : "No bands found"}
           </p>
-          <Button variant="flat" onPress={clearFilters}>
-            Clear All Filters
-          </Button>
+          <p className="text-sm mb-4">
+            {selectedBranch
+              ? "Try changing your branch selection or search terms"
+              : "Try adjusting your search terms or filters"}
+          </p>
+          <div className="flex gap-2 justify-center">
+            <Button variant="flat" onPress={clearFilters}>
+              Clear Search & Filters
+            </Button>
+            {selectedBranch && (
+              <Button
+                variant="flat"
+                onPress={() => {
+                  localStorage.removeItem("selectedBranch");
+                  setSelectedBranch("");
+                }}
+              >
+                View All Branches
+              </Button>
+            )}
+          </div>
         </div>
       )}
 

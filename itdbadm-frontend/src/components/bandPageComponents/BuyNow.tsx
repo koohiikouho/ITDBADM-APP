@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, cn } from "@heroui/react";
 import { Check, Rocket, ShoppingBag, ArrowRight } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
 
 interface BuyNowButtonProps {
   onBuyNow?: () => void;
@@ -11,6 +12,13 @@ interface BuyNowButtonProps {
   icon?: "rocket" | "flash" | "shoppingBag" | "arrow";
 }
 
+interface CartResponse {
+  message: string;
+  action: string;
+  product_id: number;
+  new_quantity: number;
+}
+
 const BuyNowButton: React.FC<BuyNowButtonProps> = ({
   onBuyNow,
   className,
@@ -19,23 +27,56 @@ const BuyNowButton: React.FC<BuyNowButtonProps> = ({
   redirectUrl = "/cart",
   icon = "rocket",
 }) => {
+  const { productId } = useParams<{ productId: string }>();
+  const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
+    if (!productId) {
+      console.error("No product ID found in URL");
+      return;
+    }
+
     setIsProcessing(true);
 
-    // Call the callback if provided
-    onBuyNow?.();
+    try {
+      // Get JWT token from localStorage
+      const token = localStorage.getItem("accessToken");
 
-    // Simulate processing time, then redirect
-    setTimeout(() => {
-      setIsProcessing(false);
-
-      // Redirect to cart page
-      if (redirectUrl) {
-        window.location.href = redirectUrl;
+      if (!token) {
+        alert("Please log in to purchase items");
+        return;
       }
-    }, 1500);
+
+      // Add item to cart via API
+      const response = await fetch("http://localhost:3000/carts/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          product_id: parseInt(productId),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to add to cart: ${response.status}`);
+      }
+
+      const data: CartResponse = await response.json();
+      console.log("Cart response:", data);
+
+      // Call the callback if provided
+      onBuyNow?.();
+
+      // Navigate directly to cart page
+      navigate(redirectUrl);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      alert("Failed to add item to cart. Please try again.");
+      setIsProcessing(false);
+    }
   };
 
   // Icon configuration
@@ -57,7 +98,7 @@ const BuyNowButton: React.FC<BuyNowButtonProps> = ({
   };
 
   const getButtonText = () => {
-    if (isProcessing) return "Processing...";
+    if (isProcessing) return "Adding to Cart...";
 
     switch (icon) {
       case "rocket":

@@ -77,7 +77,7 @@ export const ordersController = new Elysia({ prefix: "/orders" })
               p.category,
               p.image,
               p.is_deleted,
-              b.name
+              b.name as band_name
             FROM orders_products op 
             JOIN products p ON op.product_id = p.product_id
             JOIN bands b ON b.band_id = p.band_id
@@ -89,18 +89,38 @@ export const ordersController = new Elysia({ prefix: "/orders" })
             [order.order_id]
           );
 
-          const products = productRows.map((product) => ({
-            product_id: product.product_id,
-            quantity: product.quantity,
-            band_id: product.band_id,
-            name: product.name,
-            price: product.price,
-            description: product.description,
-            category: product.category,
-            image: product.image,
-            is_deleted: product.is_deleted,
-            band: product.name,
-          }));
+          const products = productRows.map((product) => {
+            // Handle different image formats to return only one image in array
+            let singleImageUrl;
+
+            if (product.image && product.image.url) {
+              if (Array.isArray(product.image.url)) {
+                // If it's an array, take the first image
+                singleImageUrl = product.image.url[0];
+              } else {
+                // If it's already a single string, use it directly
+                singleImageUrl = product.image.url;
+              }
+            } else {
+              // Fallback if no image is available
+              singleImageUrl = null;
+            }
+
+            return {
+              product_id: product.product_id,
+              quantity: product.quantity,
+              band_id: product.band_id,
+              name: product.name,
+              price: product.price,
+              description: product.description,
+              category: product.category,
+              image: {
+                url: singleImageUrl ? [singleImageUrl] : [],
+              },
+              is_deleted: product.is_deleted,
+              band: product.band_name,
+            };
+          });
 
           return {
             id: order.order_id,

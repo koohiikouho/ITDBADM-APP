@@ -21,6 +21,7 @@ import CreateBandPage from "./pages/admin/createband";
 import DeleteProductPage from "./pages/admin/deleteproduct";
 import SentOffersPage from "@/pages/offers";
 import { AuthProvider } from "./lib/authContext";
+import LikesPage from "./pages/likes";
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
         <Route element={<CreateProductPage />} path="/createproduct" />
         <Route element={<CreateBandPage />} path="/createband" />
         <Route element={<DeleteProductPage />} path="/deleteproduct" />
+        <Route element={<LikesPage />} path="/likes" />
 
         <Route element={<SentOffersPage />} path="sent-offers" />
         <Route element={<MyOrdersPage />} path="/orders" />

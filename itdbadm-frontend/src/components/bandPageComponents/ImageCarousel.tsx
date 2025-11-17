@@ -36,7 +36,7 @@ const Carousel: React.FC<CarouselProps> = ({
   const [modalImageIndex, setModalImageIndex] = useState(0);
 
   const nextSlide = () => {
-    if (isAnimating) return;
+    if (isAnimating || images.length <= 1) return;
     setIsAnimating(true);
     setTimeout(() => {
       setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
@@ -45,7 +45,7 @@ const Carousel: React.FC<CarouselProps> = ({
   };
 
   const prevSlide = () => {
-    if (isAnimating) return;
+    if (isAnimating || images.length <= 1) return;
     setIsAnimating(true);
     setTimeout(() => {
       setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
@@ -54,7 +54,7 @@ const Carousel: React.FC<CarouselProps> = ({
   };
 
   const goToSlide = (index: number) => {
-    if (isAnimating || index === currentIndex) return;
+    if (isAnimating || index === currentIndex || images.length <= 1) return;
     setIsAnimating(true);
     setTimeout(() => {
       setCurrentIndex(index);
@@ -72,19 +72,21 @@ const Carousel: React.FC<CarouselProps> = ({
   };
 
   const nextModalSlide = () => {
+    if (images.length <= 1) return;
     setModalImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
 
   const prevModalSlide = () => {
+    if (images.length <= 1) return;
     setModalImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
   // Auto-play functionality
   useEffect(() => {
-    if (!autoPlay || isAnimating) return;
+    if (!autoPlay || isAnimating || images.length <= 1) return;
     const interval = setInterval(nextSlide, autoPlayInterval);
     return () => clearInterval(interval);
-  }, [autoPlay, autoPlayInterval, isAnimating]);
+  }, [autoPlay, autoPlayInterval, isAnimating, images.length]);
 
   // Preview size classes
   const previewSizeClasses = {
@@ -190,36 +192,35 @@ const Carousel: React.FC<CarouselProps> = ({
             )}
           </div>
 
-          {/* Image Previews */}
-          {images.length > 1 && (
-            <div className="p-3 sm:p-4 bg-gray-50 dark:bg-background border-t border-gray-200 dark:border-gray-700">
-              <div className="flex justify-center space-x-2 sm:space-x-3 overflow-x-auto py-1 sm:py-2">
-                {images.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => goToSlide(index)}
-                    disabled={isAnimating}
-                    className={cn(
-                      "flex-shrink-0 transition-all duration-200  overflow-hidden border-2",
-                      previewSizeClasses[previewSize],
-                      index === currentIndex
-                        ? "border-blue-500 dark:border-blue-400 scale-105 shadow-md"
-                        : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 hover:scale-102",
-                      isAnimating && "pointer-events-none opacity-100"
-                    )}
-                  >
-                    <Image
-                      src={image}
-                      radius="none"
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-full object-cover"
-                      removeWrapper
-                    />
-                  </button>
-                ))}
-              </div>
+          {/* Image Previews - ALWAYS SHOWN even with single image */}
+          <div className="p-3 sm:p-4 bg-gray-50 dark:bg-background border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-center space-x-2 sm:space-x-3 overflow-x-auto py-1 sm:py-2">
+              {images.map((image, index) => (
+                <button
+                  key={index}
+                  onClick={() => images.length > 1 && goToSlide(index)}
+                  disabled={isAnimating || images.length <= 1}
+                  className={cn(
+                    "flex-shrink-0 transition-all duration-200 overflow-hidden border-2",
+                    previewSizeClasses[previewSize],
+                    index === currentIndex
+                      ? "border-blue-500 dark:border-blue-400 scale-105 shadow-md"
+                      : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 hover:scale-102",
+                    isAnimating && "pointer-events-none opacity-100",
+                    images.length <= 1 && "cursor-default hover:scale-100" // Disable hover effects for single image
+                  )}
+                >
+                  <Image
+                    src={image}
+                    radius="none"
+                    alt={`Preview ${index + 1}`}
+                    className="w-full h-full object-cover"
+                    removeWrapper
+                  />
+                </button>
+              ))}
             </div>
-          )}
+          </div>
         </CardBody>
       </Card>
 

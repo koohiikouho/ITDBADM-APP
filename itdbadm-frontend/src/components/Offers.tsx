@@ -1,5 +1,5 @@
 // src/components/OffersPage.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   MusicalNoteIcon,
   TrashIcon,
@@ -7,73 +7,133 @@ import {
 } from "@heroicons/react/24/outline";
 import type { Offer, OfferStatus } from "../types/offer";
 
-const OffersPage = () => {
-  const [offers, setOffers] = useState<Offer[]>([
-    {
-      id: "OFF-001",
-      bandName: "The Midnight Riders",
-      bookingDate: "2024-02-15",
-      description: "Summer Music Festival - Main Stage Performance",
-      price: 5000,
-      status: "pending",
-      filedDate: "2024-01-10",
-    },
-    {
-      id: "OFF-002",
-      bandName: "Electric Dreams",
-      bookingDate: "2024-03-22",
-      description: "Private Corporate Event - Evening Entertainment",
-      price: 3500,
-      status: "accepted",
-      filedDate: "2024-01-08",
-    },
-    {
-      id: "OFF-003",
-      bandName: "Neon Waves",
-      bookingDate: "2024-02-28",
-      description: "Club Residency - Weekly Friday Nights",
-      price: 1200,
-      status: "rejected",
-      filedDate: "2024-01-05",
-    },
-    {
-      id: "OFF-004",
-      bandName: "Solar Flare",
-      bookingDate: "2024-04-10",
-      description: "Charity Gala - Live Performance",
-      price: 2000,
-      status: "pending",
-      filedDate: "2024-01-12",
-    },
-    {
-      id: "OFF-005",
-      bandName: "The Retrospectives",
-      bookingDate: "2024-03-05",
-      description: "Wedding Reception - Background Music",
-      price: 1800,
-      status: "pending",
-      filedDate: "2024-01-03",
-    },
-  ]);
+// API Response Type
+interface ApiOffer {
+  offer_id: number;
+  band_id: number;
+  booking_date: string;
+  description: string;
+  price: string;
+  status: string;
+  date_created: string;
+  name: string; // Band name is now included in the response
+}
 
+const OffersPage = () => {
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<OfferStatus | "all">("all");
   const [showRetractModal, setShowRetractModal] = useState<string | null>(null);
 
-  const retractOffer = (offerId: string) => {
-    setOffers((prev) =>
-      prev.map((offer) =>
-        offer.id === offerId ? { ...offer, status: "retracted" } : offer
-      )
-    );
-    setShowRetractModal(null);
+  // Fetch offers from API
+  useEffect(() => {
+    const fetchOffers = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          throw new Error("No access token found. Please log in.");
+        }
+
+        const response = await fetch("http://localhost:3000/bookings/user", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error("Authentication failed. Please log in again.");
+          }
+          throw new Error(`Failed to fetch offers: ${response.statusText}`);
+        }
+
+        const data: ApiOffer[] = await response.json();
+
+        // Transform API data to match Offer type
+        const transformedOffers: Offer[] = data.map((offer) => ({
+          id: `OFF-${offer.offer_id.toString().padStart(3, "0")}`,
+          bandName: offer.name, // Use the band name from the API response
+          bookingDate: offer.booking_date,
+          description: offer.description,
+          price: parseFloat(offer.price),
+          status: mapStatusToOfferStatus(offer.status),
+          filedDate: offer.date_created,
+        }));
+
+        setOffers(transformedOffers);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load offers");
+        console.error("Error fetching offers:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOffers();
+  }, []);
+
+  // Map API status to OfferStatus type
+  const mapStatusToOfferStatus = (status: string): OfferStatus => {
+    const statusMap: Record<string, OfferStatus> = {
+      Pending: "pending",
+      Accepted: "accepted",
+      Rejected: "rejected",
+      Retracted: "retracted",
+      pending: "pending",
+      accepted: "accepted",
+      rejected: "rejected",
+      retracted: "retracted",
+    };
+    return statusMap[status] || "pending";
+  };
+
+  const retractOffer = async (offerId: string) => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        throw new Error("No access token found");
+      }
+
+      // Extract numeric ID from "OFF-001" format
+      const numericId = offerId.replace("OFF-", "");
+
+      // Use DELETE method instead of PATCH
+      const response = await fetch(
+        `http://localhost:3000/bookings/${numericId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete offer");
+      }
+
+      // Remove the offer from local state
+      setOffers((prev) => prev.filter((offer) => offer.id !== offerId));
+      setShowRetractModal(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete offer");
+      console.error("Error deleting offer:", err);
+    }
   };
 
   const getStatusColor = (status: OfferStatus): string => {
     const colors = {
-      pending: "bg-white text-black border-black",
-      accepted: "bg-black text-white border-black",
-      rejected: "bg-white text-black border-black",
-      retracted: "bg-black text-white border-black",
+      pending: "bg-yellow-100 text-yellow-800 border-yellow-300",
+      accepted: "bg-green-100 text-green-800 border-green-300",
+      rejected: "bg-red-100 text-red-800 border-red-300",
+      retracted: "bg-gray-100 text-gray-800 border-gray-300",
     };
     return colors[status];
   };
@@ -99,7 +159,7 @@ const OffersPage = () => {
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: "JPY",
     }).format(amount);
   };
 
@@ -119,6 +179,37 @@ const OffersPage = () => {
     { value: "rejected", label: "Rejected" },
     { value: "retracted", label: "Retracted" },
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center">
+        <div className="text-center">
+          <MusicalNoteIcon className="h-12 w-12 text-black dark:text-white animate-bounce mx-auto mb-4" />
+          <p className="text-black dark:text-white">Loading offers...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center">
+        <div className="text-center">
+          <ExclamationTriangleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-black dark:text-white mb-2">
+            Error Loading Offers
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white dark:bg-black transition-colors">
@@ -184,7 +275,7 @@ const OffersPage = () => {
                       <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
                         Band
                       </label>
-                      <p className="text-black dark:text-white">
+                      <p className="text-black dark:text-white font-medium">
                         {offer.bandName}
                       </p>
                     </div>
@@ -245,7 +336,7 @@ const OffersPage = () => {
                           className="flex items-center space-x-2 px-3 py-2 text-black dark:text-white border border-black dark:border-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors text-sm font-medium"
                         >
                           <TrashIcon className="h-4 w-4" />
-                          <span>Retract Offer</span>
+                          <span>Delete Offer</span>
                         </button>
                       )}
                     </div>
@@ -271,18 +362,18 @@ const OffersPage = () => {
           </div>
         )}
 
-        {/* Retract Confirmation Modal */}
+        {/* Delete Confirmation Modal */}
         {showRetractModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-lg max-w-md w-full p-6">
               <div className="flex items-center space-x-3 mb-4">
                 <ExclamationTriangleIcon className="h-6 w-6 text-black dark:text-white" />
                 <h3 className="text-lg font-semibold text-black dark:text-white">
-                  Retract Offer
+                  Delete Offer
                 </h3>
               </div>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Are you sure you want to retract this offer? This action cannot
+                Are you sure you want to delete this offer? This action cannot
                 be undone.
               </p>
               <div className="flex space-x-3 justify-end">
@@ -294,9 +385,9 @@ const OffersPage = () => {
                 </button>
                 <button
                   onClick={() => retractOffer(showRetractModal)}
-                  className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black border border-black dark:border-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+                  className="px-4 py-2 bg-red-600 text-white border border-red-600 rounded-lg hover:bg-red-700 transition-colors"
                 >
-                  Retract Offer
+                  Delete Offer
                 </button>
               </div>
             </div>

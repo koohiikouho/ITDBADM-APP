@@ -17,15 +17,23 @@ const BandInfoHead: React.FC<BandProps> = ({
   bandId,
   enableSpotify = false,
 }) => {
-  function descriptionOn(desc: Boolean) {
-    if (desc) {
-      var { bandId } = useParams<{ bandId: string }>();
-      bandId?.toString();
-      return <BookBandButton theme="music" size="lg" bandId={bandId} />;
+  function descriptionOn(desc: Boolean, bandId: string) {
+    if (!bandId) {
+      if (desc) {
+        var { bandId } = useParams<{ bandId: string }>();
+        bandId?.toString();
+        return <BookBandButton theme="music" size="lg" bandId={bandId} />;
+      } else {
+        var { bandId } = useParams<{ bandId: string }>();
+        bandId?.toString();
+        return <BuyMerchButton theme="merch" size="lg" bandId={bandId} />;
+      }
     } else {
-      var { bandId } = useParams<{ bandId: string }>();
-      bandId?.toString();
-      return <BuyMerchButton theme="merch" size="lg" bandId={bandId} />;
+      if (desc) {
+        return <BookBandButton theme="music" size="lg" bandId={bandId} />;
+      } else {
+        return <BuyMerchButton theme="merch" size="lg" bandId={bandId} />;
+      }
     }
   }
 
@@ -100,7 +108,9 @@ const BandInfoHead: React.FC<BandProps> = ({
           )}
         </div>
         <div className="col-start-3 row-start-2 flex items-center">
-          <div className="">{descriptionOn(isDescriptionOn)}</div>
+          <div className="">
+            {descriptionOn(isDescriptionOn, bandId.toString())}
+          </div>
         </div>
       </div>
       <div>

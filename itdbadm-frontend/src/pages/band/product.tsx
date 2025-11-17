@@ -15,7 +15,7 @@ interface ProductData {
   description: string;
   category: string;
   image: {
-    url: string;
+    url: string[];
   };
 }
 
@@ -133,7 +133,7 @@ export default function ProductPage() {
           <BandInfoHead
             isDescriptionOn
             bandData={bandData}
-            bandId={productData.band_id}
+            bandId={productData.band_id.toString()} // This is safe now because we checked !productData above
           />
           <ProductBody productData={productData} bandData={bandData} />
           <div className="flex content-center flex-col items-center">

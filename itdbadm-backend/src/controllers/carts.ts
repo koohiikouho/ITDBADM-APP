@@ -1,47 +1,476 @@
 import { Elysia, t } from "elysia";
 import { dbPool } from "../db";
-import mysql from 'mysql2/promise';
+import mysql from "mysql2/promise";
 
+export const cartsController = new Elysia({ prefix: "/carts" })
 
-export const cartsController = new Elysia({ prefix: '/carts' })
+  //GET all products from a user's cart
+  .get("/user", async ({ headers, set, jwt }) => {
+    const token = headers.authorization?.split(" ")[1];
+    const payload = await jwt.verify(token);
 
-//GET all products from a user's cart
+    if (!payload) {
+      set.status = 401;
+      return { error: "Unauthorized" };
+    }
 
-    .get("/user", async ({ headers, set, jwt }) => {
+    const userId = payload.id;
 
-        const token = headers.authorization?.split(" ")[1];
-        const payload = await jwt.verify(token);
+    try {
+      const cartQuery = `SELECT * FROM carts WHERE user_id = ${userId};`;
+      const [cartRows] = await dbPool.execute<mysql.RowDataPacket[]>(cartQuery);
 
-        if(!payload) {
-            set.status = 401;
-            return { error: "Unauthorized" };
+      if (cartRows.length === 0) {
+        set.status = 200;
+        return { message: "No items in the cart found." };
+      }
+
+      const productIds = cartRows.map((row) => row.product_id);
+
+      const productQuery = `
+            SELECT product_id, name, price, description, category, band_id, image, is_deleted 
+            FROM products 
+            WHERE product_id IN (${productIds.join(",")})
+        `;
+      const [productRows] = await dbPool.execute<mysql.RowDataPacket[]>(
+        productQuery
+      );
+
+      const productMap = new Map();
+      productRows.forEach((product) => {
+        productMap.set(product.product_id, product);
+      });
+
+      const userCartList = cartRows.map((cartItem) => {
+        const product = productMap.get(cartItem.product_id);
+
+        // Handle different image formats to return only one image in array
+        let singleImageUrl;
+
+        if (product?.image && product.image.url) {
+          if (Array.isArray(product.image.url)) {
+            // If it's an array, take the first image
+            singleImageUrl = product.image.url[0];
+          } else {
+            // If it's already a single string, use it directly
+            singleImageUrl = product.image.url;
+          }
+        } else {
+          // Fallback if no image is available
+          singleImageUrl = null;
         }
 
-        const userId = payload.id;
+        return {
+          user_id: cartItem.user_id,
+          product_id: cartItem.product_id,
+          quantity: cartItem.quantity,
+          name: product?.name,
+          price: product?.price,
+          description: product?.description,
+          category: product?.category,
+          band_id: product?.band_id,
+          image: {
+            url: singleImageUrl ? [singleImageUrl] : [],
+          },
+          is_deleted: product?.is_deleted,
+        };
+      });
 
-        try {
-            const query = `SELECT * FROM carts WHERE user_id = ${userId};`;
+      set.status = 200;
+      return userCartList;
+    } catch (error) {
+      console.error("Error fetching cart contents: ", error);
+      set.status = 500;
+      return { message: "Internal Server Error while retrieving user cart." };
+    }
+  })
 
-            const [rows] = await dbPool.execute<mysql.RowDataPacket[]>(query);
+  .post(
+    "/add",
+    async ({ body, headers, set, jwt }) => {
+      const token = headers.authorization?.split(" ")[1];
+      const payload = await jwt.verify(token);
 
-            if (rows.length === 0) {
-                set.status = 200;
-                return { message: "No items in the cart found." };
-            }
+      if (!payload) {
+        set.status = 401;
+        return { error: "Unauthorized" };
+      }
 
-            const userCartList = rows.map((row) => ({
-                user_id: row.user_id,
-                product_id: row.product_id,
-                quantity: row.quantity
-            }));
+      const userId = payload.id;
+      const { product_id } = body;
+
+      try {
+        // First check if the product exists and is not deleted
+        // Use LIMIT 1 to ensure only one row is returned
+        const productCheckQuery =
+          "SELECT product_id, is_deleted FROM products WHERE product_id = ? LIMIT 1";
+        const [productRows] = await dbPool.execute<mysql.RowDataPacket[]>(
+          productCheckQuery,
+          [product_id]
+        );
+
+        if (productRows.length === 0) {
+          set.status = 404;
+          return { error: "Product not found" };
+        }
+
+        if (productRows[0].is_deleted) {
+          set.status = 400;
+          return { error: "Product is no longer available" };
+        }
+
+        // Check if the item already exists in the cart
+        const cartCheckQuery =
+          "SELECT * FROM carts WHERE user_id = ? AND product_id = ? LIMIT 1";
+        const [existingCartItems] = await dbPool.execute<mysql.RowDataPacket[]>(
+          cartCheckQuery,
+          [userId, product_id]
+        );
+
+        if (existingCartItems.length > 0) {
+          // Item exists, increment quantity
+          const updateQuery =
+            "UPDATE carts SET quantity = quantity + 1 WHERE user_id = ? AND product_id = ?";
+          const [updateResult] = await dbPool.execute(updateQuery, [
+            userId,
+            product_id,
+          ]);
+
+          // Get the updated quantity by querying again
+          const [updatedCartItems] = await dbPool.execute<
+            mysql.RowDataPacket[]
+          >(
+            "SELECT quantity FROM carts WHERE user_id = ? AND product_id = ? LIMIT 1",
+            [userId, product_id]
+          );
+
+          set.status = 200;
+          return {
+            message: "Cart item quantity updated",
+            action: "incremented",
+            product_id,
+            new_quantity: updatedCartItems[0].quantity,
+          };
+        } else {
+          // Item doesn't exist, insert new record
+          const insertQuery =
+            "INSERT INTO carts (user_id, product_id, quantity) VALUES (?, ?, ?)";
+          await dbPool.execute(insertQuery, [userId, product_id, 1]);
+
+          set.status = 201;
+          return {
+            message: "Item added to cart",
+            action: "added",
+            product_id,
+            quantity: 1,
+          };
+        }
+      } catch (error) {
+        console.error("Error adding item to cart: ", error);
+        set.status = 500;
+        return { error: "Internal Server Error while adding item to cart" };
+      }
+    },
+    {
+      body: t.Object({
+        product_id: t.Numeric(),
+      }),
+    }
+  )
+  .put(
+    "/item",
+    async ({ body, headers, set, jwt }) => {
+      const token = headers.authorization?.split(" ")[1];
+      const payload = await jwt.verify(token);
+
+      if (!payload) {
+        set.status = 401;
+        return { error: "Unauthorized" };
+      }
+
+      const userId = payload.id;
+      const { operation, product_id, new_quantity } = body;
+
+      try {
+        // First check if the cart item exists
+        const cartCheckQuery =
+          "SELECT * FROM carts WHERE user_id = ? AND product_id = ? LIMIT 1";
+        const [existingCartItems] = await dbPool.execute<mysql.RowDataPacket[]>(
+          cartCheckQuery,
+          [userId, product_id]
+        );
+
+        if (existingCartItems.length === 0) {
+          set.status = 404;
+          return { error: "Cart item not found" };
+        }
+
+        if (operation === "change") {
+          // Validate new_quantity
+          if (new_quantity === undefined || new_quantity === null) {
+            set.status = 400;
+            return { error: "new_quantity is required for change operation" };
+          }
+
+          if (new_quantity < 0) {
+            set.status = 400;
+            return { error: "Quantity cannot be negative" };
+          }
+
+          if (new_quantity === 0) {
+            // If quantity is set to 0, remove the item from cart
+            const deleteQuery =
+              "DELETE FROM carts WHERE user_id = ? AND product_id = ?";
+            await dbPool.execute(deleteQuery, [userId, product_id]);
 
             set.status = 200;
-            return userCartList;
-            
+            return {
+              message: "Item removed from cart",
+              action: "removed",
+              product_id,
+              previous_quantity: existingCartItems[0].quantity,
+            };
+          } else {
+            // Update to the new quantity
+            const updateQuery =
+              "UPDATE carts SET quantity = ? WHERE user_id = ? AND product_id = ?";
+            const [updateResult] = await dbPool.execute(updateQuery, [
+              new_quantity,
+              userId,
+              product_id,
+            ]);
 
-        } catch (error) {
-            console.error("Error fetching cart contents: ", error);
-            set.status = 500;
-            return { message: "Internal Server Error while retrieving user cart."};
+            set.status = 200;
+            return {
+              message: "Cart item quantity updated",
+              action: "updated",
+              product_id,
+              previous_quantity: existingCartItems[0].quantity,
+              new_quantity: new_quantity,
+            };
+          }
+        } else if (operation === "delete") {
+          // Delete the item from cart
+          const deleteQuery =
+            "DELETE FROM carts WHERE user_id = ? AND product_id = ?";
+          await dbPool.execute(deleteQuery, [userId, product_id]);
+
+          set.status = 200;
+          return {
+            message: "Item removed from cart",
+            action: "deleted",
+            product_id,
+            previous_quantity: existingCartItems[0].quantity,
+          };
+        } else {
+          set.status = 400;
+          return { error: "Invalid operation. Use 'change' or 'delete'" };
         }
-    })
+      } catch (error) {
+        console.error("Error updating cart item: ", error);
+        set.status = 500;
+        return { error: "Internal Server Error while updating cart item" };
+      }
+    },
+    {
+      body: t.Object({
+        operation: t.String(),
+        product_id: t.Numeric(),
+        new_quantity: t.Optional(t.Numeric()),
+      }),
+    }
+  )
+
+  .post(
+    "/place-order",
+    async ({ body, headers, set, jwt }) => {
+      const token = headers.authorization?.split(" ")[1];
+      const payload = await jwt.verify(token);
+
+      if (!payload) {
+        set.status = 401;
+        return { error: "Unauthorized" };
+      }
+
+      const userId = payload.id;
+      const {
+        contact_information,
+        first_name,
+        last_name,
+        address,
+        city,
+        country,
+        postal_code,
+      } = body;
+
+      // Validate required fields
+      if (
+        !contact_information ||
+        !first_name ||
+        !last_name ||
+        !address ||
+        !city ||
+        !country ||
+        !postal_code
+      ) {
+        set.status = 400;
+        return { error: "All shipping information fields are required" };
+      }
+
+      try {
+        // Start a transaction
+        const connection = await dbPool.getConnection();
+        await connection.beginTransaction();
+
+        try {
+          // 1. Get user's cart items
+          const cartQuery =
+            "SELECT product_id, quantity FROM carts WHERE user_id = ?";
+          const [cartRows] = await connection.execute<mysql.RowDataPacket[]>(
+            cartQuery,
+            [userId]
+          );
+
+          if (cartRows.length === 0) {
+            set.status = 400;
+            return { error: "Cart is empty" };
+          }
+
+          // 2. Calculate total price and validate products
+          let totalPrice = 0;
+          const productIds = cartRows.map((row) => row.product_id);
+
+          const productQuery = `
+            SELECT product_id, price, is_deleted, name 
+            FROM products 
+            WHERE product_id IN (${productIds.join(",")})
+          `;
+          const [productRows] = await connection.execute<mysql.RowDataPacket[]>(
+            productQuery
+          );
+
+          const productMap = new Map();
+          productRows.forEach((product) => {
+            productMap.set(product.product_id, product);
+          });
+
+          // Validate all products and calculate total
+          for (const cartItem of cartRows) {
+            const product = productMap.get(cartItem.product_id);
+
+            if (!product) {
+              throw new Error(
+                `Product with ID ${cartItem.product_id} not found`
+              );
+            }
+
+            if (product.is_deleted) {
+              throw new Error(
+                `Product "${product.name}" is no longer available`
+              );
+            }
+
+            totalPrice += parseFloat(product.price) * cartItem.quantity;
+          }
+
+          // 3. Create order record
+          const orderQuery = `
+            INSERT INTO orders (user_id, order_date, status, price, description) 
+            VALUES (?, NOW(), 'Ongoing', ?, ?)
+          `;
+          const orderDescription = `Order placed by ${first_name} ${last_name}`;
+
+          const [orderResult] = await connection.execute<mysql.OkPacket>(
+            orderQuery,
+            [userId, totalPrice, orderDescription]
+          );
+
+          const orderId = orderResult.insertId;
+
+          // 4. Create shipping information
+          const shippingQuery = `
+            INSERT INTO shipping_information 
+            (order_id, contact_information, first_name, last_name, address, city, country, postal_code) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `;
+
+          const [shippingResult] = await connection.execute<mysql.OkPacket>(
+            shippingQuery,
+            [
+              orderId,
+              contact_information,
+              first_name,
+              last_name,
+              address,
+              city,
+              country,
+              postal_code,
+            ]
+          );
+
+          const shippingId = shippingResult.insertId;
+
+          // 5. Update order with shipping_id
+          const updateOrderQuery =
+            "UPDATE orders SET shipping_id = ? WHERE order_id = ?";
+          await connection.execute(updateOrderQuery, [shippingId, orderId]);
+
+          // 6. Create order_products records
+          const orderProductsQuery = `
+            INSERT INTO orders_products (order_id, product_id, quantity) 
+            VALUES (?, ?, ?)
+          `;
+
+          for (const cartItem of cartRows) {
+            await connection.execute(orderProductsQuery, [
+              orderId,
+              cartItem.product_id,
+              cartItem.quantity,
+            ]);
+          }
+
+          // 7. Clear user's cart
+          const clearCartQuery = "DELETE FROM carts WHERE user_id = ?";
+          await connection.execute(clearCartQuery, [userId]);
+
+          // Commit transaction
+          await connection.commit();
+
+          set.status = 201;
+          return {
+            message: "Order placed successfully",
+            order_id: orderId,
+            shipping_id: shippingId,
+            total_price: totalPrice,
+            items_ordered: cartRows.length,
+          };
+        } catch (error) {
+          // Rollback transaction on error
+          await connection.rollback();
+          throw error;
+        } finally {
+          connection.release();
+        }
+      } catch (error) {
+        console.error("Error placing order:", error);
+        set.status = 500;
+        return {
+          error:
+            error instanceof Error
+              ? error.message
+              : "Internal Server Error while placing order",
+        };
+      }
+    },
+    {
+      body: t.Object({
+        contact_information: t.String(),
+        first_name: t.String(),
+        last_name: t.String(),
+        address: t.String(),
+        city: t.String(),
+        country: t.String(),
+        postal_code: t.String(),
+      }),
+    }
+  );

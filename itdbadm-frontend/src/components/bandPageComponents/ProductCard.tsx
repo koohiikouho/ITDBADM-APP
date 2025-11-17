@@ -27,17 +27,24 @@ interface ProductGridProps {
   bandId: string | undefined;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({
+const ProductCard: React.FC<ProductCardProps & { index: number }> = ({
   category,
   title,
   price,
   imageUrl,
   onClick,
+  index, // Add index prop
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(index < 3); // Set first 3 cards as visible immediately
 
   useEffect(() => {
+    // First 3 cards are already visible, no animation needed
+    if (index < 3) {
+      return;
+    }
+
+    // Use intersection observer for the rest
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -60,13 +67,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
         observer.unobserve(cardRef.current);
       }
     };
-  }, []);
+  }, [index]);
 
   return (
     <div
       ref={cardRef}
       className={`
-        transition-all duration-700 ease-out
+        ${index < 3 ? "opacity-100" : "transition-all duration-700 ease-out"}
         ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}
       `}
       onClick={onClick}
@@ -107,27 +114,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({ bandId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const productsPerPage = 12;
-  const [gridVisible, setGridVisible] = useState(false);
 
   const navigate = useNavigate();
 
   console.log("ProductGrid - Received bandId prop:", bandId);
-
-  // Simple timeout to show content after everything is loaded
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setGridVisible(true);
-    }, 300); // Short delay to ensure DOM is ready
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Also show when products are loaded
-  useEffect(() => {
-    if (!loading && products.length > 0) {
-      setGridVisible(true);
-    }
-  }, [loading, products.length]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -224,7 +214,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ bandId }) => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-16 transition-all duration-700 ease-out opacity-100 translate-y-0">
+      <div className="flex justify-center items-center py-16">
         <div className="text-lg">Loading products...</div>
         <div className="text-sm text-gray-500 mt-2">
           Band ID: {bandId || "Not provided"}
@@ -235,7 +225,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ bandId }) => {
 
   if (error) {
     return (
-      <div className="flex justify-center items-center py-16 transition-all duration-700 ease-out opacity-100 translate-y-0">
+      <div className="flex justify-center items-center py-16">
         <div className="text-lg text-red-500">Error: {error}</div>
         <div className="text-sm text-gray-500 mt-2">
           Band ID: {bandId || "Not provided"}
@@ -246,7 +236,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ bandId }) => {
 
   if (products.length === 0) {
     return (
-      <div className="flex justify-center items-center py-16 transition-all duration-700 ease-out opacity-100 translate-y-0">
+      <div className="flex justify-center items-center py-16">
         <div className="text-lg text-gray-500">
           No products found for this band
         </div>
@@ -258,21 +248,17 @@ const ProductGrid: React.FC<ProductGridProps> = ({ bandId }) => {
   }
 
   return (
-    <div
-      className={`
-      min-h-screen transition-all duration-1000 ease-out
-      ${gridVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}
-    `}
-    >
+    <div className="min-h-screen">
       <div className="">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {currentProducts.map((product) => (
+          {currentProducts.map((product, index) => (
             <ProductCard
               key={product.product_id}
               category={product.category}
               title={product.name}
               price={formatPrice(product.price)}
               imageUrl={product.image.url}
+              index={index} // Pass the index
               onClick={() => handleProductClick(product.product_id)}
             />
           ))}
@@ -280,12 +266,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ bandId }) => {
 
         {/* Pagination Component */}
         {totalPages > 1 && (
-          <div
-            className={`
-            flex justify-center mt-8 transition-all duration-700 ease-out delay-300
-            ${gridVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}
-          `}
-          >
+          <div className="flex justify-center mt-8">
             <Pagination
               total={totalPages}
               page={currentPage}
