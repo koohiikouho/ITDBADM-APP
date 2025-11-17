@@ -52,7 +52,7 @@ export const usersController = new Elysia({ prefix: "/users" })
         return { error: "User not found." };
       }
 
-      const username = rows[0].username;
+      const username = rows[0]?.username;
 
       // Return username
       return { username: username };
@@ -60,10 +60,13 @@ export const usersController = new Elysia({ prefix: "/users" })
       console.error("Error fetching username", error);
 
       // Handle JWT verification errors
-      if (error.message.includes("jwt") || error.message.includes("token")) {
-        set.status = 401;
-        return { error: "Invalid authentication token." };
+      if (error instanceof Error) {
+        if (error.message.includes("jwt") || error.message.includes("token")) {
+          set.status = 401;
+          return { error: "Invalid authentication token." };
+        }
       }
+        
 
       set.status = 500;
       return { error: "Internal Server Error while retrieving username." };

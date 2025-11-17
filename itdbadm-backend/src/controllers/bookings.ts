@@ -4,6 +4,13 @@ import { dbPool } from "../db";
 import mysql from "mysql2/promise";
 
 export const bookingsController = new Elysia({ prefix: "/bookings" })
+  .use(
+    jwt({
+      name: "jwt",
+      secret: process.env.JWT_SECRET as string,
+      exp: "1d",
+    })
+  )
 
   ///
   .get("/user", async ({ headers, set, jwt }) => {
@@ -72,7 +79,9 @@ export const bookingsController = new Elysia({ prefix: "/bookings" })
         return { error: "Booking offer not found." };
       }
 
-      if (verifyRows[0].user_id !== userId) {
+
+      // shutting up undefined error
+      if (verifyRows[0]?.user_id !== userId) {
         set.status = 403;
         return { error: "You can only delete your own booking offers." };
       }

@@ -2,8 +2,17 @@ import { Elysia, t } from "elysia";
 import { dbPool } from "../db";
 import mysql from "mysql2/promise";
 
-export const cartsController = new Elysia({ prefix: "/carts" })
+import { jwt } from "@elysiajs/jwt"
 
+export const cartsController = new Elysia({ prefix: "/carts" })
+  .use(
+    jwt({
+      name: "jwt",
+      secret: process.env.JWT_SECRET as string,
+      exp: "1d",
+    })
+  )
+  
   //GET all products from a user's cart
   .get("/user", async ({ headers, set, jwt }) => {
     const token = headers.authorization?.split(" ")[1];
@@ -114,7 +123,9 @@ export const cartsController = new Elysia({ prefix: "/carts" })
           return { error: "Product not found" };
         }
 
-        if (productRows[0].is_deleted) {
+
+        // shutting up undefined error
+        if (productRows[0]?.is_deleted) {
           set.status = 400;
           return { error: "Product is no longer available" };
         }
@@ -149,7 +160,7 @@ export const cartsController = new Elysia({ prefix: "/carts" })
             message: "Cart item quantity updated",
             action: "incremented",
             product_id,
-            new_quantity: updatedCartItems[0].quantity,
+            new_quantity: updatedCartItems[0]?.quantity,  // shutting up undefined error
           };
         } else {
           // Item doesn't exist, insert new record
@@ -228,7 +239,7 @@ export const cartsController = new Elysia({ prefix: "/carts" })
               message: "Item removed from cart",
               action: "removed",
               product_id,
-              previous_quantity: existingCartItems[0].quantity,
+              previous_quantity: existingCartItems[0]?.quantity,  // shutting up undefined error
             };
           } else {
             // Update to the new quantity
@@ -245,7 +256,7 @@ export const cartsController = new Elysia({ prefix: "/carts" })
               message: "Cart item quantity updated",
               action: "updated",
               product_id,
-              previous_quantity: existingCartItems[0].quantity,
+              previous_quantity: existingCartItems[0]?.quantity, // shutting up undefined error
               new_quantity: new_quantity,
             };
           }
@@ -260,7 +271,7 @@ export const cartsController = new Elysia({ prefix: "/carts" })
             message: "Item removed from cart",
             action: "deleted",
             product_id,
-            previous_quantity: existingCartItems[0].quantity,
+            previous_quantity: existingCartItems[0]?.quantity,  // shutting up undefined error
           };
         } else {
           set.status = 400;
