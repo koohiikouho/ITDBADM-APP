@@ -77,7 +77,7 @@ export default function ManageProductsPage() {
         if (!confirm("Are you sure you want to delete this product?")) return;
 
         try {
-            const response = await fetch(`${apiClient.baseURL}/products/${productId}`, {
+            const response = await fetch(`${apiClient.baseURL}/band-manager/products/${productId}`, {
                 method: "DELETE",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -87,6 +87,9 @@ export default function ManageProductsPage() {
             if (response.ok) {
                 setProducts(products.filter(p => p.product_id !== productId));
                 alert("Product deleted successfully");
+            } else {
+                const errorData = await response.json();
+                alert(`Error deleting product: ${errorData.error || "Unknown error"}`);
             }
         } catch (error) {
             console.error("Error deleting product:", error);

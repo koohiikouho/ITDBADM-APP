@@ -29,6 +29,8 @@ import EditBandPage from "./pages/bandmanager/edit-band";
 import ManageProductsPage from "./pages/bandmanager/manage-products";
 import SchedulePage from "./pages/bandmanager/schedule";
 import AnalyticsPage from "./pages/bandmanager/analytics";
+import EditProductPage from "./pages/bandmanager/edit-product";
+
 
 function App() {
   return (
@@ -55,7 +57,7 @@ function App() {
         <Route element={<EditBandPage />} path="/bandmanager/edit-band" />
         <Route element={<CreateProductPage />} path="/bandmanager/create-product" />
         <Route element={<ManageProductsPage />} path="/bandmanager/manage-products" />
-        <Route element={<ManageProductsPage />} path="/bandmanager/edit-product/:productId" />
+        <Route element={<EditProductPage />} path="/bandmanager/edit-product/:productId" />
         <Route element={<SchedulePage />} path="/bandmanager/schedule" />
         <Route element={<AnalyticsPage />} path="/bandmanager/analytics" />
 

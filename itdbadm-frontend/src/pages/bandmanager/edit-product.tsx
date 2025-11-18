@@ -5,24 +5,35 @@ import {
     Button,
     Card,
     CardBody,
-    CardHeader,
     Select,
     SelectItem
 } from "@heroui/react";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Save, Upload } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Save } from "lucide-react";
 import { apiClient } from "@/lib/api";
 
-export default function CreateProductPage() {
+interface Product {
+    product_id: number;
+    name: string;
+    price: string;
+    description: string;
+    category: string;
+    image: {
+        url: string[];
+    };
+}
+
+export default function EditProductPage() {
     const navigate = useNavigate();
+    const { productId } = useParams();
     const [loading, setLoading] = useState(false);
+    const [product, setProduct] = useState<Product | null>(null);
     const [formData, setFormData] = useState({
         name: "",
         price: "",
         description: "",
         category: "",
-        images: [] as File[]
     });
 
     const categories = [
@@ -32,77 +43,81 @@ export default function CreateProductPage() {
         { key: "Digital Music", label: "Digital Music" }
     ];
 
+    useEffect(() => {
+        fetchProduct();
+    }, [productId]);
+
+    const fetchProduct = async () => {
+        try {
+            // You'll need to add a GET endpoint for single product
+            const response = await fetch(`${apiClient.baseURL}/products/${productId}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setProduct(data);
+                setFormData({
+                    name: data.name,
+                    price: data.price,
+                    description: data.description,
+                    category: data.category,
+                });
+            }
+        } catch (error) {
+            console.error("Error fetching product:", error);
+        }
+    };
 
     const handleSubmit = async () => {
-        if (!formData.name || !formData.price || !formData.category) {
-            alert("Please fill in all required fields");
-            return;
-        }
-
-        // Validate price is a valid number
-        const priceValue = parseFloat(formData.price);
-        if (isNaN(priceValue) || priceValue <= 0) {
-            alert("Please enter a valid price");
-            return;
-        }
-
         setLoading(true);
         try {
-            const submitData = {
-                name: formData.name,
-                price: priceValue.toString(), // Ensure it's a string
-                description: formData.description,
-                category: formData.category,
-            };
-
-            console.log("Submitting data:", submitData); // Debug log
-
-            const response = await fetch(`${apiClient.baseURL}/band-manager/products`, {
-                method: "POST",
+            const response = await fetch(`${apiClient.baseURL}/band-manager/products/${productId}`, {
+                method: "PUT",
                 headers: {
                     "Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(submitData),
+                body: JSON.stringify(formData),
             });
 
             if (response.ok) {
-                const result = await response.json();
-                alert("Product created successfully!");
+                alert("Product updated successfully!");
                 navigate("/bandmanager/manage-products");
             } else {
                 const errorData = await response.json();
-                console.error("Server error response:", errorData);
-                alert(`Error creating product: ${errorData.error || "Unknown error"}`);
+                alert(`Error updating product: ${errorData.error || "Unknown error"}`);
             }
         } catch (error) {
-            console.error("Error creating product:", error);
-            alert("Error creating product - check console for details");
+            console.error("Error updating product:", error);
+            alert("Error updating product");
         } finally {
             setLoading(false);
         }
     };
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            setFormData({
-                ...formData,
-                images: Array.from(e.target.files)
-            });
-        }
-    };
+    if (!product) {
+        return (
+            <DefaultLayout>
+                <div className="flex justify-center items-center py-16">
+                    <div className="text-lg">Loading product...</div>
+                </div>
+            </DefaultLayout>
+        );
+    }
 
     return (
         <DefaultLayout>
             <div className="max-w-2xl mx-auto p-6">
                 <div className="mb-6">
-                    <h1 className="text-3xl font-bold">Create New Product</h1>
-                    <p className="text-gray-600">Add new merchandise to your band's store</p>
+                    <h1 className="text-3xl font-bold">Edit Product</h1>
+                    <p className="text-gray-600">Update product information</p>
                 </div>
 
                 <Card>
                     <CardBody className="space-y-6">
-                        {/* Product Name */}
                         <Input
                             label="Product Name"
                             value={formData.name}
@@ -111,7 +126,6 @@ export default function CreateProductPage() {
                             isRequired
                         />
 
-                        {/* Price */}
                         <Input
                             label="Price (JPY)"
                             type="number"
@@ -121,7 +135,6 @@ export default function CreateProductPage() {
                             isRequired
                         />
 
-                        {/* Category */}
                         <Select
                             label="Category"
                             selectedKeys={[formData.category]}
@@ -137,7 +150,6 @@ export default function CreateProductPage() {
                             ))}
                         </Select>
 
-                        {/* Description */}
                         <Textarea
                             label="Description"
                             value={formData.description}
@@ -146,41 +158,6 @@ export default function CreateProductPage() {
                             minRows={4}
                         />
 
-                        {/* Image Upload */}
-                        <div>
-                            <label className="block text-sm font-medium mb-2">
-                                Product Images
-                            </label>
-                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                                <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                                <p className="text-sm text-gray-600 mb-2">
-                                    Drag and drop images here, or click to select
-                                </p>
-                                <input
-                                    type="file"
-                                    multiple
-                                    accept="image/*"
-                                    onChange={handleImageChange}
-                                    className="hidden"
-                                    id="image-upload"
-                                />
-                                <Button
-                                    as="label"
-                                    htmlFor="image-upload"
-                                    variant="flat"
-                                    size="sm"
-                                >
-                                    Select Images
-                                </Button>
-                                {formData.images.length > 0 && (
-                                    <p className="text-sm text-green-600 mt-2">
-                                        {formData.images.length} image(s) selected
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Submit Button */}
                         <div className="flex gap-4 justify-end">
                             <Button
                                 variant="light"
@@ -195,7 +172,7 @@ export default function CreateProductPage() {
                                 startContent={!loading && <Save className="h-4 w-4" />}
                                 isDisabled={!formData.name || !formData.price || !formData.category}
                             >
-                                {loading ? "Creating..." : "Create Product"}
+                                {loading ? "Updating..." : "Update Product"}
                             </Button>
                         </div>
                     </CardBody>
