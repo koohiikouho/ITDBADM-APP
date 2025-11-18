@@ -58,7 +58,7 @@
 
 //       if (token && !JWTManager.isTokenExpired(token)) {
 //         const payload = JWTManager.getTokenPayload(token);
-        
+
 //         try {
 //             // Fetch username for display
 //             const response = await fetch(apiClient.baseURL + `/users/username`, {
@@ -66,7 +66,7 @@
 //                   Authorization: `Bearer ${token}`,
 //                 },
 //             });
-            
+
 //             let username = "User";
 //             if (response.ok) {
 //                 const data = await response.json();
@@ -89,7 +89,7 @@
 //     };
 
 //     checkAuth();
-    
+
 //     // Listen for storage changes (login/logout in other tabs)
 //     window.addEventListener("storage", checkAuth);
 //     return () => window.removeEventListener("storage", checkAuth);
@@ -148,7 +148,7 @@
 //             <p className="font-bold text-inherit">Band N Brand</p>
 //           </Link>
 //         </NavbarBrand>
-        
+
 //         {/* Desktop Navigation Links */}
 //         <div className="hidden lg:flex gap-4 justify-start ml-2">
 //           {navLinks.map((item) => (
@@ -172,7 +172,7 @@
 //       <NavbarContent className="hidden sm:flex basis-1/5 sm:basis-full" justify="end">
 //         <NavbarItem className="hidden sm:flex gap-2">
 //           <ThemeSwitch />
-          
+
 //           {/* Only show Cart for Customers (or Guests) */}
 //           {isCustomer && (
 //             <Link href="/cart" title="Cart">
@@ -211,7 +211,7 @@
 //                 <DropdownItem key="profile" href={isManager ? "/bandmanager/edit-band" : "/me"} startContent={<UserIcon className="w-4 h-4" />}>
 //                   {isManager ? "Band Profile" : "Profile Settings"}
 //                 </DropdownItem>
-                
+
 //                 {/* Customer Specific Items */}
 //                 {isCustomer ? (
 //                     <DropdownItem key="orders" href="/orders" startContent={<DocumentTextIcon className="w-4 h-4" />}>
@@ -228,7 +228,7 @@
 //                       Liked Products
 //                     </DropdownItem>
 //                 ) : null}
-                
+
 //                 {/* Manager Specific Items */}
 //                 {isManager ? (
 //                   <DropdownItem key="products" href="/bandmanager/manage-products" startContent={<Package className="w-4 h-4" />}>
@@ -292,9 +292,9 @@
 //               </Link>
 //             </NavbarMenuItem>
 //           ))}
-          
+
 //           <div className="my-2 border-t border-default-200/50" />
-          
+
 //           {user.isAuthenticated ? (
 //             <>
 //               <NavbarMenuItem>
@@ -302,7 +302,7 @@
 //                    {isManager ? "Band Profile" : "Profile Settings"}
 //                 </Link>
 //               </NavbarMenuItem>
-              
+
 //               {isCustomer && (
 //                   <>
 //                     <NavbarMenuItem>
@@ -424,12 +424,12 @@ export const RoleBasedNavbar = () => {
     fetchBranches();
 
     const handleStorageChange = (e: StorageEvent) => {
-        // Refresh auth if token changes
-        if (e.key === "accessToken" || e.key === null) checkAuth();
-        // Refresh preferences if they change in another tab/component
-        if (e.key === "selectedBranch" || e.key === "selectedCurrency") initializePreferences();
+      // Refresh auth if token changes
+      if (e.key === "accessToken" || e.key === null) checkAuth();
+      // Refresh preferences if they change in another tab/component
+      if (e.key === "selectedBranch" || e.key === "selectedCurrency") initializePreferences();
     };
-    
+
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
@@ -439,27 +439,27 @@ export const RoleBasedNavbar = () => {
 
     if (token && !JWTManager.isTokenExpired(token)) {
       const payload = JWTManager.getTokenPayload(token);
-      
-      try {
-          const response = await fetch(apiClient.baseURL + `/users/username`, {
-              headers: { Authorization: `Bearer ${token}` },
-          });
-          
-          let username = "User";
-          if (response.ok) {
-              const data = await response.json();
-              username = data.username;
-          }
 
-          setUser({
-            username: username,
-            role_id: payload?.role_id || 3,
-            isAuthenticated: true,
-          });
+      try {
+        const response = await fetch(apiClient.baseURL + `/users/username`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        let username = "User";
+        if (response.ok) {
+          const data = await response.json();
+          username = data.username;
+        }
+
+        setUser({
+          username: username,
+          role_id: payload?.role_id || 3,
+          isAuthenticated: true,
+        });
 
       } catch (error) {
-          console.error("Auth check failed", error);
-          handleLogout();
+        console.error("Auth check failed", error);
+        handleLogout();
       }
     } else {
       setUser({ username: "", role_id: null, isAuthenticated: false });
@@ -469,12 +469,12 @@ export const RoleBasedNavbar = () => {
   const initializePreferences = () => {
     const savedBranch = localStorage.getItem("selectedBranch") || "";
     const savedCurrency = localStorage.getItem("selectedCurrency") || "JPY";
-    
+
     setSelectedBranch(savedBranch);
     setSelectedCurrency(savedCurrency);
-    
+
     if (!localStorage.getItem("selectedCurrency")) {
-        localStorage.setItem("selectedCurrency", "JPY");
+      localStorage.setItem("selectedCurrency", "JPY");
     }
   };
 
@@ -485,12 +485,12 @@ export const RoleBasedNavbar = () => {
       if (response.ok) {
         const data = await response.json();
         setBranches(data);
-        
+
         // Set default branch if none selected
         if (data.length > 0 && !localStorage.getItem("selectedBranch")) {
-            const defaultBranch = data[0].branch_id.toString();
-            setSelectedBranch(defaultBranch);
-            localStorage.setItem("selectedBranch", defaultBranch);
+          const defaultBranch = data[0].branch_id.toString();
+          setSelectedBranch(defaultBranch);
+          localStorage.setItem("selectedBranch", defaultBranch);
         }
       }
     } catch (error) {
@@ -523,7 +523,7 @@ export const RoleBasedNavbar = () => {
   };
 
   // --- Helpers ---
-  
+
   const getCurrentBranchName = () => {
     if (branchesLoading) return "Loading...";
     const branch = branches.find((b) => b.branch_id.toString() === selectedBranch);
@@ -548,15 +548,16 @@ export const RoleBasedNavbar = () => {
   const bandManagerLinks = [
     { label: "Dashboard", href: "/bandmanager/dashboard" },
     { label: "Manage Band", href: "/bandmanager/edit-band" },
-    { label: "View Orders", href: "/bandmanager/orders" }, 
-    { label: "Booking Offers", href: "/bandmanager/bookings" }, 
+    { label: "View Orders", href: "/bandmanager/orders" },
+    { label: "Booking Offers", href: "/bandmanager/bookings" },
   ];
 
   // Change the admin links once a view has been established
   const adminLinks = [
-    { label: "Analytics", href: "/bandmanager/analytics" },
-    { label: "Manage Users", href: "/admin/users" },
-    { label: "Manage Products", href: "/bandmanager/manage-products" },
+    { label: "Dashboard", href: "/admin/dashboard" },
+    { label: "Users", href: "/admin/users" },
+    { label: "Products", href: "/admin/products" },
+    { label: "Analytics", href: "/admin/analytics" },
   ];
 
   let navLinks = customerLinks;
@@ -568,9 +569,9 @@ export const RoleBasedNavbar = () => {
   const isAdmin = user.role_id === 1;
 
   return (
-    <HeroUINavbar 
-      maxWidth="xl" 
-      position="sticky" 
+    <HeroUINavbar
+      maxWidth="xl"
+      position="sticky"
       onMenuOpenChange={setIsMenuOpen}
     >
       {/* --- LEFT: Logo & Main Links --- */}
@@ -581,7 +582,7 @@ export const RoleBasedNavbar = () => {
             <p className="font-bold text-inherit">Band N Brand</p>
           </Link>
         </NavbarBrand>
-        
+
         <div className="hidden lg:flex gap-4 justify-start ml-2">
           {navLinks.map((item) => (
             <NavbarItem key={item.href}>
@@ -602,7 +603,7 @@ export const RoleBasedNavbar = () => {
 
       {/* --- RIGHT (Desktop): Preferences, Cart, Profile --- */}
       <NavbarContent className="hidden sm:flex basis-1/5 sm:basis-full" justify="end">
-        
+
         {/* Branch & Currency Selectors (Only for Customers) */}
         {isCustomer && (
           <>
@@ -664,7 +665,7 @@ export const RoleBasedNavbar = () => {
 
         <NavbarItem className="hidden sm:flex gap-2">
           <ThemeSwitch />
-          
+
           {isCustomer && (
             <Link href="/cart" title="Cart">
               <CartIcon className="text-default-500" />
@@ -684,10 +685,10 @@ export const RoleBasedNavbar = () => {
                     size="sm"
                     name={user.username}
                     classNames={{
-                      base: isAdmin 
+                      base: isAdmin
                         ? "bg-gradient-to-br from-red-500 to-orange-500"
-                        : isManager 
-                          ? "bg-gradient-to-br from-purple-500 to-indigo-500" 
+                        : isManager
+                          ? "bg-gradient-to-br from-purple-500 to-indigo-500"
                           : "bg-gradient-to-br from-[#FFB457] to-[#FF705B]",
                       icon: "text-white/90",
                     }}
@@ -701,39 +702,39 @@ export const RoleBasedNavbar = () => {
                 <DropdownItem key="profile" href={isManager ? "/bandmanager/edit-band" : "/me"} startContent={<UserIcon className="w-4 h-4" />}>
                   {isManager ? "Band Profile" : "Profile Settings"}
                 </DropdownItem>
-                
+
                 {isCustomer ? (
-                    <DropdownItem key="orders" href="/orders" startContent={<DocumentTextIcon className="w-4 h-4" />}>
-                      My Orders
-                    </DropdownItem>
-                ) : null }
+                  <DropdownItem key="orders" href="/orders" startContent={<DocumentTextIcon className="w-4 h-4" />}>
+                    My Orders
+                  </DropdownItem>
+                ) : null}
                 {isCustomer ? (
-                    <DropdownItem key="offers" href="/sent-offers" startContent={<MusicalNoteIcon className="w-4 h-4" />}>
-                      My Offers
-                    </DropdownItem>
-                ) : null }
+                  <DropdownItem key="offers" href="/sent-offers" startContent={<MusicalNoteIcon className="w-4 h-4" />}>
+                    My Offers
+                  </DropdownItem>
+                ) : null}
                 {isCustomer ? (
-                    <DropdownItem key="likes" href="/likes" startContent={<HeartFilledIcon className="w-4 h-4" />}>
-                      Liked Products
-                    </DropdownItem>
-                ) : null }
-                
+                  <DropdownItem key="likes" href="/likes" startContent={<HeartFilledIcon className="w-4 h-4" />}>
+                    Liked Products
+                  </DropdownItem>
+                ) : null}
+
                 {isManager ? (
                   <DropdownItem key="products" href="/bandmanager/manage-products" startContent={<Package className="w-4 h-4" />}>
                     Manage Products
                   </DropdownItem>
-                ) : null }
+                ) : null}
 
                 {isAdmin ? (
                   <DropdownItem key="analytics" href="/bandmanager/analytics" startContent={<BarChart3 className="w-4 h-4" />}>
                     Analytics
                   </DropdownItem>
-                ) : null }
-                 {isAdmin ? (
+                ) : null}
+                {isAdmin ? (
                   <DropdownItem key="users" href="/admin/users" startContent={<Users className="w-4 h-4" />}>
                     All Users
                   </DropdownItem>
-                ) : null }
+                ) : null}
 
                 <DropdownItem key="logout" color="danger" startContent={<LogoutIcon className="w-4 h-4" />} onPress={handleLogout}>
                   Logout
@@ -755,7 +756,7 @@ export const RoleBasedNavbar = () => {
 
       {/* --- RIGHT (Mobile): Preferences & Menu --- */}
       <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
-        
+
         {/* Mobile Branch & Currency (Customers Only) */}
         {isCustomer && (
           <>
@@ -805,13 +806,13 @@ export const RoleBasedNavbar = () => {
         )}
 
         <ThemeSwitch />
-        
+
         {isCustomer && (
-           <Link href="/cart" className="mr-2">
-             <CartIcon className="text-default-500" size={20} />
-           </Link>
+          <Link href="/cart" className="mr-2">
+            <CartIcon className="text-default-500" size={20} />
+          </Link>
         )}
-        
+
         <NavbarMenuToggle />
       </NavbarContent>
 
@@ -830,40 +831,40 @@ export const RoleBasedNavbar = () => {
               </Link>
             </NavbarMenuItem>
           ))}
-          
+
           <div className="my-2 border-t border-default-200/50" />
-          
+
           {user.isAuthenticated ? (
             <>
               <NavbarMenuItem>
                 <Link href={isManager ? "/bandmanager/edit-band" : "/me"} size="lg" color="secondary">
-                   {isManager ? "Band Profile" : "Profile Settings"}
+                  {isManager ? "Band Profile" : "Profile Settings"}
                 </Link>
               </NavbarMenuItem>
-              
+
               {isCustomer && (
-                  <>
-                    <NavbarMenuItem>
-                        <Link href="/orders" size="lg" color="foreground">My Orders</Link>
-                    </NavbarMenuItem>
-                    <NavbarMenuItem>
-                        <Link href="/sent-offers" size="lg" color="foreground">My Offers</Link>
-                    </NavbarMenuItem>
-                    <NavbarMenuItem>
-                        <Link href="/likes" size="lg" color="foreground">Liked Products</Link>
-                    </NavbarMenuItem>
-                  </>
+                <>
+                  <NavbarMenuItem>
+                    <Link href="/orders" size="lg" color="foreground">My Orders</Link>
+                  </NavbarMenuItem>
+                  <NavbarMenuItem>
+                    <Link href="/sent-offers" size="lg" color="foreground">My Offers</Link>
+                  </NavbarMenuItem>
+                  <NavbarMenuItem>
+                    <Link href="/likes" size="lg" color="foreground">Liked Products</Link>
+                  </NavbarMenuItem>
+                </>
               )}
 
               {isAdmin && (
-                 <>
-                   <NavbarMenuItem>
-                       <Link href="/bandmanager/analytics" size="lg" color="foreground">Analytics</Link>
-                   </NavbarMenuItem>
-                   <NavbarMenuItem>
-                       <Link href="/admin/users" size="lg" color="foreground">Manage Users</Link>
-                   </NavbarMenuItem>
-                 </>
+                <>
+                  <NavbarMenuItem>
+                    <Link href="/bandmanager/analytics" size="lg" color="foreground">Analytics</Link>
+                  </NavbarMenuItem>
+                  <NavbarMenuItem>
+                    <Link href="/admin/users" size="lg" color="foreground">Manage Users</Link>
+                  </NavbarMenuItem>
+                </>
               )}
 
               <NavbarMenuItem>
