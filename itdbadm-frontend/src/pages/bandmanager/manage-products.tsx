@@ -12,14 +12,21 @@ import {
     TableRow,
     TableCell,
     Pagination,
-    Badge
+    Badge,
+    Modal,
+    ModalContent,
+    ModalHeader,
+    ModalBody,
+    ModalFooter,
+    useDisclosure
 } from "@heroui/react";
 import {
     Plus,
     Edit,
     Trash2,
     Search,
-    Package
+    Package,
+    Archive
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -34,7 +41,7 @@ interface Product {
     image: {
         url: string[];
     };
-    stock?: number;
+    stock: number;
 }
 
 export default function ManageProductsPage() {
@@ -43,6 +50,13 @@ export default function ManageProductsPage() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
+    
+    // Stock Modal State
+    const { isOpen, onOpen, onClose } = useDisclosure();
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [newStock, setNewStock] = useState("0");
+    const [updatingStock, setUpdatingStock] = useState(false);
+    
     const productsPerPage = 10;
 
     useEffect(() => {
@@ -60,35 +74,8 @@ export default function ManageProductsPage() {
 
             if (response.ok) {
                 const productsData = await response.json();
-
-                // Fetch stock information for each product
-                const productsWithStock = await Promise.all(
-                    productsData.map(async (product: Product) => {
-                        try {
-                            const stockResponse = await fetch(`${apiClient.baseURL}/inventory/${product.product_id}`, {
-                                headers: {
-                                    Authorization: `Bearer ${token}`,
-                                },
-                            });
-
-                            if (stockResponse.ok) {
-                                const stockData = await stockResponse.json();
-                                return {
-                                    ...product,
-                                    stock: stockData.quantity || 0
-                                };
-                            } else {
-                                console.warn(`Could not fetch stock for product ${product.product_id}`);
-                                return { ...product, stock: 0 };
-                            }
-                        } catch (error) {
-                            console.error(`Error fetching stock for product ${product.product_id}:`, error);
-                            return { ...product, stock: 0 };
-                        }
-                    })
-                );
-
-                setProducts(productsWithStock);
+                // The API now returns stock in the main object, so we don't need extra fetches
+                setProducts(productsData);
             } else {
                 console.error("Error fetching products:", response.status);
             }
@@ -121,6 +108,53 @@ export default function ManageProductsPage() {
         } catch (error) {
             console.error("Error deleting product:", error);
             alert("Error deleting product");
+        }
+    };
+
+    const openStockModal = (product: Product) => {
+        setSelectedProduct(product);
+        setNewStock(product.stock.toString());
+        onOpen();
+    };
+
+    const handleUpdateStock = async () => {
+        if (!selectedProduct) return;
+        
+        const stockVal = parseInt(newStock);
+        if (isNaN(stockVal) || stockVal < 0) {
+            alert("Please enter a valid stock quantity");
+            return;
+        }
+
+        setUpdatingStock(true);
+        try {
+             const token = localStorage.getItem("accessToken");
+             const response = await fetch(`${apiClient.baseURL}/band-manager/products/${selectedProduct.product_id}/stock`, {
+                 method: "PATCH",
+                 headers: {
+                     "Authorization": `Bearer ${token}`,
+                     "Content-Type": "application/json"
+                 },
+                 body: JSON.stringify({ stock: stockVal })
+             });
+
+             if (response.ok) {
+                 // Update local state
+                 setProducts(products.map(p => 
+                     p.product_id === selectedProduct.product_id 
+                     ? { ...p, stock: stockVal } 
+                     : p
+                 ));
+                 onClose();
+             } else {
+                 const err = await response.json();
+                 alert(`Failed to update stock: ${err.error}`);
+             }
+        } catch (e) {
+            console.error(e);
+            alert("Error updating stock");
+        } finally {
+            setUpdatingStock(false);
         }
     };
 
@@ -225,13 +259,21 @@ export default function ManageProductsPage() {
                                         <TableCell>
                                             <Badge
                                                 variant="flat"
-                                                color={product.stock && product.stock > 0 ? "success" : "danger"}
+                                                color={product.stock > 0 ? "success" : "danger"}
                                             >
-                                                {product.stock || 0} in stock
+                                                {product.stock} in stock
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex space-x-2">
+                                                <Button
+                                                    size="sm"
+                                                    variant="light"
+                                                    color="secondary"
+                                                    onPress={() => openStockModal(product)}
+                                                >
+                                                    <Archive className="h-4 w-4" />
+                                                </Button>
                                                 <Button
                                                     size="sm"
                                                     variant="light"
@@ -266,6 +308,32 @@ export default function ManageProductsPage() {
                         )}
                     </CardBody>
                 </Card>
+
+                {/* Quick Stock Update Modal */}
+                <Modal isOpen={isOpen} onClose={onClose}>
+                    <ModalContent>
+                        <ModalHeader>Update Stock: {selectedProduct?.name}</ModalHeader>
+                        <ModalBody>
+                            <Input
+                                label="Stock Quantity"
+                                type="number"
+                                value={newStock}
+                                onChange={(e) => setNewStock(e.target.value)}
+                                min="0"
+                            />
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button variant="light" onPress={onClose}>Cancel</Button>
+                            <Button 
+                                color="primary" 
+                                onPress={handleUpdateStock}
+                                isLoading={updatingStock}
+                            >
+                                Update Stock
+                            </Button>
+                        </ModalFooter>
+                    </ModalContent>
+                </Modal>
             </div>
         </DefaultLayout>
     );

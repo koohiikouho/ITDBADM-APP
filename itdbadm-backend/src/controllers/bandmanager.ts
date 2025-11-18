@@ -191,7 +191,7 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
         }
     })
 
-    // In the POST /products endpoint, update the body validation and logic:
+    // Create Product
     .post(
         "/products",
         async ({ headers, set, jwt, body }) => {
@@ -297,7 +297,7 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
         }
     )
 
-    // In the PUT /products/:id endpoint, update to handle stock:
+    // Update Product
     .put(
         "/products/:id",
         async ({ headers, set, jwt, params, body }) => {
@@ -388,6 +388,72 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
                 description: t.String(),
                 category: t.String(),
                 stock: t.Union([t.String(), t.Number()]), // Add stock field
+            })
+        }
+    )
+    
+    // Update Product Stock Only
+    .patch(
+        "/products/:id/stock",
+        async ({ headers, set, jwt, params, body }) => {
+            const token = headers.authorization?.split(" ")[1];
+            const payload = await jwt.verify(token);
+
+            if (!payload) {
+                set.status = 401;
+                return { error: "Unauthorized" };
+            }
+
+            const userId = payload.id;
+            const productId = params.id;
+            const { stock } = body;
+
+            const stockValue = typeof stock === 'string' ? parseInt(stock) : stock;
+
+            if (isNaN(stockValue) || stockValue < 0) {
+                set.status = 400;
+                return { error: "Invalid stock quantity" };
+            }
+
+            const connection = await dbPool.getConnection();
+
+            try {
+                // Verify ownership
+                 const [authRows] = await connection.execute<mysql.RowDataPacket[]>(
+                    `SELECT p.product_id 
+                    FROM products p 
+                    JOIN bands b ON p.band_id = b.band_id 
+                    WHERE p.product_id = ? AND b.manager_id = ?`,
+                    [productId, userId]
+                );
+
+                if (authRows.length === 0) {
+                    set.status = 403;
+                    return { error: "You are not authorized to update this product" };
+                }
+
+                // Update inventory
+                const updateInventoryQuery = `
+                    UPDATE inventory 
+                    SET quantity = ? 
+                    WHERE product_id = ? AND branch_id = 1
+                `;
+
+                await connection.execute(updateInventoryQuery, [stockValue, productId]);
+
+                return { message: "Stock updated successfully", newStock: stockValue };
+
+            } catch (error) {
+                console.error("Error updating stock:", error);
+                set.status = 500;
+                return { error: "Internal Server Error" };
+            } finally {
+                connection.release();
+            }
+        },
+        {
+            body: t.Object({
+                stock: t.Union([t.String(), t.Number()])
             })
         }
     )

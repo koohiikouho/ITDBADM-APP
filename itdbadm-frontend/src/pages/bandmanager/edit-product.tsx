@@ -64,8 +64,8 @@ export default function EditProductPage() {
             if (response.ok) {
                 const productData = await response.json();
 
-                // Fetch stock information - FIX: Make sure this endpoint returns the correct data
-                const stockResponse = await fetch(`${apiClient.baseURL}/inventory/${productId}`, {
+                // Correctly fetch stock using the band-manager endpoint
+                const stockResponse = await fetch(`${apiClient.baseURL}/band-manager/products/${productId}/stock`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -74,8 +74,7 @@ export default function EditProductPage() {
                 let stock = 0;
                 if (stockResponse.ok) {
                     const stockData = await stockResponse.json();
-                    // FIX: Handle different possible response structures
-                    stock = stockData.quantity || stockData.stock || 0;
+                    stock = stockData.stock || 0;
                 } else {
                     console.warn("Could not fetch stock data, using default 0");
                 }
@@ -86,7 +85,7 @@ export default function EditProductPage() {
                     price: productData.price?.toString() || "",
                     description: productData.description || "",
                     category: productData.category || "",
-                    stock: stock.toString(), // FIX: Ensure stock is properly set
+                    stock: stock.toString(),
                 });
             } else {
                 console.error("Error fetching product:", response.status);
