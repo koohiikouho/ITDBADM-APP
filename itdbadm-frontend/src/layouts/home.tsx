@@ -1,7 +1,27 @@
-import { Link } from "@heroui/link";
+// import { Link } from "@heroui/link";
 
-import { Navbar } from "@/components/navbars/navbar";
-import { UserNavbar } from "@/components/navbars/usernavbar";
+// import { Navbar } from "@/components/navbars/navbar";
+// import { UserNavbar } from "@/components/navbars/usernavbar";
+
+// export default function HomeLayout({
+//   children,
+// }: {
+//   children: React.ReactNode;
+// }) {
+//   return (
+//     <div className="">
+//       <div className="z-50">
+//         <UserNavbar />
+//       </div>
+
+//       {children}
+//     </div>
+//   );
+// }
+
+
+
+import { RoleBasedNavbar } from "@/components/navbars/roleBasedNavbar";
 
 export default function HomeLayout({
   children,
@@ -11,9 +31,8 @@ export default function HomeLayout({
   return (
     <div className="">
       <div className="z-50">
-        <UserNavbar />
+        <RoleBasedNavbar />
       </div>
-
       {children}
     </div>
   );
