@@ -72,7 +72,7 @@ export default function SchedulePage() {
             });
 
             if (response.ok) {
-                alert("Schedule updated successfully!");
+                console.log("Schedule updated successfully!");
             }
         } catch (error) {
             console.error("Error updating schedule:", error);

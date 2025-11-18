@@ -544,4 +544,162 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
             set.status = 500;
             return { error: "Internal Server Error while retrieving stats" };
         }
-    });
+    })
+
+    // GET /band-manager/schedule
+    .get("/schedule", async ({ headers, set, jwt }) => {
+        const token = headers.authorization?.split(" ")[1];
+        const payload = await jwt.verify(token);
+
+        if (!payload) {
+            set.status = 401;
+            return { error: "Unauthorized" };
+        }
+
+        const userId = payload.id;
+
+        try {
+            // 1. Get the band ID managed by the user
+            const [bandRows] = await dbPool.execute<mysql.RowDataPacket[]>(
+                "SELECT band_id FROM bands WHERE manager_id = ? AND is_deleted = 0",
+                [userId]
+            );
+
+            if (bandRows.length === 0) {
+                set.status = 404;
+                return { error: "No band found for this manager" };
+            }
+
+            const bandId = bandRows[0]?.band_id;
+
+            // 2. Fetch the schedule
+            const [scheduleRows] = await dbPool.execute<mysql.RowDataPacket[]>(
+                `SELECT monday, tuesday, wednesday, thursday, friday, saturday, sunday, vacation FROM schedule WHERE band_id = ?`,
+                [bandId]
+            );
+
+            if (scheduleRows.length === 0) {
+                // Return a default schedule if none exists yet
+                return {
+                    monday: true,
+                    tuesday: true,
+                    wednesday: true,
+                    thursday: true,
+                    friday: true,
+                    saturday: true,
+                    sunday: true,
+                    vacation: false
+                };
+            }
+
+            const schedule = scheduleRows[0];
+            // Convert MySQL tinyint(1) (0/1) to boolean
+            return {
+                monday: schedule?.monday === 1,
+                tuesday: schedule?.tuesday === 1,
+                wednesday: schedule?.wednesday === 1,
+                thursday: schedule?.thursday === 1,
+                friday: schedule?.friday === 1,
+                saturday: schedule?.saturday === 1,
+                sunday: schedule?.sunday === 1,
+                vacation: schedule?.vacation === 1,
+            };
+        } catch (error) {
+            console.error("Error fetching schedule:", error);
+            set.status = 500;
+            return { error: "Internal Server Error while retrieving schedule" };
+        }
+    })
+
+    // Update band schedule
+    // PUT /band-manager/schedule
+    .put(
+        "/schedule",
+        async ({ headers, set, jwt, body }) => {
+            const token = headers.authorization?.split(" ")[1];
+            const payload = await jwt.verify(token);
+
+            if (!payload) {
+                set.status = 401;
+                return { error: "Unauthorized" };
+            }
+
+            const userId = payload.id;
+            const { monday, tuesday, wednesday, thursday, friday, saturday, sunday, vacation } = body;
+
+            try {
+                // 1. Get the band ID managed by the user
+                const [bandRows] = await dbPool.execute<mysql.RowDataPacket[]>(
+                    "SELECT band_id FROM bands WHERE manager_id = ? AND is_deleted = 0",
+                    [userId]
+                );
+
+                if (bandRows.length === 0) {
+                    set.status = 404;
+                    return { error: "No band found for this manager" };
+                }
+
+                const bandId = bandRows[0]?.band_id;
+
+                // Helper to convert boolean to MySQL tinyint(1) (0 or 1)
+                const boolToTinyInt = (bool: boolean) => (bool ? 1 : 0);
+
+                // 2. Check if a schedule entry already exists
+                const [checkRows] = await dbPool.execute<mysql.RowDataPacket[]>(
+                    "SELECT band_id FROM schedule WHERE band_id = ?",
+                    [bandId]
+                );
+
+                if (checkRows.length === 0) {
+                    // If no schedule exists, insert a new entry
+                    const insertQuery = `
+                        INSERT INTO schedule (band_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, vacation)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    `;
+                    await dbPool.execute(insertQuery, [
+                        bandId,
+                        boolToTinyInt(monday),
+                        boolToTinyInt(tuesday),
+                        boolToTinyInt(wednesday),
+                        boolToTinyInt(thursday),
+                        boolToTinyInt(friday),
+                        boolToTinyInt(saturday),
+                        boolToTinyInt(sunday),
+                        boolToTinyInt(vacation),
+                    ]);
+                } else {
+                    // If a schedule exists, update the entry using the stored procedure
+                    await dbPool.execute(`CALL sp_update_band_schedule(?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
+                        bandId,
+                        boolToTinyInt(monday),
+                        boolToTinyInt(tuesday),
+                        boolToTinyInt(wednesday),
+                        boolToTinyInt(thursday),
+                        boolToTinyInt(friday),
+                        boolToTinyInt(saturday),
+                        boolToTinyInt(sunday),
+                        boolToTinyInt(vacation),
+                    ]);
+                }
+
+
+                return { message: "Schedule updated successfully" };
+            } catch (error) {
+                console.error("Error updating schedule:", error);
+                set.status = 500;
+                return { error: "Internal Server Error while updating schedule" };
+            }
+        },
+        {
+            body: t.Object({
+                monday: t.Boolean(),
+                tuesday: t.Boolean(),
+                wednesday: t.Boolean(),
+                thursday: t.Boolean(),
+                friday: t.Boolean(),
+                saturday: t.Boolean(),
+                sunday: t.Boolean(),
+                vacation: t.Boolean(),
+            }),
+        }
+    );
