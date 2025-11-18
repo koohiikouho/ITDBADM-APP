@@ -109,7 +109,7 @@ const CardGrid: React.FC = () => {
 
     if (selectedBranch) {
       filtered = cardData.filter(
-        (item) => item.branch.toString() === selectedBranch
+        (item) => item.branch && item.branch.toString() == selectedBranch
       );
     }
 

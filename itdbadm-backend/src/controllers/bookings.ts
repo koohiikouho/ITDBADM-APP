@@ -4,8 +4,17 @@ import { dbPool } from "../db";
 import mysql from "mysql2/promise";
 
 export const bookingsController = new Elysia({ prefix: "/bookings" })
+  .use(
+    jwt({
+      name: "jwt",
+      secret: process.env.JWT_SECRET as string,
+      exp: "1d",
+    })
+  )
 
-  ///
+  // User booking routes
+
+  // Get all bookings by a user
   .get("/user", async ({ headers, set, jwt }) => {
     const token = headers.authorization?.split(" ")[1];
     const payload = await jwt.verify(token);
@@ -40,8 +49,8 @@ export const bookingsController = new Elysia({ prefix: "/bookings" })
     }
   })
 
-  //delete
-  //
+  
+  // Delete a booking made by the owner user
   .delete("/:offer_id", async ({ headers, set, jwt, params }) => {
     const token = headers.authorization?.split(" ")[1];
     const payload = await jwt.verify(token);
@@ -72,7 +81,9 @@ export const bookingsController = new Elysia({ prefix: "/bookings" })
         return { error: "Booking offer not found." };
       }
 
-      if (verifyRows[0].user_id !== userId) {
+
+      // shutting up undefined error
+      if (verifyRows[0]?.user_id !== userId) {
         set.status = 403;
         return { error: "You can only delete your own booking offers." };
       }
@@ -99,6 +110,7 @@ export const bookingsController = new Elysia({ prefix: "/bookings" })
     }
   })
 
+  // Create a new booking offer 
   .post(
     "/",
     async ({ headers, set, jwt, body }) => {
@@ -200,4 +212,148 @@ export const bookingsController = new Elysia({ prefix: "/bookings" })
         event_details: t.String(),
       }),
     }
-  );
+  )
+
+  // Band manager routes
+
+  // GET /bookings/band - Get offers for the band managed by the user
+  .get("/band", async ({ headers, set, jwt }) => {
+    const token = headers.authorization?.split(" ")[1];
+    const payload = await jwt.verify(token);
+
+    if (!payload) {
+      set.status = 401;
+      return { error: "Unauthorized" };
+    }
+
+    const userId = payload.id;
+
+    try {
+      // 1. Get the band_id managed by this user
+      const [bandRows] = await dbPool.execute<mysql.RowDataPacket[]>(
+        `SELECT band_id FROM bands WHERE manager_id = ?`,
+        [userId]
+      );
+
+      if (bandRows.length === 0) {
+        set.status = 404;
+        return { message: "You do not manage any band." };
+      }
+
+      const bandId = bandRows[0]?.band_id;
+
+      // 2. Get offers for this band
+      const query = `
+        SELECT 
+          bo.offer_id, 
+          bo.user_id, 
+          u.username as user_name,
+          bo.booking_date, 
+          bo.description, 
+          bo.price, 
+          bo.status, 
+          bo.date_created 
+        FROM booking_offers bo
+        JOIN users u ON bo.user_id = u.user_id
+        WHERE bo.band_id = ?
+        ORDER BY bo.date_created DESC
+      `;
+
+      const [rows] = await dbPool.execute<mysql.RowDataPacket[]>(query, [
+        bandId,
+      ]);
+
+      if (rows.length === 0) {
+        set.status = 200;
+        return []; 
+      }
+
+      return rows;
+    } catch (error) {
+      console.error("Error fetching band bookings:", error);
+      set.status = 500;
+      return {
+        message: "Internal Server Error while retrieving band bookings.",
+      };
+    }
+  })
+
+  // POST /bookings/:id/accept - Accept an offer
+  .post("/:id/accept", async ({ params, headers, set, jwt }) => {
+    const token = headers.authorization?.split(" ")[1];
+    const payload = await jwt.verify(token);
+
+    if (!payload) {
+        set.status = 401;
+        return { error: "Unauthorized" };
+    }
+
+    const userId = payload.id;
+    const offerId = params.id;
+
+    try {
+        // Verify the user manages the band linked to this offer
+        const [authRows] = await dbPool.execute<mysql.RowDataPacket[]>(
+            `SELECT b.manager_id 
+             FROM booking_offers bo 
+             JOIN bands b ON bo.band_id = b.band_id 
+             WHERE bo.offer_id = ?`,
+            [offerId]
+        );
+
+        if (authRows.length === 0 || authRows[0]?.manager_id !== userId) {
+            set.status = 403;
+            return { error: "You are not authorized to accept this offer." };
+        }
+
+        // Call Stored Procedure
+        await dbPool.execute(`CALL sp_accept_offer(?)`, [offerId]);
+
+        return { message: "Offer accepted successfully." };
+
+    } catch (error) {
+        console.error("Error accepting offer:", error);
+        set.status = 500;
+        return { message: "Internal Server Error." };
+    }
+  })
+
+  // POST /bookings/:id/reject - Reject an offer
+  .post("/:id/reject", async ({ params, headers, set, jwt }) => {
+      const token = headers.authorization?.split(" ")[1];
+      const payload = await jwt.verify(token);
+  
+      if (!payload) {
+          set.status = 401;
+          return { error: "Unauthorized" };
+      }
+  
+      const userId = payload.id;
+      const offerId = params.id;
+  
+      try {
+          // Verify auth
+          const [authRows] = await dbPool.execute<mysql.RowDataPacket[]>(
+              `SELECT b.manager_id 
+               FROM booking_offers bo 
+               JOIN bands b ON bo.band_id = b.band_id 
+               WHERE bo.offer_id = ?`,
+              [offerId]
+          );
+  
+          if (authRows.length === 0 || authRows[0]?.manager_id !== userId) {
+              set.status = 403;
+              return { error: "You are not authorized to reject this offer." };
+          }
+  
+          // Call Stored Procedure
+          await dbPool.execute(`CALL sp_reject_offer(?)`, [offerId]);
+  
+          return { message: "Offer rejected successfully." };
+  
+      } catch (error) {
+          console.error("Error rejecting offer:", error);
+          set.status = 500;
+          return { message: "Internal Server Error." };
+      }
+  });

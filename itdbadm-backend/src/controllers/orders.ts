@@ -4,7 +4,14 @@ import mysql from "mysql2/promise";
 import { jwt } from "@elysiajs/jwt";
 
 export const ordersController = new Elysia({ prefix: "/orders" })
-
+  .use(
+    jwt({
+      name: "jwt",
+      secret: process.env.JWT_SECRET as string,
+      exp: "1d",
+    })
+  )
+  
   // GET /orders
   .get("/", async ({ set }) => {
     try {

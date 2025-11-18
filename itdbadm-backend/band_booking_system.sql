@@ -1,10 +1,10 @@
 CREATE DATABASE  IF NOT EXISTS `band_booking_system` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `band_booking_system`;
--- MySQL dump 10.13  Distrib 8.4.7, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.43, for Win64 (x86_64)
 --
--- Host: 127.0.0.1    Database: band_booking_system
+-- Host: localhost    Database: band_booking_system
 -- ------------------------------------------------------
--- Server version	8.4.7
+-- Server version	8.0.43
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -35,7 +35,7 @@ CREATE TABLE `audit_product_log` (
   `image` json DEFAULT NULL,
   `changed_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`audit_product_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -44,7 +44,7 @@ CREATE TABLE `audit_product_log` (
 
 LOCK TABLES `audit_product_log` WRITE;
 /*!40000 ALTER TABLE `audit_product_log` DISABLE KEYS */;
-INSERT INTO `audit_product_log` VALUES (1,1,1,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}','2025-11-16 17:32:27'),(2,8,1,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"album.jpg\"}','2025-11-16 17:33:46'),(3,15,1,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}','2025-11-16 17:33:46'),(4,8,1,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"https://m.media-amazon.com/images/I/91tiRtwMXsL._UF1000,1000_QL80_.jpg\"}','2025-11-16 17:34:46'),(5,15,1,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"https://preview.redd.it/official-poster-for-kessoku-band-live-kousei-in-zepp-haneda-v0-alc1xdd77mva1.png?auto=webp&s=7a4ca22e509e3ba2cf9f298e0480ca467223cbc6\"}','2025-11-16 17:34:46'),(6,1,1,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"https://i.etsystatic.com/39412186/r/il/5fe648/4488598606/il_fullxfull.4488598606_sg8k.jpg\"}','2025-11-16 20:37:42'),(7,2,2,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}','2025-11-16 20:43:29'),(8,8,1,'\"Kessoku Band\" Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"https://m.media-amazon.com/images/I/91tiRtwMXsL._UF1000,1000_QL80_.jpg\"}','2025-11-16 20:43:29'),(9,15,1,'Zepp Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"https://preview.redd.it/official-poster-for-kessoku-band-live-kousei-in-zepp-haneda-v0-alc1xdd77mva1.png?auto=webp&s=7a4ca22e509e3ba2cf9f298e0480ca467223cbc6\"}','2025-11-16 21:44:47'),(10,5,5,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}','2025-11-16 22:17:11'),(11,6,6,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}','2025-11-16 22:17:22'),(12,6,6,'Official T-Shirt',2500.00,'BanG Dream! Girls Band Party! Graphic T-Shirt ver. \"Afterglow\"','Physical','{\"url\": \"shirt.jpg\"}','2025-11-16 22:17:40'),(13,5,5,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": [\"https://bushiroad-global-online-store.com/cdn/shop/products/unisex-basic-softstyle-t-shirt-black-front-620da797b0833_750x.jpg?v=1645062046\"]}','2025-11-16 22:18:25'),(14,12,5,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"album.jpg\"}','2025-11-16 22:20:35'),(15,2,2,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": [\"shirt.jpg\"]}','2025-11-16 22:22:23'),(16,4,4,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}','2025-11-16 22:22:23'),(17,9,2,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"album.jpg\"}','2025-11-16 22:23:21'),(18,19,5,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}','2025-11-16 22:25:19'),(19,19,5,'Bang Dream! Official Piano Score Afterglow',800.00,'Piano Score','Physical','{\"url\": [\"https://s.pacn.ws/1/p/ym/bang-dream-official-piano-score-afterglow-623369.1.jpg?v=q6prxm\", \"https://s.pacn.ws/1/p/ym/bang-dream-official-piano-score-afterglow-623369.2.jpg?v=q6prxm\", \"https://s.pacn.ws/1/p/ym/bang-dream-official-piano-score-afterglow-623369.4.jpg?v=q6przd\"]}','2025-11-16 22:25:22'),(20,17,3,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}','2025-11-16 22:25:47'),(21,1,1,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": [\"https://i.etsystatic.com/39412186/r/il/5fe648/4488598606/il_fullxfull.4488598606_sg8k.jpg\", \"https://i.etsystatic.com/39412186/r/il/badcce/4535967723/il_340x270.4535967723_prz9.jpg\", \"https://img.lazcdn.com/collect/social-img/7ebb54c871a74b19af68e03820301e97_4f727b1b900a4324bf190dd9a03e22e0.png_720x720q80.png\"]}','2025-11-17 01:44:45'),(22,16,2,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}','2025-11-17 01:58:46'),(23,20,6,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}','2025-11-17 01:59:34'),(24,16,2,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": [\"https://m.media-amazon.com/images/I/81FDlgl2LsL.jpg\"]}','2025-11-17 02:00:01');
+INSERT INTO `audit_product_log` VALUES (1,1,1,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}','2025-11-16 17:32:27'),(2,8,1,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"album.jpg\"}','2025-11-16 17:33:46'),(3,15,1,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}','2025-11-16 17:33:46'),(4,8,1,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"https://m.media-amazon.com/images/I/91tiRtwMXsL._UF1000,1000_QL80_.jpg\"}','2025-11-16 17:34:46'),(5,15,1,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"https://preview.redd.it/official-poster-for-kessoku-band-live-kousei-in-zepp-haneda-v0-alc1xdd77mva1.png?auto=webp&s=7a4ca22e509e3ba2cf9f298e0480ca467223cbc6\"}','2025-11-16 17:34:46'),(6,1,1,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"https://i.etsystatic.com/39412186/r/il/5fe648/4488598606/il_fullxfull.4488598606_sg8k.jpg\"}','2025-11-16 20:37:42'),(7,2,2,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}','2025-11-16 20:43:29'),(8,8,1,'\"Kessoku Band\" Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"https://m.media-amazon.com/images/I/91tiRtwMXsL._UF1000,1000_QL80_.jpg\"}','2025-11-16 20:43:29'),(9,15,1,'Zepp Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"https://preview.redd.it/official-poster-for-kessoku-band-live-kousei-in-zepp-haneda-v0-alc1xdd77mva1.png?auto=webp&s=7a4ca22e509e3ba2cf9f298e0480ca467223cbc6\"}','2025-11-16 21:44:47'),(10,5,5,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}','2025-11-16 22:17:11'),(11,6,6,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}','2025-11-16 22:17:22'),(12,6,6,'Official T-Shirt',2500.00,'BanG Dream! Girls Band Party! Graphic T-Shirt ver. \"Afterglow\"','Physical','{\"url\": \"shirt.jpg\"}','2025-11-16 22:17:40'),(13,5,5,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": [\"https://bushiroad-global-online-store.com/cdn/shop/products/unisex-basic-softstyle-t-shirt-black-front-620da797b0833_750x.jpg?v=1645062046\"]}','2025-11-16 22:18:25'),(14,12,5,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"album.jpg\"}','2025-11-16 22:20:35'),(15,2,2,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": [\"shirt.jpg\"]}','2025-11-16 22:22:23'),(16,4,4,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": \"shirt.jpg\"}','2025-11-16 22:22:23'),(17,9,2,'Digital Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": \"album.jpg\"}','2025-11-16 22:23:21'),(18,19,5,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}','2025-11-16 22:25:19'),(19,19,5,'Bang Dream! Official Piano Score Afterglow',800.00,'Piano Score','Physical','{\"url\": [\"https://s.pacn.ws/1/p/ym/bang-dream-official-piano-score-afterglow-623369.1.jpg?v=q6prxm\", \"https://s.pacn.ws/1/p/ym/bang-dream-official-piano-score-afterglow-623369.2.jpg?v=q6prxm\", \"https://s.pacn.ws/1/p/ym/bang-dream-official-piano-score-afterglow-623369.4.jpg?v=q6przd\"]}','2025-11-16 22:25:22'),(20,17,3,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}','2025-11-16 22:25:47'),(21,1,1,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": [\"https://i.etsystatic.com/39412186/r/il/5fe648/4488598606/il_fullxfull.4488598606_sg8k.jpg\", \"https://i.etsystatic.com/39412186/r/il/badcce/4535967723/il_340x270.4535967723_prz9.jpg\", \"https://img.lazcdn.com/collect/social-img/7ebb54c871a74b19af68e03820301e97_4f727b1b900a4324bf190dd9a03e22e0.png_720x720q80.png\"]}','2025-11-17 01:44:45'),(22,16,2,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}','2025-11-17 01:58:46'),(23,20,6,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": \"poster.jpg\"}','2025-11-17 01:59:34'),(24,16,2,'Live Poster',800.00,'Limited edition poster','Physical','{\"url\": [\"https://m.media-amazon.com/images/I/81FDlgl2LsL.jpg\"]}','2025-11-17 02:00:01'),(25,1,1,'Official T-Shirt',2500.00,'Band merchandise shirt','Physical','{\"url\": [\"https://i.etsystatic.com/39412186/r/il/5fe648/4488598606/il_fullxfull.4488598606_sg8k.jpg\", \"https://i.etsystatic.com/39412186/r/il/badcce/4535967723/il_340x270.4535967723_prz9.jpg\", \"https://img.lazcdn.com/collect/social-img/7ebb54c871a74b19af68e03820301e97_4f727b1b900a4324bf190dd9a03e22e0.png_720x720q80.png\"]}','2025-11-17 06:23:40'),(26,8,1,'\"Kessoku Band\" Album',1500.00,'Full album (MP3/FLAC)','Digital Music','{\"url\": [\"https://m.media-amazon.com/images/I/91tiRtwMXsL._UF1000,1000_QL80_.jpg\"]}','2025-11-17 07:02:59');
 /*!40000 ALTER TABLE `audit_product_log` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -95,7 +95,7 @@ CREATE TABLE `audit_user_log` (
   `action` varchar(10) DEFAULT NULL,
   `changed_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`user_log_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -104,7 +104,7 @@ CREATE TABLE `audit_user_log` (
 
 LOCK TABLES `audit_user_log` WRITE;
 /*!40000 ALTER TABLE `audit_user_log` DISABLE KEYS */;
-INSERT INTO `audit_user_log` VALUES (1,10,3,0,'CREATE','2025-11-16 18:02:47'),(2,11,3,0,'CREATE','2025-11-16 18:17:16');
+INSERT INTO `audit_user_log` VALUES (1,10,3,0,'CREATE','2025-11-16 18:02:47'),(2,11,3,0,'CREATE','2025-11-16 18:17:16'),(3,12,3,0,'CREATE','2025-11-17 05:58:30'),(4,13,4,0,'CREATE','2025-11-17 15:36:23'),(5,14,4,0,'CREATE','2025-11-17 19:39:38');
 /*!40000 ALTER TABLE `audit_user_log` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -156,7 +156,7 @@ CREATE TABLE `bands` (
   KEY `branch_id` (`branch_id`),
   CONSTRAINT `bands_ibfk_1` FOREIGN KEY (`manager_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `bands_ibfk_2` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`branch_id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -190,7 +190,7 @@ CREATE TABLE `booking_offers` (
   KEY `band_id` (`band_id`),
   CONSTRAINT `booking_offers_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
   CONSTRAINT `booking_offers_ibfk_2` FOREIGN KEY (`band_id`) REFERENCES `bands` (`band_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -353,7 +353,7 @@ CREATE TABLE `inventory` (
 
 LOCK TABLES `inventory` WRITE;
 /*!40000 ALTER TABLE `inventory` DISABLE KEYS */;
-INSERT INTO `inventory` VALUES (1,1,55),(1,2,16),(1,3,58),(1,4,54),(1,5,42),(1,6,49),(1,8,49),(1,9,45),(1,10,35),(1,11,10),(1,12,10),(1,13,28),(1,15,39),(1,16,55),(1,17,52),(1,18,20),(1,19,11),(1,20,40);
+INSERT INTO `inventory` VALUES (1,1,50),(1,2,16),(1,3,58),(1,4,54),(1,5,42),(1,6,49),(1,8,47),(1,9,45),(1,10,35),(1,11,10),(1,12,10),(1,13,28),(1,15,39),(1,16,55),(1,17,52),(1,18,20),(1,19,11),(1,20,40);
 /*!40000 ALTER TABLE `inventory` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -439,7 +439,7 @@ CREATE TABLE `orders` (
   KEY `offer_id` (`offer_id`),
   CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`offer_id`) REFERENCES `booking_offers` (`offer_id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -448,7 +448,7 @@ CREATE TABLE `orders` (
 
 LOCK TABLES `orders` WRITE;
 /*!40000 ALTER TABLE `orders` DISABLE KEYS */;
-INSERT INTO `orders` VALUES (1,11,'2025-11-15 16:55:12','Ongoing',NULL,3500.00,NULL,'Sample merch order',NULL),(2,11,'2025-11-17 01:44:45','Ongoing',NULL,2500.00,NULL,'Order placed by Ron Alonzo',1),(3,11,'2025-11-17 01:49:41','Ongoing',NULL,4851.00,NULL,'Order placed by Ron Alonzo',2);
+INSERT INTO `orders` VALUES (1,11,'2025-11-15 16:55:12','Ongoing',NULL,3500.00,NULL,'Sample merch order',NULL),(2,11,'2025-11-17 01:44:45','Ongoing',NULL,2500.00,NULL,'Order placed by Ron Alonzo',1),(3,11,'2025-11-17 01:49:41','Ongoing',NULL,4851.00,NULL,'Order placed by Ron Alonzo',2),(4,12,'2025-11-17 06:23:40','Ongoing',NULL,12500.00,NULL,'Order placed by Joe yabuki',3),(5,12,'2025-11-17 07:02:59','Ongoing',NULL,3000.00,NULL,'Order placed by Joe Yabuki',4);
 /*!40000 ALTER TABLE `orders` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -476,7 +476,7 @@ CREATE TABLE `orders_products` (
 
 LOCK TABLES `orders_products` WRITE;
 /*!40000 ALTER TABLE `orders_products` DISABLE KEYS */;
-INSERT INTO `orders_products` VALUES (1,1,2),(1,2,1),(2,1,1),(3,22,1);
+INSERT INTO `orders_products` VALUES (1,1,2),(1,2,1),(2,1,1),(3,22,1),(4,1,5),(5,8,2);
 /*!40000 ALTER TABLE `orders_products` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -667,7 +667,7 @@ CREATE TABLE `shipping_information` (
   UNIQUE KEY `shipping_id_UNIQUE` (`shipping_id`),
   KEY `order_id` (`order_id`),
   CONSTRAINT `shipping_information_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -676,7 +676,7 @@ CREATE TABLE `shipping_information` (
 
 LOCK TABLES `shipping_information` WRITE;
 /*!40000 ALTER TABLE `shipping_information` DISABLE KEYS */;
-INSERT INTO `shipping_information` VALUES (1,2,'+63 09398699687','Ron','Alonzo','The Block','Las Pinas City','Philippines','1742'),(2,3,'+639398699867','Ron','Alonzo','Albania\'s Strongest House','Albania','Albania','3213');
+INSERT INTO `shipping_information` VALUES (1,2,'+63 09398699687','Ron','Alonzo','The Block','Las Pinas City','Philippines','1742'),(2,3,'+639398699867','Ron','Alonzo','Albania\'s Strongest House','Albania','Albania','3213'),(3,4,'12312312311','Joe','yabuki','lol kingdom','JackSpecticeye','Ireland','1984'),(4,5,'12345678901','Joe','Yabuki','not real','Ilove it','Bhutan','1177');
 /*!40000 ALTER TABLE `shipping_information` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -703,7 +703,7 @@ CREATE TABLE `user_likes` (
 
 LOCK TABLES `user_likes` WRITE;
 /*!40000 ALTER TABLE `user_likes` DISABLE KEYS */;
-INSERT INTO `user_likes` VALUES (11,9),(11,21);
+INSERT INTO `user_likes` VALUES (12,5),(12,8),(11,9),(11,21);
 /*!40000 ALTER TABLE `user_likes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -729,7 +729,7 @@ CREATE TABLE `users` (
   KEY `currency_id` (`currency_id`),
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`role_id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `users_ibfk_2` FOREIGN KEY (`currency_id`) REFERENCES `currencies` (`currency_id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -738,7 +738,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,1,'admin_master','admin@example.com','hashed_pw',3,0),(2,4,'ikuyo_kita_mgr','kita@kessoku.jp','hashed_pw',1,0),(3,4,'yui_mgr','yui@htt.jp','hashed_pw',1,0),(4,4,'kasumi_mgr','kasumi@pparty.jp','hashed_pw',1,0),(5,4,'yukina_mgr','yukina@roselia.jp','hashed_pw',1,0),(6,4,'ran_mgr','ran@afterglow.jp','hashed_pw',1,0),(7,4,'honoka_mgr','honoka@muse.jp','hashed_pw',1,0),(8,3,'otaku_fan1','fan1@example.com','hashed_pw',3,0),(9,3,'otaku_fan2','fan2@example.com','hashed_pw',1,0),(10,3,'ulol','ulol@umail.com','$2b$10$umUyvXpWDn6zmgDKAWtfo.DXzH8BLDjJ99.Y/XGtRI99Z6FER01jy',1,0),(11,3,'wow2123','ronfourieralonzo@gmail.com','$2b$10$qokda6eJ2LjQ0RGSZ.CATuXse0eCfF5GjOA5nHPdRmP.gZn.lafZ2',1,0);
+INSERT INTO `users` VALUES (1,1,'admin_master','admin@example.com','hashed_pw',3,0),(2,4,'ikuyo_kita_mgr','kita@kessoku.jp','hashed_pw',1,0),(3,4,'yui_mgr','yui@htt.jp','hashed_pw',1,0),(4,4,'kasumi_mgr','kasumi@pparty.jp','hashed_pw',1,0),(5,4,'yukina_mgr','yukina@roselia.jp','hashed_pw',1,0),(6,4,'ran_mgr','ran@afterglow.jp','hashed_pw',1,0),(7,4,'honoka_mgr','honoka@muse.jp','hashed_pw',1,0),(8,3,'otaku_fan1','fan1@example.com','hashed_pw',3,0),(9,3,'otaku_fan2','fan2@example.com','hashed_pw',1,0),(10,3,'ulol','ulol@umail.com','$2b$10$umUyvXpWDn6zmgDKAWtfo.DXzH8BLDjJ99.Y/XGtRI99Z6FER01jy',1,0),(11,3,'wow2123','ronfourieralonzo@gmail.com','$2b$10$qokda6eJ2LjQ0RGSZ.CATuXse0eCfF5GjOA5nHPdRmP.gZn.lafZ2',1,0),(12,3,'boomer2124','explode@boom.com','$2b$10$rKIpv3k2iV/COhWQyVRDC.OpYbE2L16m7hjqhzB4sFPu1r.TrZUu6',4,0);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -769,10 +769,8 @@ DELIMITER ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_auto_create_band` AFTER INSERT ON `users` FOR EACH ROW BEGIN
-    IF NEW.role_id = (SELECT role_id FROM roles WHERE role_type = 'BandManager') THEN
-        INSERT INTO bands (manager_id, name)
-        VALUES (NEW.user_id, CONCAT(NEW.username, ' Band'));
-    END IF;
+	INSERT INTO bands (manager_id, branch_id, name)
+    VALUES (NEW.user_id, -1, "default_band");
 END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1165,4 +1163,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-17 10:54:02
+-- Dump completed on 2025-11-18  3:57:41

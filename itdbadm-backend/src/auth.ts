@@ -1,16 +1,16 @@
 import { Elysia, t } from "elysia";
 import bcrypt from "bcrypt";
 import { dbPool } from "./db";
-// import { jwt } from "@elysiajs/jwt";
+import { jwt } from "@elysiajs/jwt";
 
 export const authRoutes = new Elysia({ prefix: "/auth" })
-  // .use(
-  //   jwt({
-  //     name: "jwt",
-  //     secret: process.env.JWT_SECRET as string,
-  //     exp: "1d",
-  //   })
-  // )
+  .use(
+    jwt({
+      name: "jwt",
+      secret: process.env.JWT_SECRET as string,
+      exp: "1d",
+    })
+  )
 
   .post(
     "/signup",
@@ -35,7 +35,7 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
 
       const userId = (result as any).insertId;
 
-      const token = await jwt.sign({ id: userId });
+      const token = await jwt.sign({ id: userId, role_id: userType });
 
       return { message: "User registered successfully", token };
     },
@@ -62,7 +62,7 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
       const { username, password } = body;
 
       const [rows] = await dbPool.query(
-        "SELECT user_id, password_hashed FROM users WHERE username = ?",
+        "SELECT user_id, password_hashed, role_id FROM users WHERE username = ? AND is_deleted = 0",
         [username]
       );
 
@@ -80,7 +80,7 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
       }
 
       // FIX: Use user_id instead of id
-      const token = await jwt.sign({ id: user.user_id });
+      const token = await jwt.sign({ id: user.user_id, role_id: user.role_id });
       return { message: "Signed in successfully", accessToken: token };
     },
     {

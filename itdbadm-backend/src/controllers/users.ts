@@ -3,6 +3,8 @@ import { dbPool } from "../db"; // Import our database pool
 import mysql from "mysql2/promise";
 import { jwt } from "@elysiajs/jwt";
 
+import bcrypt from "bcrypt";
+
 export const usersController = new Elysia({ prefix: "/users" })
   .use(
     jwt({
@@ -12,7 +14,7 @@ export const usersController = new Elysia({ prefix: "/users" })
     })
   )
 
-  // GET /users/username/:id
+  // GET /users/username/
   .get("/username", async ({ jwt, set, request }) => {
     try {
       // Get the token from Authorization header
@@ -52,7 +54,7 @@ export const usersController = new Elysia({ prefix: "/users" })
         return { error: "User not found." };
       }
 
-      const username = rows[0].username;
+      const username = rows[0]?.username;
 
       // Return username
       return { username: username };
@@ -60,85 +62,159 @@ export const usersController = new Elysia({ prefix: "/users" })
       console.error("Error fetching username", error);
 
       // Handle JWT verification errors
-      if (error.message.includes("jwt") || error.message.includes("token")) {
-        set.status = 401;
-        return { error: "Invalid authentication token." };
+      if (error instanceof Error) {
+        if (error.message.includes("jwt") || error.message.includes("token")) {
+          set.status = 401;
+          return { error: "Invalid authentication token." };
+        }
       }
+        
 
       set.status = 500;
       return { error: "Internal Server Error while retrieving username." };
     }
-  });
+  })
 
-// POST /users/signup
+  // GET /users/profile - all user details
+  .get("/profile", async ({ headers, set, jwt }) => {
 
-// POST /users/login
+    const token = headers.authorization?.split(" ")[1];
+    const payload = await jwt.verify(token);
 
-// POST /users/register
-// .post('/register', async ({ body, set }) => {
-//     // 1. Validate the incoming role against defined IDs
-//     const roleId = (body.role === 'Artist') ? 4 : 3; // 4=BandManager, 3=Customer (based on your SQL schema)
-//     const defaultCurrencyId = 2; // USD (based on your SQL currencies table)
+    if (!payload) {
+      set.status = 401;
+      return { error: "Unauthorized" };
+    }
 
-//     // 2. Hash the password (using a proper library like argon2 or bcrypt is highly recommended in production)
-//     const password_hashed = `hashed_pw_for_${body.username}`; // Placeholder for now
+    const userId = payload.id;
 
-//     try {
-//         // 3. Insert the new user into the 'users' table
-//         const query = `
-//             INSERT INTO users (role_id, username, email, password_hashed, genre, currency_id)
-//             VALUES (?, ?, ?, ?, ?, ?);
-//         `;
-//         const [result] = await dbPool.execute<mysql.ResultSetHeader>(query, [
-//             roleId,
-//             body.username,
-//             body.email,
-//             password_hashed,
-//             body.genre || null, // Genre is only for artists
-//             defaultCurrencyId
-//         ]);
+    try {
+      const query = `
+        SELECT u.username, u.email, u.currency_id, c.currency_code 
+        FROM users u
+        LEFT JOIN currencies c ON u.currency_id = c.currency_id
+        WHERE u.user_id = ? AND u.is_deleted = 0
+      `;
+      const [rows] = await dbPool.execute<mysql.RowDataPacket[]>(query, [userId]);
 
-//         // The MySQL trigger 'trg_auto_create_band' handles band table insertion for artists (role_id 4)
+      if (rows.length === 0) {
+        set.status = 404;
+        return { error: "User not found" };
+      }
 
-//         set.status = 201; // Created
-//         return {
-//             message: "Account created successfully.",
-//             user_id: result.insertId,
-//             role: body.role
-//         };
+      const user = rows[0];
+      return {
+        username: user?.username,
+        email: user?.email,
+        currency_id: user?.currency_id,
+        currency_code: user?.currency_code
+      };
 
-//     } catch (error) {
-//         console.error('Registration error:', error);
-//         // Check for duplicate key error (username/email unique constraint)
-//         if (error && (error as any).code === 'ER_DUP_ENTRY') {
-//             set.status = 409; // Conflict
-//             return { message: "Username or email already exists." };
-//         }
-//         set.status = 500;
-//         return { message: 'Internal Server Error during registration.' };
-//     }
-// }, {
-//     // Input validation using Elysia's schema system (t)
-//     body: t.Object({
-//         username: t.String({ minLength: 3 }),
-//         email: t.String({ format: 'email' }),
-//         password: t.String({ minLength: 6 }),
-//         role: t.Union([t.Literal('Customer'), t.Literal('Artist')]),
-//         genre: t.Optional(t.String())
-//     }),
-//     detail: {
-//         summary: 'Register a new user or artist account'
-//     }
-// })
+    } catch (error) {
+      console.error("Error fetching profile: ", error);
+      set.status = 500;
+      return { error: "Internal Server Error "};
+    }
 
-// Like or unlike a product
-// .post('product/:id/like', async ({ params, body, set }) => {
-//     const productId = params.id;
-//     const userId = body.user_id; // In real scenarios, get this from auth context)
+  })
 
-//     try {
+  // PUT /users/profile - Update profile details
+  .put(
+    "/profile",
+    async ({ headers, body, set, jwt }) => {
+      const token = headers.authorization?.split(" ")[1];
+      const payload = await jwt.verify(token);
 
-//     } catch (error) {
-//         console.error('Error liking/unliking product:', error);
-//     }
-// });
+      if (!payload) {
+        set.status = 401;
+        return { error: "Unauthorized" };
+      }
+
+      const userId = payload.id;
+      const { username, email, password, currency_id } = body;
+
+      const connection = await dbPool.getConnection();
+      await connection.beginTransaction();
+
+      try {
+        // 1. Validate Username Uniqueness
+        if (username) {
+          const [existingUser] = await connection.execute<mysql.RowDataPacket[]>(
+            "SELECT user_id FROM users WHERE username = ? AND user_id != ?",
+            [username, userId]
+          );
+          if (existingUser.length > 0) {
+            set.status = 409;
+            return { error: "Username already taken" };
+          }
+        }
+
+        // 2. Validate Email Uniqueness (if changed)
+        if (email) {
+          const [existingEmail] = await connection.execute<mysql.RowDataPacket[]>(
+            "SELECT user_id FROM users WHERE email = ? AND user_id != ?",
+            [email, userId]
+          );
+          if (existingEmail.length > 0) {
+            set.status = 409;
+            return { error: "Email already in use" };
+          }
+        }
+
+        // 3. Build Update Query dynamically
+        let updates: string[] = [];
+        let values: any[] = [];
+
+        if (username) {
+            updates.push("username = ?");
+            values.push(username);
+        }
+        if (email) {
+            updates.push("email = ?");
+            values.push(email);
+        }
+        if (currency_id) {
+            updates.push("currency_id = ?");
+            values.push(currency_id);
+        }
+        if (password) {
+            if (password.length < 6) {
+                set.status = 400;
+                return { error: "Password must be at least 6 characters long" };
+            }
+            const hashedPassword = await bcrypt.hash(password, 10);
+            updates.push("password_hashed = ?");
+            values.push(hashedPassword);
+        }
+
+        if (updates.length === 0) {
+            connection.release();
+            return { message: "No changes detected" };
+        }
+
+        const updateQuery = `UPDATE users SET ${updates.join(", ")} WHERE user_id = ?`;
+        values.push(userId);
+
+        await connection.execute(updateQuery, values);
+        await connection.commit();
+
+        return { message: "Profile updated successfully" };
+
+      } catch (error) {
+        await connection.rollback();
+        console.error("Error updating profile:", error);
+        set.status = 500;
+        return { error: "Internal Server Error during profile update" };
+      } finally {
+        connection.release();
+      }
+    },
+    {
+      body: t.Object({
+        username: t.Optional(t.String()),
+        email: t.Optional(t.String()),
+        password: t.Optional(t.String()),
+        currency_id: t.Optional(t.Numeric()),
+      }),
+    }
+  );

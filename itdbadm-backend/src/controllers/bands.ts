@@ -3,8 +3,16 @@ import { Elysia, t } from "elysia";
 import { dbPool } from "../db";
 import mysql from "mysql2/promise";
 
-export const bandsController = new Elysia({ prefix: "/bands" })
+import { jwt } from "@elysiajs/jwt";
 
+export const bandsController = new Elysia({ prefix: "/bands" })
+  .use(
+    jwt({
+      name: "jwt",
+      secret: process.env.JWT_SECRET as string,
+      exp: "1d",
+    })
+  )
   // GET /bands
   .get(
     "/",
@@ -150,7 +158,8 @@ export const bandsController = new Elysia({ prefix: "/bands" })
       const bandProductsList = rows[0]!; // First result set
 
       // Process each product to return only one image in the array
-      const processedProducts = bandProductsList.map((product: any) => {
+      // shutting up error via optional chaining
+      const processedProducts = bandProductsList?.map((product: any) => {
         // Handle different image formats to return only one image in array
         let singleImageUrl;
 
@@ -210,7 +219,8 @@ export const bandsController = new Elysia({ prefix: "/bands" })
       const bandProductsList = rows[0]!; // First result set
 
       // Process each product to return only one image in the array
-      const processedProducts = bandProductsList.map((product: any) => {
+      // chaining operation to shut up error
+      const processedProducts = bandProductsList?.map((product: any) => {
         // Handle different image formats to return only one image in array
         let singleImageUrl;
 

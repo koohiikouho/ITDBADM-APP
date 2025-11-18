@@ -8,6 +8,7 @@ export interface CardItem {
   title: string;
   description: string;
   image: string;
+  branch: number;
 }
 
 export interface Product {

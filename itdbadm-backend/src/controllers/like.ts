@@ -2,7 +2,16 @@ import { Elysia, t } from "elysia";
 import { dbPool } from "../db";
 import mysql from "mysql2/promise";
 
+import { jwt } from "@elysiajs/jwt";;
+
 export const likeController = new Elysia({ prefix: "/like" })
+  .use(
+    jwt({
+      name: "jwt",
+      secret: process.env.JWT_SECRET as string,
+      exp: "1d",
+    })
+  )
 
   // GET /like/:productId - Check if product is liked by user
   .get("/:productId", async ({ params: { productId }, headers, set, jwt }) => {
