@@ -40,7 +40,7 @@ export default function BandManagerDashboard() {
 
     const fetchBandStats = async () => {
         try {
-            // In a real app, you'd fetch the band manager's band ID from context/auth
+            // fetch band
             const response = await fetch(`${apiClient.baseURL}/band-manager/stats`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -103,61 +103,61 @@ export default function BandManagerDashboard() {
         <DefaultLayout>
             <div className="max-w-7xl mx-auto p-6">
                 {/* Header */}
-                <div className="mb-8">
+                <div className="mb-8 text-center">
                     <h1 className="text-3xl font-bold">Band Manager Dashboard</h1>
                     <p className="text-gray-600">Manage your band's merchandise, bookings, and analytics</p>
                 </div>
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    {/* Products Card */}
                     <Card className="border">
-                        <CardBody className="flex items-center">
-                            <div className="p-3 bg-blue-100 rounded-lg mr-4">
+                        <CardBody className="flex flex-col items-center justify-center text-center p-6">
+                            <div className="p-3 bg-blue-100 rounded-full mb-4">
                                 <Package className="h-6 w-6 text-blue-600" />
                             </div>
-                            <div>
-                                <p className="text-sm text-gray-600">Products</p>
-                                <p className="text-2xl font-bold">{stats.totalProducts}</p>
-                            </div>
+                            <p className="text-sm text-gray-600 mb-1">Products</p>
+                            <p className="text-3xl font-bold">{stats.totalProducts}</p>
                         </CardBody>
                     </Card>
 
+                    {/* Bookings Card */}
                     <Card className="border">
-                        <CardBody className="flex items-center">
-                            <div className="p-3 bg-green-100 rounded-lg mr-4">
+                        <CardBody className="flex flex-col items-center justify-center text-center p-6">
+                            <div className="p-3 bg-green-100 rounded-full mb-4">
                                 <Calendar className="h-6 w-6 text-green-600" />
                             </div>
-                            <div>
-                                <p className="text-sm text-gray-600">Bookings</p>
-                                <p className="text-2xl font-bold">{stats.totalBookings}</p>
-                            </div>
+                            <p className="text-sm text-gray-600 mb-1">Bookings</p>
+                            <p className="text-3xl font-bold">{stats.totalBookings}</p>
                         </CardBody>
                     </Card>
 
+                    {/* Pending Offers Card */}
                     <Card className="border">
-                        <CardBody className="flex items-center">
-                            <div className="p-3 bg-purple-100 rounded-lg mr-4">
+                        <CardBody className="flex flex-col items-center justify-center text-center p-6">
+                            <div className="p-3 bg-purple-100 rounded-full mb-4">
                                 <Users className="h-6 w-6 text-purple-600" />
                             </div>
-                            <div>
-                                <p className="text-sm text-gray-600">Pending Offers</p>
-                                <p className="text-2xl font-bold">{stats.pendingOffers}</p>
-                            </div>
+                            <p className="text-sm text-gray-600 mb-1">Pending Offers</p>
+                            <p className="text-3xl font-bold">{stats.pendingOffers}</p>
                         </CardBody>
                     </Card>
 
+                    {/* Revenue Card */}
                     <Card className="border">
-                        <CardBody className="flex items-center">
-                            <div className="p-3 bg-orange-100 rounded-lg mr-4">
+                        <CardBody className="flex flex-col items-center justify-center text-center p-6 relative">
+                            <div className="p-3 bg-orange-100 rounded-full mb-4">
                                 <DollarSign className="h-6 w-6 text-orange-600" />
                             </div>
-                            <div>
-                                <p className="text-sm text-gray-600">Revenue</p>
-                                <p className="text-2xl font-bold">¥{stats.revenue.toLocaleString()}</p>
-                                <Badge color={stats.revenueChange >= 0 ? "success" : "danger"} size="sm">
-                                    {stats.revenueChange >= 0 ? "+" : ""}{stats.revenueChange}%
-                                </Badge>
-                            </div>
+                            <p className="text-sm text-gray-600 mb-1">Revenue</p>
+                            <p className="text-3xl font-bold">¥{stats.revenue.toLocaleString()}</p>
+                            <Badge
+                                color={stats.revenueChange >= 0 ? "success" : "danger"}
+                                size="sm"
+                                className="absolute top-2 right-2 text-xs scale-90"
+                            >
+                                {stats.revenueChange >= 0 ? "+" : ""}{stats.revenueChange}%
+                            </Badge>
                         </CardBody>
                     </Card>
                 </div>

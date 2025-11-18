@@ -40,7 +40,7 @@ export default function EditBandPage() {
 
     const fetchBandData = async () => {
         try {
-            // Fetch band manager's band data
+            // fetch band
             const response = await fetch(`${apiClient.baseURL}/band-manager/band`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
