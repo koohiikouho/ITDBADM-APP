@@ -23,6 +23,13 @@ import SentOffersPage from "@/pages/offers";
 import { AuthProvider } from "./lib/authContext";
 import LikesPage from "./pages/likes";
 
+//bandmanager side
+import BandManagerDashboard from "./pages/bandmanager/dashboard";
+import EditBandPage from "./pages/bandmanager/edit-band";
+import ManageProductsPage from "./pages/bandmanager/manage-products";
+import SchedulePage from "./pages/bandmanager/schedule";
+import AnalyticsPage from "./pages/bandmanager/analytics";
+
 function App() {
   return (
     <AuthProvider>
@@ -44,6 +51,13 @@ function App() {
         <Route element={<CreateBandPage />} path="/createband" />
         <Route element={<DeleteProductPage />} path="/deleteproduct" />
         <Route element={<LikesPage />} path="/likes" />
+        <Route element={<BandManagerDashboard />} path="/bandmanager/dashboard" />
+        <Route element={<EditBandPage />} path="/bandmanager/edit-band" />
+        <Route element={<CreateProductPage />} path="/bandmanager/create-product" />
+        <Route element={<ManageProductsPage />} path="/bandmanager/manage-products" />
+        <Route element={<ManageProductsPage />} path="/bandmanager/edit-product/:productId" />
+        <Route element={<SchedulePage />} path="/bandmanager/schedule" />
+        <Route element={<AnalyticsPage />} path="/bandmanager/analytics" />
 
         <Route element={<SentOffersPage />} path="sent-offers" />
         <Route element={<MyOrdersPage />} path="/orders" />

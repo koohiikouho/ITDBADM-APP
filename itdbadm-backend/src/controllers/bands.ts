@@ -147,7 +147,7 @@ export const bandsController = new Elysia({ prefix: "/bands" })
         return { message: "No products found for this band." };
       }
 
-      const bandProductsList = rows[0]; // First result set
+      const bandProductsList = rows[0]!; // First result set
 
       // Process each product to return only one image in the array
       const processedProducts = bandProductsList.map((product: any) => {
@@ -207,7 +207,7 @@ export const bandsController = new Elysia({ prefix: "/bands" })
         return { message: "No products found for this band." };
       }
 
-      const bandProductsList = rows[0]; // First result set
+      const bandProductsList = rows[0]!; // First result set
 
       // Process each product to return only one image in the array
       const processedProducts = bandProductsList.map((product: any) => {
