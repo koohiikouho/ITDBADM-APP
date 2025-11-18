@@ -153,7 +153,6 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
         }
     )
 
-    // all products for managed band
     .get("/products", async ({ headers, set, jwt }) => {
         const token = headers.authorization?.split(" ")[1];
         const payload = await jwt.verify(token);
@@ -166,24 +165,24 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
         const userId = payload.id;
 
         try {
-            // get products for band managed by user
             const query = `
-        SELECT 
-          p.product_id,
-          p.name,
-          p.price,
-          p.description,
-          p.category,
-          p.image,
-          p.is_deleted
-        FROM products p
-        JOIN bands b ON p.band_id = b.band_id
-        WHERE b.manager_id = ? AND p.is_deleted = 0
-        ORDER BY p.product_id DESC
-      `;
+                SELECT 
+                    p.product_id,
+                    p.name,
+                    p.price,
+                    p.description,
+                    p.category,
+                    p.image,
+                    p.is_deleted,
+                    COALESCE(i.quantity, 0) as stock
+                FROM products p
+                JOIN bands b ON p.band_id = b.band_id
+                LEFT JOIN inventory i ON p.product_id = i.product_id AND i.branch_id = 1
+                WHERE b.manager_id = ? AND p.is_deleted = 0
+                ORDER BY p.product_id DESC
+            `;
 
             const [rows] = await dbPool.execute<mysql.RowDataPacket[]>(query, [userId]);
-
             return rows;
         } catch (error) {
             console.error("Error fetching products:", error);
@@ -192,6 +191,7 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
         }
     })
 
+    // In the POST /products endpoint, update the body validation and logic:
     .post(
         "/products",
         async ({ headers, set, jwt, body }) => {
@@ -204,14 +204,20 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
             }
 
             const userId = payload.id;
-            const { name, price, description, category } = body;
+            const { name, price, description, category, stock } = body;
 
             // Handle both string and number price
             const priceValue = typeof price === 'string' ? parseFloat(price) : price;
+            const stockValue = typeof stock === 'string' ? parseInt(stock) : stock;
 
             if (isNaN(priceValue) || priceValue <= 0) {
                 set.status = 400;
                 return { error: "Invalid price" };
+            }
+
+            if (isNaN(stockValue) || stockValue < 0) {
+                set.status = 400;
+                return { error: "Invalid stock quantity" };
             }
 
             // temp image data will update cloudinary later
@@ -255,14 +261,14 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
                     JSON.stringify(imageData)
                 ]);
 
-                // Add to inventory default branch 1
+                // Add to inventory with specified stock quantity
                 const inventoryQuery = `
                     INSERT INTO inventory (branch_id, product_id, quantity)
-                    VALUES (1, ?, 10)
-                    ON DUPLICATE KEY UPDATE quantity = quantity + 10
+                    VALUES (1, ?, ?)
+                    ON DUPLICATE KEY UPDATE quantity = quantity + ?
                 `;
 
-                await connection.execute(inventoryQuery, [result.insertId]);
+                await connection.execute(inventoryQuery, [result.insertId, stockValue, stockValue]);
                 await connection.commit();
 
                 set.status = 201;
@@ -286,10 +292,12 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
                 price: t.Union([t.String(), t.Number()]), // Accept both string and number
                 description: t.String(),
                 category: t.String(),
+                stock: t.Union([t.String(), t.Number()]), // Add stock field
             })
         }
     )
 
+    // In the PUT /products/:id endpoint, update to handle stock:
     .put(
         "/products/:id",
         async ({ headers, set, jwt, params, body }) => {
@@ -303,11 +311,21 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
 
             const userId = payload.id;
             const productId = params.id;
-            const { name, price, description, category } = body;
+            const { name, price, description, category, stock } = body;
+
+            const stockValue = typeof stock === 'string' ? parseInt(stock) : stock;
+
+            if (isNaN(stockValue) || stockValue < 0) {
+                set.status = 400;
+                return { error: "Invalid stock quantity" };
+            }
+
+            const connection = await dbPool.getConnection();
+            await connection.beginTransaction();
 
             try {
                 // Verify user owns this product
-                const [authRows] = await dbPool.execute<mysql.RowDataPacket[]>(
+                const [authRows] = await connection.execute<mysql.RowDataPacket[]>(
                     `SELECT p.product_id, p.image
                     FROM products p 
                     JOIN bands b ON p.band_id = b.band_id 
@@ -333,7 +351,7 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
                     WHERE product_id = ?
                 `;
 
-                await dbPool.execute(updateQuery, [
+                await connection.execute(updateQuery, [
                     name,
                     parseFloat(price),
                     description,
@@ -342,12 +360,25 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
                     productId
                 ]);
 
+                // Update inventory stock
+                const updateInventoryQuery = `
+                    UPDATE inventory 
+                    SET quantity = ? 
+                    WHERE product_id = ? AND branch_id = 1
+                `;
+
+                await connection.execute(updateInventoryQuery, [stockValue, productId]);
+
+                await connection.commit();
                 return { message: "Product updated successfully" };
 
             } catch (error) {
+                await connection.rollback();
                 console.error("Error updating product:", error);
                 set.status = 500;
                 return { error: "Internal Server Error while updating product" };
+            } finally {
+                connection.release();
             }
         },
         {
@@ -356,6 +387,7 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
                 price: t.String(),
                 description: t.String(),
                 category: t.String(),
+                stock: t.Union([t.String(), t.Number()]), // Add stock field
             })
         }
     )
@@ -404,6 +436,42 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
             }
         }
     )
+
+    .get("/products/:id/stock", async ({ headers, set, jwt, params }) => {
+        const token = headers.authorization?.split(" ")[1];
+        const payload = await jwt.verify(token);
+
+        if (!payload) {
+            set.status = 401;
+            return { error: "Unauthorized" };
+        }
+
+        const userId = payload.id;
+        const productId = params.id;
+
+        try {
+            const query = `
+                SELECT COALESCE(i.quantity, 0) as stock
+                FROM products p
+                JOIN bands b ON p.band_id = b.band_id
+                LEFT JOIN inventory i ON p.product_id = i.product_id AND i.branch_id = 1
+                WHERE p.product_id = ? AND b.manager_id = ? AND p.is_deleted = 0
+            `;
+
+            const [rows] = await dbPool.execute<mysql.RowDataPacket[]>(query, [productId, userId]);
+
+            if (rows.length === 0) {
+                set.status = 404;
+                return { error: "Product not found" };
+            }
+
+            return { stock: rows[0]!.stock };
+        } catch (error) {
+            console.error("Error fetching product stock:", error);
+            set.status = 500;
+            return { error: "Internal Server Error while retrieving stock" };
+        }
+    })
 
     .get("/stats", async ({ headers, set, jwt }) => {
         const token = headers.authorization?.split(" ")[1];

@@ -22,6 +22,7 @@ interface Product {
     image: {
         url: string[];
     };
+    stock?: number;
 }
 
 export default function EditProductPage() {
@@ -34,6 +35,7 @@ export default function EditProductPage() {
         price: "",
         description: "",
         category: "",
+        stock: "0",
     });
 
     const categories = [
@@ -49,38 +51,91 @@ export default function EditProductPage() {
 
     const fetchProduct = async () => {
         try {
-            // You'll need to add a GET endpoint for single product
+            setLoading(true);
+            const token = localStorage.getItem("accessToken");
+
+            // Fetch product details
             const response = await fetch(`${apiClient.baseURL}/products/${productId}`, {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                    Authorization: `Bearer ${token}`,
                 },
             });
 
             if (response.ok) {
-                const data = await response.json();
-                setProduct(data);
-                setFormData({
-                    name: data.name,
-                    price: data.price,
-                    description: data.description,
-                    category: data.category,
+                const productData = await response.json();
+
+                // Fetch stock information - FIX: Make sure this endpoint returns the correct data
+                const stockResponse = await fetch(`${apiClient.baseURL}/inventory/${productId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
                 });
+
+                let stock = 0;
+                if (stockResponse.ok) {
+                    const stockData = await stockResponse.json();
+                    // FIX: Handle different possible response structures
+                    stock = stockData.quantity || stockData.stock || 0;
+                } else {
+                    console.warn("Could not fetch stock data, using default 0");
+                }
+
+                setProduct(productData);
+                setFormData({
+                    name: productData.name || "",
+                    price: productData.price?.toString() || "",
+                    description: productData.description || "",
+                    category: productData.category || "",
+                    stock: stock.toString(), // FIX: Ensure stock is properly set
+                });
+            } else {
+                console.error("Error fetching product:", response.status);
+                alert("Error loading product");
             }
         } catch (error) {
             console.error("Error fetching product:", error);
+            alert("Error loading product");
+        } finally {
+            setLoading(false);
         }
     };
 
     const handleSubmit = async () => {
+        if (!formData.name || !formData.price || !formData.category || !formData.stock) {
+            alert("Please fill in all required fields");
+            return;
+        }
+
+        // Validate price and stock
+        const priceValue = parseFloat(formData.price);
+        const stockValue = parseInt(formData.stock);
+
+        if (isNaN(priceValue) || priceValue <= 0) {
+            alert("Please enter a valid price");
+            return;
+        }
+
+        if (isNaN(stockValue) || stockValue < 0) {
+            alert("Please enter a valid stock quantity");
+            return;
+        }
+
         setLoading(true);
         try {
+            const token = localStorage.getItem("accessToken");
             const response = await fetch(`${apiClient.baseURL}/band-manager/products/${productId}`, {
                 method: "PUT",
                 headers: {
-                    "Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
+                    "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify({
+                    name: formData.name,
+                    price: priceValue.toString(), // Ensure string format
+                    description: formData.description,
+                    category: formData.category,
+                    stock: stockValue // Send as number
+                }),
             });
 
             if (response.ok) {
@@ -98,7 +153,13 @@ export default function EditProductPage() {
         }
     };
 
-    if (!product) {
+    // Add debug logging to see what's happening
+    useEffect(() => {
+        console.log("Current formData:", formData);
+        console.log("Current product:", product);
+    }, [formData, product]);
+
+    if (loading && !product) {
         return (
             <DefaultLayout>
                 <div className="flex justify-center items-center py-16">
@@ -133,6 +194,18 @@ export default function EditProductPage() {
                             onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                             placeholder="Enter price"
                             isRequired
+                            min="0"
+                            step="0.01"
+                        />
+
+                        <Input
+                            label="Stock Quantity"
+                            type="number"
+                            value={formData.stock}
+                            onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                            placeholder="Enter stock quantity"
+                            isRequired
+                            min="0"
                         />
 
                         <Select
@@ -170,7 +243,7 @@ export default function EditProductPage() {
                                 onPress={handleSubmit}
                                 isLoading={loading}
                                 startContent={!loading && <Save className="h-4 w-4" />}
-                                isDisabled={!formData.name || !formData.price || !formData.category}
+                                isDisabled={!formData.name || !formData.price || !formData.category || !formData.stock}
                             >
                                 {loading ? "Updating..." : "Update Product"}
                             </Button>
