@@ -2,6 +2,9 @@ import { Elysia, t } from "elysia";
 import { dbPool } from "../db";
 import mysql from "mysql2/promise";
 import { jwt } from "@elysiajs/jwt";
+import { Money, Currencies } from "ts-money";
+
+import { FrankfurterService } from "../services/frankfurterService";
 
 export const productsController = new Elysia({ prefix: "/products" })
   .use(
@@ -13,9 +16,10 @@ export const productsController = new Elysia({ prefix: "/products" })
   )
 
   // GET /products
-  .get("/", async ({ set }) => {
+  .get("/all/:currency", async ({ params, set }) => {
     try {
       const query = `SELECT b.branch_id, p.product_id, b.name as 'band_name',p.name,p.description,p.category,p.price,p.image FROM products p LEFT JOIN bands b ON p.band_id=b.band_id WHERE p.is_deleted = 0;`;
+      const currency = params.currency;
 
       const [rows] = await dbPool.execute<mysql.RowDataPacket[]>(query);
 
@@ -24,37 +28,38 @@ export const productsController = new Elysia({ prefix: "/products" })
         return { message: "No products registered yet." };
       }
 
-      // Map the results to a clean array of product objects
-      const productList = rows.map((row) => {
-        // Handle different image formats to return only one image in array
-        let singleImageUrl;
+      // Convert all products with the same currency
+      const productList = Promise.all(
+        rows.map(async (row) => {
+          let singleImageUrl;
 
-        if (row.image && row.image.url) {
-          if (Array.isArray(row.image.url)) {
-            // If it's an array, take the first image
-            singleImageUrl = row.image.url[0];
+          if (row.image && row.image.url) {
+            if (Array.isArray(row.image.url)) {
+              singleImageUrl = row.image.url[0];
+            } else {
+              singleImageUrl = row.image.url;
+            }
           } else {
-            // If it's already a single string, use it directly
-            singleImageUrl = row.image.url;
+            singleImageUrl = null;
           }
-        } else {
-          // Fallback if no image is available
-          singleImageUrl = null;
-        }
 
-        return {
-          branch: row.branch_id,
-          id: row.product_id,
-          band_name: row.band_name,
-          name: row.name,
-          description: row.description,
-          category: row.category,
-          price: row.price,
-          img: {
-            url: [singleImageUrl], // Maintain nesting with single item array
-          },
-        };
-      });
+          // Use Frankfurter service for conversion - only get the converted amount
+          const converted = FrankfurterService.convert(row.price, currency);
+
+          return {
+            branch: row.branch_id,
+            id: row.product_id,
+            band_name: row.band_name,
+            name: row.name,
+            description: row.description,
+            category: row.category,
+            price: converted.amount, // Use the converted amount directly (same field name)
+            img: {
+              url: [singleImageUrl], // Maintain nesting with single item array
+            },
+          };
+        })
+      );
 
       set.status = 200;
       return productList;
@@ -96,8 +101,11 @@ export const productsController = new Elysia({ prefix: "/products" })
       }
 
       // Soft delete the product
-      const deleteQuery = "UPDATE products SET is_deleted = 1 WHERE product_id = ?";
-      const [result] = await dbPool.execute<mysql.OkPacket>(deleteQuery, [productId]);
+      const deleteQuery =
+        "UPDATE products SET is_deleted = 1 WHERE product_id = ?";
+      const [result] = await dbPool.execute<mysql.OkPacket>(deleteQuery, [
+        productId,
+      ]);
 
       if (result.affectedRows === 0) {
         set.status = 404;
@@ -105,7 +113,6 @@ export const productsController = new Elysia({ prefix: "/products" })
       }
 
       return { message: "Product deleted successfully" };
-
     } catch (error) {
       console.error("Error deleting product:", error);
       set.status = 500;
@@ -114,27 +121,45 @@ export const productsController = new Elysia({ prefix: "/products" })
   })
 
   // GET /products/:id
-  .get("/:id", async ({ params, set }) => {
-    try {
-      const productId = params.id;
+  .get(
+    "/:id/:currency",
+    async ({ params, set, query }) => {
+      try {
+        const productId = params.id;
+        const currency = params.currency;
 
-      // SQL Query: Fetch detailed info for a specific product by ID
-      const query = `SELECT band_id, name, price, description, category, image FROM products WHERE product_id = ${productId} AND is_deleted = 0;`;
+        // SQL Query: Fetch detailed info for a specific product by ID
+        const query = `SELECT band_id, name, price, description, category, image FROM products WHERE product_id = ${productId} AND is_deleted = 0;`;
 
-      const [rows] = await dbPool.execute<mysql.RowDataPacket[]>(query);
+        const [rows] = await dbPool.execute<mysql.RowDataPacket[]>(query);
 
-      if (rows.length === 0) {
-        set.status = 404;
-        return { message: "Product not found." };
+        if (rows.length === 0) {
+          set.status = 404;
+          return { message: "Product not found." };
+        }
+
+        const product = rows[0];
+
+        // Convert price if currency is specified and not JPY
+        if (currency && currency !== "JPY") {
+          const converted = await FrankfurterService.convert(
+            product.price,
+            currency
+          );
+          product.price = converted.amount;
+        }
+
+        set.status = 200;
+        return product;
+      } catch (error) {
+        console.error("Error fetching product by ID:", error);
+        set.status = 500;
+        return { message: "Internal Server Error while retrieving product." };
       }
-
-      const product = rows[0];
-      set.status = 200;
-
-      return product;
-    } catch (error) {
-      console.error("Error fetching product by ID:", error);
-      set.status = 500;
-      return { message: "Internal Server Error while retrieving product." };
+    },
+    {
+      query: t.Object({
+        currency: t.Optional(t.String()),
+      }),
     }
-  });
+  );

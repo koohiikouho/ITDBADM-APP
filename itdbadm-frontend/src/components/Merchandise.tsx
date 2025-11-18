@@ -210,7 +210,11 @@ const ProductGrid: React.FC = () => {
           "Fetching products from: " + apiClient.baseURL + " /products"
         );
 
-        const response = await fetch(apiClient.baseURL + "/products");
+        const response = await fetch(
+          apiClient.baseURL +
+            "/products/all/" +
+            localStorage.getItem("selectedCurrency")
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to fetch products: ${response.status}`);
@@ -251,6 +255,7 @@ const ProductGrid: React.FC = () => {
         PHP: { symbol: "₱", locale: "en-PH" },
         JPY: { symbol: "¥", locale: "ja-JP" },
         VND: { symbol: "₫", locale: "vi-VN" },
+        TRY: { symbol: "₺", locale: "tr-TR" },
       };
 
       const format = currencyFormats[selectedCurrency] || {

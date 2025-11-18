@@ -11,6 +11,7 @@ import {
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
+import { formatPrice } from "@/lib/currencyFormatter";
 
 interface Product {
   product_id: number;
@@ -143,7 +144,8 @@ const CompactProductGrid: React.FC<CompactProductGridProps> = ({ bandId }) => {
         setError(null);
 
         const response = await fetch(
-          apiClient.baseURL + `/bands/products/${bandId}/max10`
+          apiClient.baseURL +
+            `/bands/products/${bandId}/max10/${localStorage.getItem("selectedCurrency")}`
         );
 
         if (!response.ok) {
@@ -184,14 +186,6 @@ const CompactProductGrid: React.FC<CompactProductGridProps> = ({ bandId }) => {
   const handleProductClick = (productId: number) => {
     console.log("Navigating to product:", productId); // Debug log
     navigate(`/product/${productId}`);
-  };
-
-  // Format price to JPY
-  const formatPrice = (price: string) => {
-    const numericPrice = parseFloat(price);
-    return isNaN(numericPrice)
-      ? price
-      : `${numericPrice.toLocaleString("ja-JP")} JPY`;
   };
 
   // Calculate pagination
@@ -283,7 +277,7 @@ const CompactProductGrid: React.FC<CompactProductGridProps> = ({ bandId }) => {
               key={product.product_id}
               category={product.category}
               title={product.name}
-              price={formatPrice(product.price)}
+              price={formatPrice(product.price, "code")}
               imageUrl={product.image.url[0] || "/placeholder-image.jpg"}
               productId={product.product_id}
               onProductClick={handleProductClick}

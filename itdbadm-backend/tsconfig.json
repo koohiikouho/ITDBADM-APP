@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     // Environment setup & latest features
-    "lib": [
-      "ESNext"
-    ],
+    "lib": ["ESNext"],
     "target": "ES2020",
     "module": "CommonJS",
     "rootDir": ".",
@@ -11,8 +10,6 @@
     "forceConsistentCasingInFileNames": true,
     "moduleDetection": "auto",
     "jsx": "react-jsx",
-    "allowJs": true,
-    // Bundler mode
     "moduleResolution": "node",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": false,

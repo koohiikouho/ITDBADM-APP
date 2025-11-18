@@ -2,6 +2,7 @@ import { Elysia, t } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import { dbPool } from "../db";
 import mysql from "mysql2/promise";
+import { FrankfurterService } from "../services/frankfurterService";
 
 export const bookingsController = new Elysia({ prefix: "/bookings" })
   .use(
@@ -49,7 +50,6 @@ export const bookingsController = new Elysia({ prefix: "/bookings" })
     }
   })
 
-  
   // Delete a booking made by the owner user
   .delete("/:offer_id", async ({ headers, set, jwt, params }) => {
     const token = headers.authorization?.split(" ")[1];
@@ -81,7 +81,6 @@ export const bookingsController = new Elysia({ prefix: "/bookings" })
         return { error: "Booking offer not found." };
       }
 
-
       // shutting up undefined error
       if (verifyRows[0]?.user_id !== userId) {
         set.status = 403;
@@ -110,10 +109,10 @@ export const bookingsController = new Elysia({ prefix: "/bookings" })
     }
   })
 
-  // Create a new booking offer 
+  // Create a new booking offer
   .post(
-    "/",
-    async ({ headers, set, jwt, body }) => {
+    "/send/:currency",
+    async ({ params, headers, set, jwt, body }) => {
       const token = headers.authorization?.split(" ")[1];
       const payload = await jwt.verify(token);
 
@@ -121,7 +120,10 @@ export const bookingsController = new Elysia({ prefix: "/bookings" })
         set.status = 401;
         return { error: "Unauthorized" };
       }
-
+      body.offer_amount = FrankfurterService.convertToYen(
+        body.offer_amount,
+        params.currency
+      ).amount;
       const userId = payload.id;
       const { band_id, event_date, offer_amount, event_details } = body;
 
@@ -265,7 +267,7 @@ export const bookingsController = new Elysia({ prefix: "/bookings" })
 
       if (rows.length === 0) {
         set.status = 200;
-        return []; 
+        return [];
       }
 
       return rows;
@@ -284,76 +286,74 @@ export const bookingsController = new Elysia({ prefix: "/bookings" })
     const payload = await jwt.verify(token);
 
     if (!payload) {
-        set.status = 401;
-        return { error: "Unauthorized" };
+      set.status = 401;
+      return { error: "Unauthorized" };
     }
 
     const userId = payload.id;
     const offerId = params.id;
 
     try {
-        // Verify the user manages the band linked to this offer
-        const [authRows] = await dbPool.execute<mysql.RowDataPacket[]>(
-            `SELECT b.manager_id 
+      // Verify the user manages the band linked to this offer
+      const [authRows] = await dbPool.execute<mysql.RowDataPacket[]>(
+        `SELECT b.manager_id 
              FROM booking_offers bo 
              JOIN bands b ON bo.band_id = b.band_id 
              WHERE bo.offer_id = ?`,
-            [offerId]
-        );
+        [offerId]
+      );
 
-        if (authRows.length === 0 || authRows[0]?.manager_id !== userId) {
-            set.status = 403;
-            return { error: "You are not authorized to accept this offer." };
-        }
+      if (authRows.length === 0 || authRows[0]?.manager_id !== userId) {
+        set.status = 403;
+        return { error: "You are not authorized to accept this offer." };
+      }
 
-        // Call Stored Procedure
-        await dbPool.execute(`CALL sp_accept_offer(?)`, [offerId]);
+      // Call Stored Procedure
+      await dbPool.execute(`CALL sp_accept_offer(?)`, [offerId]);
 
-        return { message: "Offer accepted successfully." };
-
+      return { message: "Offer accepted successfully." };
     } catch (error) {
-        console.error("Error accepting offer:", error);
-        set.status = 500;
-        return { message: "Internal Server Error." };
+      console.error("Error accepting offer:", error);
+      set.status = 500;
+      return { message: "Internal Server Error." };
     }
   })
 
   // POST /bookings/:id/reject - Reject an offer
   .post("/:id/reject", async ({ params, headers, set, jwt }) => {
-      const token = headers.authorization?.split(" ")[1];
-      const payload = await jwt.verify(token);
-  
-      if (!payload) {
-          set.status = 401;
-          return { error: "Unauthorized" };
-      }
-  
-      const userId = payload.id;
-      const offerId = params.id;
-  
-      try {
-          // Verify auth
-          const [authRows] = await dbPool.execute<mysql.RowDataPacket[]>(
-              `SELECT b.manager_id 
+    const token = headers.authorization?.split(" ")[1];
+    const payload = await jwt.verify(token);
+
+    if (!payload) {
+      set.status = 401;
+      return { error: "Unauthorized" };
+    }
+
+    const userId = payload.id;
+    const offerId = params.id;
+
+    try {
+      // Verify auth
+      const [authRows] = await dbPool.execute<mysql.RowDataPacket[]>(
+        `SELECT b.manager_id 
                FROM booking_offers bo 
                JOIN bands b ON bo.band_id = b.band_id 
                WHERE bo.offer_id = ?`,
-              [offerId]
-          );
-  
-          if (authRows.length === 0 || authRows[0]?.manager_id !== userId) {
-              set.status = 403;
-              return { error: "You are not authorized to reject this offer." };
-          }
-  
-          // Call Stored Procedure
-          await dbPool.execute(`CALL sp_reject_offer(?)`, [offerId]);
-  
-          return { message: "Offer rejected successfully." };
-  
-      } catch (error) {
-          console.error("Error rejecting offer:", error);
-          set.status = 500;
-          return { message: "Internal Server Error." };
+        [offerId]
+      );
+
+      if (authRows.length === 0 || authRows[0]?.manager_id !== userId) {
+        set.status = 403;
+        return { error: "You are not authorized to reject this offer." };
       }
+
+      // Call Stored Procedure
+      await dbPool.execute(`CALL sp_reject_offer(?)`, [offerId]);
+
+      return { message: "Offer rejected successfully." };
+    } catch (error) {
+      console.error("Error rejecting offer:", error);
+      set.status = 500;
+      return { message: "Internal Server Error." };
+    }
   });

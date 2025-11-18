@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Pagination } from "@heroui/react";
 import { Card, CardHeader, CardBody, CardFooter, Image } from "@heroui/react";
 import { useNavigate } from "react-router-dom";
+import { formatPrice } from "@/lib/currencyFormatter";
 
 interface Product {
   product_id: number;
@@ -137,11 +138,11 @@ const ProductGrid: React.FC<ProductGridProps> = ({ bandId }) => {
 
         console.log(
           "Fetching products from:",
-          `http://localhost:3000/bands/products/${cleanBandId}`
+          `http://localhost:3000/bands/products/${cleanBandId}/${localStorage.getItem("selectedCurrency")}`
         );
 
         const response = await fetch(
-          `http://localhost:3000/bands/products/${cleanBandId}`,
+          `http://localhost:3000/bands/products/${cleanBandId}/${localStorage.getItem("selectedCurrency")}`,
           {
             method: "GET",
             headers: {
@@ -187,18 +188,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({ bandId }) => {
       setError("No band ID provided");
     }
   }, [bandId]);
-
-  // Format price to JPY
-  const formatPrice = (price: string) => {
-    try {
-      const numericPrice = parseFloat(price);
-      return isNaN(numericPrice)
-        ? price
-        : `${numericPrice.toLocaleString("ja-JP")} JPY`;
-    } catch {
-      return price;
-    }
-  };
 
   // Calculate pagination
   const totalPages = Math.ceil(products.length / productsPerPage);
@@ -256,7 +245,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ bandId }) => {
               key={product.product_id}
               category={product.category}
               title={product.name}
-              price={formatPrice(product.price)}
+              price={formatPrice(product.price, "code")}
               imageUrl={product.image.url}
               index={index} // Pass the index
               onClick={() => handleProductClick(product.product_id)}

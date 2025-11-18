@@ -29,7 +29,7 @@ import { UserNavbar } from "@/components/navbars/usernavbar";
 //   );
 // }
 
-import { RoleBasedNavbar } from "@/components/navbars/roleBasedNavbar"; 
+import { RoleBasedNavbar } from "@/components/navbars/roleBasedNavbar";
 
 export default function DefaultLayout({
   children,
@@ -38,13 +38,13 @@ export default function DefaultLayout({
 }) {
   return (
     <div className="relative flex flex-col h-screen">
-      <RoleBasedNavbar /> 
+      <RoleBasedNavbar />
       <main className="container mx-auto max-w-7xl px-6 flex-grow pt-16">
         {children}
       </main>
       {/* ... footer ... */}
       <footer className="w-full flex items-center justify-center py-3">
-//         <Link
+        <Link
           isExternal
           className="flex items-center gap-1 text-current"
           href="https://heroui.com"

@@ -15,6 +15,7 @@ import {
 } from "@heroui/react";
 import { Trash2, ShoppingBag } from "lucide-react";
 import { apiClient } from "@/lib/api";
+import { formatPrice } from "@/lib/currencyFormatter";
 
 // Types
 interface CartItem {
@@ -118,13 +119,18 @@ const Checkout = () => {
           throw new Error("No access token found. Please log in.");
         }
 
-        const response = await fetch(apiClient.baseURL + "/carts/user", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          apiClient.baseURL +
+            "/carts/user/" +
+            localStorage.getItem("selectedCurrency"),
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (!response.ok) {
           if (response.status === 401) {
@@ -586,10 +592,7 @@ const Checkout = () => {
                       onClick={(e) => e.stopPropagation()} // Prevent navigation when clicking remove button
                     >
                       <p className="font-semibold text-sm">
-                        ¥
-                        {(formatCurrency(item.price) * item.quantity).toFixed(
-                          2
-                        )}
+                        {formatPrice(Number(item.price) * item.quantity)}
                       </p>
                       <Button
                         isIconOnly
@@ -611,12 +614,12 @@ const Checkout = () => {
               <div className="space-y-2">
                 <div className="flex justify-between mb-2">
                   <span>Subtotal</span>
-                  <span>¥{subtotal.toFixed(2)}</span>
+                  <span>{formatPrice(subtotal)}</span>
                 </div>
                 <Divider />
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total</span>
-                  <span>¥{total.toFixed(2)}</span>
+                  <span>{formatPrice(subtotal)}</span>
                 </div>
               </div>
             </CardBody>

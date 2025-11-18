@@ -32,7 +32,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({
   description = "",
   className,
   size = "md",
-  variant = "flat",
+  variant = "light",
 }) => {
   const [isCopied, setIsCopied] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout>();

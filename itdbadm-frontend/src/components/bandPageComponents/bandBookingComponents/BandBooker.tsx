@@ -41,14 +41,14 @@ const OfferForm: React.FC<OfferFormProps> = ({
   className,
   onSubmit,
   bandName = "the band",
-  currency = "USD",
+  currency = String(localStorage.getItem("selectedCurrency")),
 }) => {
   const { bandId } = useParams(); // Get bandId from URL params
   const [formData, setFormData] = useState<OfferFormData>({
     date: null,
     price: "",
     description: "",
-    currency: currency,
+    currency: String(localStorage.getItem("selectedCurrency")),
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,25 +59,25 @@ const OfferForm: React.FC<OfferFormProps> = ({
       label: "US Dollar",
       symbol: "$",
       icon: DollarSign,
-      example: "2,000.00",
+      example: "2000.00",
     },
     PHP: {
       label: "Philippine Peso",
       symbol: "₱",
       icon: Coins,
-      example: "100,000.00",
+      example: "100000.00",
     },
     JPY: {
       label: "Japanese Yen",
       symbol: "¥",
       icon: JapaneseYen,
-      example: "200,000",
+      example: "200000",
     },
-    VND: {
+    TRY: {
       label: "Vietnamese Dong",
-      symbol: "₫",
+      symbol: "₺",
       icon: Landmark,
-      example: "50,000,000",
+      example: "50000000",
     },
   };
 
@@ -125,14 +125,19 @@ const OfferForm: React.FC<OfferFormProps> = ({
       };
 
       // Make API call
-      const response = await fetch(apiClient.baseURL + "/bookings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(requestData),
-      });
+      const response = await fetch(
+        apiClient.baseURL +
+          "/bookings/send/" +
+          localStorage.getItem("selectedCurrency"),
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(requestData),
+        }
+      );
 
       const result = await response.json();
 
@@ -153,7 +158,7 @@ const OfferForm: React.FC<OfferFormProps> = ({
         date: null,
         price: "",
         description: "",
-        currency: currency,
+        currency: "",
       });
     } catch (error) {
       console.error("Error creating booking offer:", error);

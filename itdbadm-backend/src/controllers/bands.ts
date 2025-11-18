@@ -4,6 +4,7 @@ import { dbPool } from "../db";
 import mysql from "mysql2/promise";
 
 import { jwt } from "@elysiajs/jwt";
+import { FrankfurterService } from "../services/frankfurterService";
 
 export const bandsController = new Elysia({ prefix: "/bands" })
   .use(
@@ -136,10 +137,10 @@ export const bandsController = new Elysia({ prefix: "/bands" })
 
   // GET /bands/products/:id
   // gets all products offered by a band
-  .get("/products/:id", async ({ params, set }) => {
+  .get("/products/:id/:currency", async ({ params, set }) => {
     //getting the id from the params
     const bandId = params.id;
-
+    const currency = params.currency;
     if (isNaN(Number(bandId))) {
       set.status = 400;
       return { error: "Invalid band ID." };
@@ -162,7 +163,10 @@ export const bandsController = new Elysia({ prefix: "/bands" })
       const processedProducts = bandProductsList?.map((product: any) => {
         // Handle different image formats to return only one image in array
         let singleImageUrl;
-
+        product.price = FrankfurterService.convert(
+          product.price,
+          currency
+        ).amount;
         // Use the 'image' field instead of 'img'
         if (product.image && product.image.url) {
           if (Array.isArray(product.image.url)) {
@@ -197,9 +201,11 @@ export const bandsController = new Elysia({ prefix: "/bands" })
     }
   })
 
-  .get("/products/:id/max10", async ({ params, set }) => {
+  .get("/products/:id/max10/:currency", async ({ params, set }) => {
     //getting the id from the params
     const bandId = params.id;
+
+    const currency = params.currency;
 
     if (isNaN(Number(bandId))) {
       set.status = 400;
@@ -221,6 +227,10 @@ export const bandsController = new Elysia({ prefix: "/bands" })
       // Process each product to return only one image in the array
       // chaining operation to shut up error
       const processedProducts = bandProductsList?.map((product: any) => {
+        product.price = FrankfurterService.convert(
+          product.price,
+          currency
+        ).amount;
         // Handle different image formats to return only one image in array
         let singleImageUrl;
 
@@ -238,8 +248,8 @@ export const bandsController = new Elysia({ prefix: "/bands" })
           singleImageUrl = null;
         }
 
-        // Return the product with processed image field (remove the duplicate img field)
         const { img, ...productWithoutImg } = product;
+
         return {
           ...productWithoutImg,
           image: {

@@ -9,6 +9,8 @@ import {
   TagIcon,
   CurrencyDollarIcon,
 } from "@heroicons/react/24/outline";
+import { apiClient } from "@/lib/api";
+import { formatPrice } from "@/lib/currencyFormatter";
 
 // Types
 interface Product {
@@ -61,13 +63,16 @@ const Orders = () => {
       throw new Error("No access token found. Please log in.");
     }
 
-    const response = await fetch("http://localhost:3000/orders/user", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch(
+      `${apiClient.baseURL}/orders/user/${localStorage.getItem("selectedCurrency")}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -149,15 +154,6 @@ const Orders = () => {
       month: "long",
       day: "numeric",
     });
-  };
-
-  const formatCurrency = (amount: string | number): string => {
-    const numericAmount =
-      typeof amount === "string" ? parseFloat(amount) : amount;
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "JPY",
-    }).format(numericAmount);
   };
 
   const filteredOrders =
@@ -282,7 +278,7 @@ const Orders = () => {
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-600">Total Spent</p>
               <p className="text-2xl font-bold text-gray-900">
-                {formatCurrency(totalSpent)}
+                {formatPrice(totalSpent)}
               </p>
             </div>
           </div>
@@ -342,7 +338,7 @@ const Orders = () => {
                       ORD-{order.id.toString().padStart(3, "0")}
                     </h3>
                     <p className="text-sm text-gray-600">
-                      {formatDate(order.order_date)}
+                      {formatPrice(order.order_date)}
                     </p>
                   </div>
                 </div>
@@ -355,7 +351,7 @@ const Orders = () => {
                   </span>
                   <div className="text-right">
                     <p className="text-lg font-bold text-gray-900">
-                      {formatCurrency(order.price)}
+                      {formatPrice(order.price)}
                     </p>
                     <p className="text-sm text-gray-600">
                       {order.products?.length || 0} items
@@ -416,11 +412,11 @@ const Orders = () => {
                       </div>
                       <div className="text-right">
                         <p className="text-md font-semibold text-gray-900">
-                          {formatCurrency(product.price)}
+                          {formatPrice(product.price)}
                         </p>
                         <p className="text-sm text-gray-600">
                           Subtotal:{" "}
-                          {formatCurrency(
+                          {formatPrice(
                             (typeof product.price === "string"
                               ? parseFloat(product.price)
                               : product.price) * product.quantity
@@ -440,7 +436,7 @@ const Orders = () => {
                     <div className="text-right">
                       <p className="text-sm text-gray-600">Total Amount</p>
                       <p className="text-xl font-bold text-gray-900">
-                        {formatCurrency(order.price)}
+                        {formatPrice(order.price)}
                       </p>
                     </div>
                   </div>

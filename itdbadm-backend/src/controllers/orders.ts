@@ -2,6 +2,7 @@ import { Elysia, t } from "elysia";
 import { dbPool } from "../db";
 import mysql from "mysql2/promise";
 import { jwt } from "@elysiajs/jwt";
+import { FrankfurterService } from "../services/frankfurterService";
 
 export const ordersController = new Elysia({ prefix: "/orders" })
   .use(
@@ -11,9 +12,9 @@ export const ordersController = new Elysia({ prefix: "/orders" })
       exp: "1d",
     })
   )
-  
+
   // GET /orders
-  .get("/", async ({ set }) => {
+  .get("/", async ({ params, set }) => {
     try {
       const query = `SELECT * FROM orders`;
 
@@ -46,7 +47,7 @@ export const ordersController = new Elysia({ prefix: "/orders" })
 
   // GET /orders/:id
 
-  .get("/user", async ({ headers, set, jwt }) => {
+  .get("/user/:currency", async ({ params, headers, set, jwt }) => {
     const token = headers.authorization?.split(" ")[1];
     const payload = await jwt.verify(token);
 
@@ -118,7 +119,8 @@ export const ordersController = new Elysia({ prefix: "/orders" })
               quantity: product.quantity,
               band_id: product.band_id,
               name: product.name,
-              price: product.price,
+              price: FrankfurterService.convert(product.price, params.currency)
+                .amount,
               description: product.description,
               category: product.category,
               image: {
@@ -135,7 +137,8 @@ export const ordersController = new Elysia({ prefix: "/orders" })
             order_date: order.order_date,
             status: order.status,
             date_fulfilled: order.date_fulfilled,
-            price: order.price,
+            price: FrankfurterService.convert(order.price, params.currency)
+              .amount,
             offer_id: order.offer_id,
             description: order.description,
             products: products, // Include all products for this order

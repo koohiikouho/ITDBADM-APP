@@ -36,11 +36,10 @@ export default function ProductPage() {
           throw new Error("No product ID found in URL");
         }
 
-        console.log("Fetching product from:", `/products/${productId}`);
-
         // Fetch product data
         const productResponse = await fetch(
-          apiClient.baseURL + `/products/${productId}`
+          apiClient.baseURL +
+            `/products/${productId}/${localStorage.getItem("selectedCurrency")}`
         );
 
         if (!productResponse.ok) {

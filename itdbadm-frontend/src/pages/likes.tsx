@@ -260,7 +260,11 @@ const LikedProducts: React.FC = () => {
         console.log("Liked product IDs:", likedProductIds);
 
         // Then fetch all products and filter only the liked ones
-        const productsResponse = await fetch(apiClient.baseURL + "/products");
+        const productsResponse = await fetch(
+          apiClient.baseURL +
+            "/products/all/" +
+            localStorage.getItem("selectedCurrency")
+        );
 
         if (!productsResponse.ok) {
           throw new Error(
