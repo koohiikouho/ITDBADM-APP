@@ -31,6 +31,7 @@ export default function CreateProductPage() {
         price: "",
         description: "",
         category: "",
+        stock: "0", // Add stock field
         images: [] as File[]
     });
 
@@ -89,8 +90,15 @@ export default function CreateProductPage() {
 
         // Validate price is a valid number
         const priceValue = parseFloat(formData.price);
+        const stockValue = parseInt(formData.stock);
+
         if (isNaN(priceValue) || priceValue <= 0) {
             alert("Please enter a valid price");
+            return;
+        }
+
+        if (isNaN(stockValue) || stockValue < 0) {
+            alert("Please enter a valid stock quantity");
             return;
         }
 
@@ -101,6 +109,7 @@ export default function CreateProductPage() {
                 price: priceValue,
                 description: formData.description,
                 category: formData.category,
+                stock: stockValue, // Include stock
             };
 
             console.log("Submitting product data:", submitData);
@@ -226,6 +235,16 @@ export default function CreateProductPage() {
                             step="0.01"
                         />
 
+                        <Input
+                            label="Stock Quantity"
+                            type="number"
+                            value={formData.stock}
+                            onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                            placeholder="Enter stock quantity"
+                            isRequired
+                            min="0"
+                        />
+
                         {/* Category */}
                         <Select
                             label="Category"
@@ -298,7 +317,7 @@ export default function CreateProductPage() {
                                 onPress={handleSubmit}
                                 isLoading={loading}
                                 startContent={!loading && <Save className="h-4 w-4" />}
-                                isDisabled={!formData.name || !formData.price || !formData.category || !band}
+                                isDisabled={!formData.name || !formData.price || !formData.category || !formData.stock || !band}
                             >
                                 {loading ? "Creating..." : "Create Product"}
                             </Button>

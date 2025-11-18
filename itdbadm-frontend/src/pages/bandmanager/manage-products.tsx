@@ -12,22 +12,17 @@ import {
     TableRow,
     TableCell,
     Pagination,
-    Dropdown,
-    DropdownTrigger,
-    DropdownMenu,
-    DropdownItem,
     Badge
 } from "@heroui/react";
 import {
     Plus,
     Edit,
     Trash2,
-    MoreVertical,
     Search,
     Package
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { apiClient } from "@/lib/api";
 
 interface Product {
@@ -39,11 +34,11 @@ interface Product {
     image: {
         url: string[];
     };
+    stock?: number;
 }
 
 export default function ManageProductsPage() {
     const navigate = useNavigate();
-    const { productId } = useParams();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
@@ -56,15 +51,46 @@ export default function ManageProductsPage() {
 
     const fetchProducts = async () => {
         try {
+            const token = localStorage.getItem("accessToken");
             const response = await fetch(`${apiClient.baseURL}/band-manager/products`, {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                    Authorization: `Bearer ${token}`,
                 },
             });
 
             if (response.ok) {
-                const data = await response.json();
-                setProducts(data);
+                const productsData = await response.json();
+
+                // Fetch stock information for each product
+                const productsWithStock = await Promise.all(
+                    productsData.map(async (product: Product) => {
+                        try {
+                            const stockResponse = await fetch(`${apiClient.baseURL}/inventory/${product.product_id}`, {
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                },
+                            });
+
+                            if (stockResponse.ok) {
+                                const stockData = await stockResponse.json();
+                                return {
+                                    ...product,
+                                    stock: stockData.quantity || 0
+                                };
+                            } else {
+                                console.warn(`Could not fetch stock for product ${product.product_id}`);
+                                return { ...product, stock: 0 };
+                            }
+                        } catch (error) {
+                            console.error(`Error fetching stock for product ${product.product_id}:`, error);
+                            return { ...product, stock: 0 };
+                        }
+                    })
+                );
+
+                setProducts(productsWithStock);
+            } else {
+                console.error("Error fetching products:", response.status);
             }
         } catch (error) {
             console.error("Error fetching products:", error);
@@ -77,10 +103,11 @@ export default function ManageProductsPage() {
         if (!confirm("Are you sure you want to delete this product?")) return;
 
         try {
+            const token = localStorage.getItem("accessToken");
             const response = await fetch(`${apiClient.baseURL}/band-manager/products/${productId}`, {
                 method: "DELETE",
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                    Authorization: `Bearer ${token}`,
                 },
             });
 
@@ -163,6 +190,7 @@ export default function ManageProductsPage() {
                                 <TableColumn>PRODUCT</TableColumn>
                                 <TableColumn>CATEGORY</TableColumn>
                                 <TableColumn>PRICE</TableColumn>
+                                <TableColumn>STOCK</TableColumn>
                                 <TableColumn>ACTIONS</TableColumn>
                             </TableHeader>
                             <TableBody>
@@ -171,9 +199,12 @@ export default function ManageProductsPage() {
                                         <TableCell>
                                             <div className="flex items-center space-x-3">
                                                 <img
-                                                    src={product.image.url[0] || "/api/placeholder/50/50"}
+                                                    src={product.image?.url?.[0] || "/api/placeholder/50/50"}
                                                     alt={product.name}
                                                     className="w-10 h-10 rounded object-cover"
+                                                    onError={(e) => {
+                                                        (e.target as HTMLImageElement).src = "/api/placeholder/50/50";
+                                                    }}
                                                 />
                                                 <div>
                                                     <p className="font-medium">{product.name}</p>
@@ -190,6 +221,14 @@ export default function ManageProductsPage() {
                                         </TableCell>
                                         <TableCell className="font-semibold">
                                             ¥{parseFloat(product.price).toLocaleString()}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge
+                                                variant="flat"
+                                                color={product.stock && product.stock > 0 ? "success" : "danger"}
+                                            >
+                                                {product.stock || 0} in stock
+                                            </Badge>
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex space-x-2">
