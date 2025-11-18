@@ -768,4 +768,70 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
                 vacation: t.Boolean(),
             }),
         }
-    );
+    )
+
+    // GET /band-manager/orders - Get all orders containing band's products
+    .get("/orders", async ({ headers, set, jwt }) => {
+        const token = headers.authorization?.split(" ")[1];
+        const payload = await jwt.verify(token);
+
+        if (!payload) {
+            set.status = 401;
+            return { error: "Unauthorized" };
+        }
+
+        const userId = payload.id;
+
+        try {
+            // Fetch orders that contain items from the band managed by this user
+            // We only aggregate items belonging to this band, not the whole user order
+            const query = `
+                SELECT 
+                    o.order_id,
+                    o.order_date,
+                    o.status,
+                    u.username as customer_name,
+                    si.first_name,
+                    si.last_name,
+                    si.address,
+                    si.city,
+                    si.country,
+                    si.postal_code,
+                    si.contact_information,
+                    SUM(op.quantity * p.price) as band_total,
+                    JSON_ARRAYAGG(
+                        JSON_OBJECT(
+                            'product_name', p.name,
+                            'quantity', op.quantity,
+                            'price', p.price,
+                            'image', p.image
+                        )
+                    ) as items
+                FROM orders o
+                JOIN users u ON o.user_id = u.user_id
+                LEFT JOIN shipping_information si ON o.shipping_id = si.shipping_id
+                JOIN orders_products op ON o.order_id = op.order_id
+                JOIN products p ON op.product_id = p.product_id
+                JOIN bands b ON p.band_id = b.band_id
+                WHERE b.manager_id = ?
+                GROUP BY o.order_id, o.order_date, o.status, u.username, si.shipping_id
+                ORDER BY o.order_date DESC
+            `;
+
+            const [rows] = await dbPool.execute<mysql.RowDataPacket[]>(query, [userId]);
+
+            // Parse the items JSON string if necessary (mysql2 might return it as string)
+            const orders = rows.map((row: any) => ({
+                ...row,
+                // Ensure items is an array (it might come as a string from JSON_ARRAYAGG depending on driver version)
+                items: typeof row.items === 'string' ? JSON.parse(row.items) : row.items
+            }));
+
+            return orders;
+
+        } catch (error) {
+            console.error("Error fetching band orders:", error);
+            set.status = 500;
+            return { error: "Internal Server Error while retrieving orders" };
+        }
+    });

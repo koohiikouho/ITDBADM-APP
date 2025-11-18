@@ -77,7 +77,7 @@ export default function BandManagerDashboard() {
             title: "View Offers",
             description: "Manage booking requests",
             icon: Calendar,
-            action: () => navigate("/sent-offers"),
+            action: () => navigate("/bandmanager/bookings"),
             color: "bg-purple-500"
         },
         {

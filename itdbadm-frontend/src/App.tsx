@@ -32,6 +32,8 @@ import SchedulePage from "./pages/bandmanager/schedule";
 import AnalyticsPage from "./pages/bandmanager/analytics";
 import EditProductPage from "./pages/bandmanager/edit-product";
 
+import BandBookingsPage from "./pages/bandmanager/bookings";
+import BandOrdersPage from "./pages/bandmanager/orders";
 
 function App() {
   return (
@@ -64,6 +66,10 @@ function App() {
 
         <Route element={<SentOffersPage />} path="sent-offers" />
         <Route element={<MyOrdersPage />} path="/orders" />
+
+        <Route element={<BandBookingsPage />} path="/bandmanager/bookings"/>
+        <Route element={<BandOrdersPage />} path="/bandmanager/orders" />
+
       </Routes>
     </AuthProvider>
   );

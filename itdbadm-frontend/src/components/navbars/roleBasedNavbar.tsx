@@ -544,13 +544,15 @@ export const RoleBasedNavbar = () => {
     { label: "About", href: "/about" },
   ];
 
+  // 
   const bandManagerLinks = [
     { label: "Dashboard", href: "/bandmanager/dashboard" },
     { label: "Manage Band", href: "/bandmanager/edit-band" },
-    { label: "View Orders", href: "/bandmanager/analytics" }, 
-    { label: "Booking Offers", href: "/bandmanager/schedule" }, 
+    { label: "View Orders", href: "/bandmanager/orders" }, 
+    { label: "Booking Offers", href: "/bandmanager/bookings" }, 
   ];
 
+  // Change the admin links once a view has been established
   const adminLinks = [
     { label: "Analytics", href: "/bandmanager/analytics" },
     { label: "Manage Users", href: "/admin/users" },
