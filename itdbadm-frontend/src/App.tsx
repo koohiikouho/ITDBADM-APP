@@ -26,6 +26,7 @@ import LikesPage from "./pages/likes";
 //bandmanager side
 import BandManagerDashboard from "./pages/bandmanager/dashboard";
 import EditBandPage from "./pages/bandmanager/edit-band";
+import CreateBandProductPage from "./pages/bandmanager/create-product";
 import ManageProductsPage from "./pages/bandmanager/manage-products";
 import SchedulePage from "./pages/bandmanager/schedule";
 import AnalyticsPage from "./pages/bandmanager/analytics";
@@ -55,7 +56,7 @@ function App() {
         <Route element={<LikesPage />} path="/likes" />
         <Route element={<BandManagerDashboard />} path="/bandmanager/dashboard" />
         <Route element={<EditBandPage />} path="/bandmanager/edit-band" />
-        <Route element={<CreateProductPage />} path="/bandmanager/create-product" />
+        <Route element={<CreateBandProductPage />} path="/bandmanager/create-product" />
         <Route element={<ManageProductsPage />} path="/bandmanager/manage-products" />
         <Route element={<EditProductPage />} path="/bandmanager/edit-product/:productId" />
         <Route element={<SchedulePage />} path="/bandmanager/schedule" />

@@ -9,14 +9,23 @@ import {
     Select,
     SelectItem
 } from "@heroui/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Save, Upload } from "lucide-react";
 import { apiClient } from "@/lib/api";
 
+interface Band {
+    band_id: number;
+    name: string;
+    genre: string;
+    description: string;
+}
+
 export default function CreateProductPage() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [band, setBand] = useState<Band | null>(null);
+    const [bandLoading, setBandLoading] = useState(true);
     const [formData, setFormData] = useState({
         name: "",
         price: "",
@@ -32,10 +41,49 @@ export default function CreateProductPage() {
         { key: "Digital Music", label: "Digital Music" }
     ];
 
+    // Fetch the user's band on component mount
+    useEffect(() => {
+        const fetchBand = async () => {
+            try {
+                const token = localStorage.getItem("accessToken");
+                console.log("Fetching band with token:", token ? "Present" : "Missing");
+
+                const response = await fetch(`${apiClient.baseURL}/band-manager/band`, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                    },
+                });
+
+                console.log("Band fetch response status:", response.status);
+
+                if (response.ok) {
+                    const bandData = await response.json();
+                    console.log("Band data:", bandData);
+                    setBand(bandData);
+                } else {
+                    const errorText = await response.text();
+                    console.error("Error fetching band:", errorText);
+                    alert("Error: Unable to fetch your band information");
+                }
+            } catch (error) {
+                console.error("Error fetching band:", error);
+                alert("Network error: Unable to fetch band information");
+            } finally {
+                setBandLoading(false);
+            }
+        };
+
+        fetchBand();
+    }, []);
 
     const handleSubmit = async () => {
         if (!formData.name || !formData.price || !formData.category) {
             alert("Please fill in all required fields");
+            return;
+        }
+
+        if (!band) {
+            alert("Error: No band associated with your account");
             return;
         }
 
@@ -50,34 +98,51 @@ export default function CreateProductPage() {
         try {
             const submitData = {
                 name: formData.name,
-                price: priceValue.toString(), // Ensure it's a string
+                price: priceValue,
                 description: formData.description,
                 category: formData.category,
             };
 
-            console.log("Submitting data:", submitData); // Debug log
+            console.log("Submitting product data:", submitData);
+            console.log("For band:", band.name, "(ID:", band.band_id + ")");
+
+            const token = localStorage.getItem("accessToken");
+            console.log("Using token:", token ? "Present" : "Missing");
 
             const response = await fetch(`${apiClient.baseURL}/band-manager/products`, {
                 method: "POST",
                 headers: {
-                    "Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
+                    "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(submitData),
             });
 
+            console.log("Response status:", response.status);
+            console.log("Response headers:", Object.fromEntries(response.headers.entries()));
+
             if (response.ok) {
                 const result = await response.json();
+                console.log("Success response:", result);
                 alert("Product created successfully!");
                 navigate("/bandmanager/manage-products");
             } else {
-                const errorData = await response.json();
-                console.error("Server error response:", errorData);
-                alert(`Error creating product: ${errorData.error || "Unknown error"}`);
+                const errorText = await response.text();
+                console.error("Server error response:", errorText);
+                let errorMessage = "Unknown error occurred";
+
+                try {
+                    const errorData = JSON.parse(errorText);
+                    errorMessage = errorData.error || errorData.message || errorText;
+                } catch (e) {
+                    errorMessage = errorText || "Unknown error occurred";
+                }
+
+                alert(`Error creating product: ${errorMessage}`);
             }
         } catch (error) {
-            console.error("Error creating product:", error);
-            alert("Error creating product - check console for details");
+            console.error("Network error creating product:", error);
+            alert("Network error: Unable to create product. Check console for details.");
         } finally {
             setLoading(false);
         }
@@ -92,12 +157,50 @@ export default function CreateProductPage() {
         }
     };
 
+    if (bandLoading) {
+        return (
+            <DefaultLayout>
+                <div className="max-w-2xl mx-auto p-6">
+                    <div className="flex justify-center items-center py-16">
+                        <div className="text-lg">Loading band information...</div>
+                    </div>
+                </div>
+            </DefaultLayout>
+        );
+    }
+
+    if (!band) {
+        return (
+            <DefaultLayout>
+                <div className="max-w-2xl mx-auto p-6">
+                    <div className="text-center py-16">
+                        <h2 className="text-2xl font-bold text-red-600 mb-4">No Band Found</h2>
+                        <p className="text-gray-600 mb-6">
+                            You need to have a band associated with your account to create products.
+                        </p>
+                        <Button
+                            color="primary"
+                            onPress={() => navigate("/bandmanager")}
+                        >
+                            Go to Band Management
+                        </Button>
+                    </div>
+                </div>
+            </DefaultLayout>
+        );
+    }
+
     return (
         <DefaultLayout>
             <div className="max-w-2xl mx-auto p-6">
                 <div className="mb-6">
                     <h1 className="text-3xl font-bold">Create New Product</h1>
                     <p className="text-gray-600">Add new merchandise to your band's store</p>
+                    <div className="mt-2 p-3 bg-blue-50 rounded-lg">
+                        <p className="text-sm text-blue-800">
+                            <strong>Band:</strong> {band.name}
+                        </p>
+                    </div>
                 </div>
 
                 <Card>
@@ -119,6 +222,8 @@ export default function CreateProductPage() {
                             onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                             placeholder="Enter price"
                             isRequired
+                            min="0"
+                            step="0.01"
                         />
 
                         {/* Category */}
@@ -193,7 +298,7 @@ export default function CreateProductPage() {
                                 onPress={handleSubmit}
                                 isLoading={loading}
                                 startContent={!loading && <Save className="h-4 w-4" />}
-                                isDisabled={!formData.name || !formData.price || !formData.category}
+                                isDisabled={!formData.name || !formData.price || !formData.category || !band}
                             >
                                 {loading ? "Creating..." : "Create Product"}
                             </Button>

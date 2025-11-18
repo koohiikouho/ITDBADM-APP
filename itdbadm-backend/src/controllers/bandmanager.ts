@@ -192,7 +192,6 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
         }
     })
 
-    // Create product
     .post(
         "/products",
         async ({ headers, set, jwt, body }) => {
@@ -206,6 +205,14 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
 
             const userId = payload.id;
             const { name, price, description, category } = body;
+
+            // Handle both string and number price
+            const priceValue = typeof price === 'string' ? parseFloat(price) : price;
+
+            if (isNaN(priceValue) || priceValue <= 0) {
+                set.status = 400;
+                return { error: "Invalid price" };
+            }
 
             // temp image data will update cloudinary later
             const imageUrls = [
@@ -233,7 +240,7 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
                     url: imageUrls
                 };
 
-                // Insert product
+                // Insert product - use the parsed price value
                 const insertQuery = `
                     INSERT INTO products (band_id, name, price, description, category, image)
                     VALUES (?, ?, ?, ?, ?, ?)
@@ -242,7 +249,7 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
                 const [result] = await connection.execute<mysql.OkPacket>(insertQuery, [
                     bandId,
                     name,
-                    parseFloat(price),
+                    priceValue, // Use the parsed number
                     description,
                     category,
                     JSON.stringify(imageData)
@@ -276,7 +283,7 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
         {
             body: t.Object({
                 name: t.String(),
-                price: t.String(),
+                price: t.Union([t.String(), t.Number()]), // Accept both string and number
                 description: t.String(),
                 category: t.String(),
             })
