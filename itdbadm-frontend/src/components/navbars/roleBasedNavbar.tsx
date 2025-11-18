@@ -149,6 +149,12 @@ export const RoleBasedNavbar = () => {
           role_id: payload?.role_id || 3,
           isAuthenticated: true,
         });
+
+        setUser({
+          username: username,
+          role_id: payload?.role_id || 3,
+          isAuthenticated: true,
+        });
       } catch (error) {
         console.error("Auth check failed", error);
         handleLogout();
@@ -238,24 +244,24 @@ export const RoleBasedNavbar = () => {
     { label: "About", href: "/about" },
   ];
 
-  // 
+  //
   const bandManagerLinks = [
     { label: "Dashboard", href: "/bandmanager/dashboard" },
     { label: "Manage Band", href: "/bandmanager/edit-band" },
-<<<<<<< Updated upstream
-    { label: "View Orders", href: "/bandmanager/orders" }, 
-    { label: "Booking Offers", href: "/bandmanager/bookings" }, 
-=======
+
+    { label: "View Orders", href: "/bandmanager/orders" },
+    { label: "Booking Offers", href: "/bandmanager/bookings" },
+
     { label: "View Orders", href: "/bandmanager/analytics" },
     { label: "Booking Offers", href: "/bandmanager/schedule" },
->>>>>>> Stashed changes
   ];
 
   // Change the admin links once a view has been established
   const adminLinks = [
-    { label: "Analytics", href: "/bandmanager/analytics" },
-    { label: "Manage Users", href: "/admin/users" },
-    { label: "Manage Products", href: "/bandmanager/manage-products" },
+    { label: "Dashboard", href: "/admin/dashboard" },
+    { label: "Users", href: "/admin/users" },
+    { label: "Products", href: "/admin/products" },
+    { label: "Analytics", href: "/admin/analytics" },
   ];
 
   let navLinks = customerLinks;

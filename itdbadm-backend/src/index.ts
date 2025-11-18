@@ -14,6 +14,8 @@ import { branchController } from "./controllers/branches";
 import { bookingsController } from "./controllers/bookings";
 import { likeController } from "./controllers/like";
 import { bandManagerController } from "./controllers/bandmanager";
+
+import { adminController } from "./controllers/admin";
 // JWT Middleware Configuration
 
 const app = new Elysia()
@@ -45,6 +47,7 @@ const app = new Elysia()
   .use(likeController)
   .use(bookingsController)
   .use(bandManagerController)
+  .use(adminController)
 
   .use(cors())
 
