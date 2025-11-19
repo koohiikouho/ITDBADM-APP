@@ -59,7 +59,7 @@ export default function EditProductPage() {
             const currency = localStorage.getItem("selectedCurrency") || "JPY";
 
             // Fetch product details with currency parameter
-            const response = await fetch(`${apiClient.baseURL}/products/${productId}/${currency}`, {
+            const response = await fetch(`${apiClient.baseURL}/band-manager/${productId}/${currency}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

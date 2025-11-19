@@ -1468,4 +1468,48 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
       set.status = 500;
       return { error: "Internal Server Error while retrieving orders" };
     }
-  });
+  })
+
+  // GET /products/:id
+    .get(
+      "/:id/:currency",
+      async ({ params, set, query }) => {
+        try {
+          const productId = params.id;
+          const currency = params.currency;
+  
+          // SQL Query: Fetch detailed info for a specific product by ID
+          const query = `SELECT band_id, name, price, description, category, image FROM products WHERE product_id = ${productId}`;
+  
+          const [rows] = await dbPool.execute<mysql.RowDataPacket[]>(query);
+  
+          if (rows.length === 0) {
+            set.status = 404;
+            return { message: "Product not found." };
+          }
+  
+          const product = rows[0];
+  
+          // Convert price if currency is specified and not JPY
+          if (currency && currency !== "JPY") {
+            const converted = await FrankfurterService.convert(
+              product.price,
+              currency
+            );
+            product.price = converted.amount;
+          }
+  
+          set.status = 200;
+          return product;
+        } catch (error) {
+          console.error("Error fetching product by ID:", error);
+          set.status = 500;
+          return { message: "Internal Server Error while retrieving product." };
+        }
+      },
+      {
+        query: t.Object({
+          currency: t.Optional(t.String()),
+        }),
+      }
+    );
