@@ -379,6 +379,10 @@ export default function EditProductPage() {
                                 <p className="text-sm text-gray-600 mb-2">
                                     Drag and drop images here, or click to select multiple images
                                 </p>
+                                <p className="text-xs text-gray-500 mb-3">
+                                    <strong>Supported formats:</strong> JPG, PNG, WEBP, GIF<br />
+                                    <strong>Maximum file size:</strong> 5MB per image
+                                </p>
                                 <input
                                     type="file"
                                     multiple
