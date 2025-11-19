@@ -48,14 +48,14 @@ export default function EditBandPage() {
 
             if (response.ok) {
                 const data = await response.json();
-                
+
                 // Sanitize data: Convert nulls to empty strings
                 // Handle member_list parsing if it comes as a string
                 let members = [];
                 if (Array.isArray(data.member_list)) {
                     members = data.member_list;
                 } else if (typeof data.member_list === 'string') {
-                    try { members = JSON.parse(data.member_list); } catch (e) {}
+                    try { members = JSON.parse(data.member_list); } catch (e) { }
                 }
 
                 setBandData({
@@ -66,7 +66,7 @@ export default function EditBandPage() {
                     pfp_string: data.pfp_string || "",
                     member_list: members
                 });
-                
+
                 setPfpPreview(data.pfp_string || "");
             }
         } catch (error) {
@@ -119,15 +119,9 @@ export default function EditBandPage() {
         const file = event.target.files?.[0];
         if (!file) return;
 
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-            alert('Please select a valid image file');
-            return;
-        }
-
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            alert('Image size should be less than 5MB');
+        const validationResult = validateImageFile(file);
+        if (!validationResult.isValid) {
+            alert(validationResult.error);
             return;
         }
 
@@ -148,8 +142,6 @@ export default function EditBandPage() {
 
             if (response.ok) {
                 const result = await response.json();
-
-                // Update both the band data and preview
                 if (bandData) {
                     setBandData({
                         ...bandData,
@@ -157,7 +149,6 @@ export default function EditBandPage() {
                     });
                 }
                 setPfpPreview(result.pfp_url);
-
                 alert("Profile picture updated successfully!");
             } else {
                 const errorData = await response.json();
@@ -168,9 +159,43 @@ export default function EditBandPage() {
             alert("Error uploading profile picture");
         } finally {
             setUploadingPfp(false);
-            // Clear the file input
             event.target.value = '';
         }
+    };
+
+    const validateImageFile = (file: File): { isValid: boolean; error?: string } => {
+        const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+        const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+        const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+
+        // Check file type
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            return {
+                isValid: false,
+                error: `Invalid file type. Please select JPG, PNG, WEBP, or GIF file.`
+            };
+        }
+
+        // Check file size
+        if (file.size > MAX_SIZE) {
+            const currentSizeMB = (file.size / 1024 / 1024).toFixed(2);
+            return {
+                isValid: false,
+                error: `File size too large. Maximum size is 5MB. Current size: ${currentSizeMB}MB`
+            };
+        }
+
+        // Check file extension
+        const fileName = file.name.toLowerCase();
+        const hasValidExtension = ALLOWED_EXTENSIONS.some(ext => fileName.endsWith(ext));
+        if (!hasValidExtension) {
+            return {
+                isValid: false,
+                error: `Invalid file extension. Allowed: ${ALLOWED_EXTENSIONS.join(', ')}`
+            };
+        }
+
+        return { isValid: true };
     };
 
     const removePfp = async () => {

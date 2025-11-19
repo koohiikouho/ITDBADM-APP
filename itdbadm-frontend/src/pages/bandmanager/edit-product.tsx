@@ -109,11 +109,64 @@ export default function EditProductPage() {
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const filesArray = Array.from(e.target.files);
-            setFormData({
-                ...formData,
-                images: [...formData.images, ...filesArray] // Append new files instead of replacing
+            const validFiles: File[] = [];
+            const invalidFiles: string[] = [];
+
+            filesArray.forEach(file => {
+                const validation = validateImageFile(file);
+                if (validation.isValid) {
+                    validFiles.push(file);
+                } else {
+                    invalidFiles.push(`${file.name}: ${validation.error}`);
+                }
             });
+
+            if (invalidFiles.length > 0) {
+                alert(`Some files were invalid:\n${invalidFiles.join('\n')}`);
+            }
+
+            if (validFiles.length > 0) {
+                setFormData({
+                    ...formData,
+                    images: [...formData.images, ...validFiles]
+                });
+            }
         }
+    };
+
+    const validateImageFile = (file: File): { isValid: boolean; error?: string } => {
+        const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+        const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+        const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+
+        // Check file type
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            return {
+                isValid: false,
+                error: `Invalid file type`
+            };
+        }
+
+        // Check file size
+        if (file.size > MAX_SIZE) {
+            const currentSizeMB = (file.size / 1024 / 1024).toFixed(2);
+            return {
+                isValid: false,
+                error: `File too large (${currentSizeMB}MB)`
+            };
+        }
+
+        // Check file extension
+        const fileName = file.name.toLowerCase();
+        const hasValidExtension = ALLOWED_EXTENSIONS.some(ext => fileName.endsWith(ext));
+        if (!hasValidExtension) {
+            return {
+                isValid: false,
+                error: `Invalid extension`
+            };
+        }
+
+        return { isValid: true };
     };
 
     const removeExistingImage = (index: number) => {
