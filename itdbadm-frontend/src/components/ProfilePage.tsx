@@ -102,8 +102,7 @@ export default function ProfilePage() {
         currency_id: data.currency_id?.toString() || "2",
       }));
     } catch (err) {
-      console.error("Failed to fetch profile", err);
-      setError("Failed to load profile data.");
+      console.error("Failed to fetch profile", err);      
     } finally {
       setIsLoading(false);
     }

@@ -53,9 +53,10 @@ export default function EditProductPage() {
         try {
             setLoading(true);
             const token = localStorage.getItem("accessToken");
+            const currency = localStorage.getItem("selectedCurrency") || "JPY";
 
-            // Fetch product details
-            const response = await fetch(`${apiClient.baseURL}/products/${productId}`, {
+            // Fetch product details with currency parameter
+            const response = await fetch(`${apiClient.baseURL}/products/${productId}/${currency}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

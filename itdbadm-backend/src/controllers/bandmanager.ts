@@ -364,7 +364,7 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
                 const updateInventoryQuery = `
                     UPDATE inventory 
                     SET quantity = ? 
-                    WHERE product_id = ? AND branch_id = 1
+                    WHERE product_id = ?
                 `;
 
                 await connection.execute(updateInventoryQuery, [stockValue, productId]);
@@ -436,7 +436,7 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
                 const updateInventoryQuery = `
                     UPDATE inventory 
                     SET quantity = ? 
-                    WHERE product_id = ? AND branch_id = 1
+                    WHERE product_id = ?
                 `;
 
                 await connection.execute(updateInventoryQuery, [stockValue, productId]);
@@ -520,7 +520,7 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
                 SELECT COALESCE(i.quantity, 0) as stock
                 FROM products p
                 JOIN bands b ON p.band_id = b.band_id
-                LEFT JOIN inventory i ON p.product_id = i.product_id AND i.branch_id = 1
+                LEFT JOIN inventory i ON p.product_id = i.product_id
                 WHERE p.product_id = ? AND b.manager_id = ? AND p.is_deleted = 0
             `;
 
