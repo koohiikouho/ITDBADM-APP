@@ -5,12 +5,10 @@ import {
     Button,
     Card,
     CardBody,
-    CardHeader,
-    Select,
-    SelectItem
+    CardHeader
 } from "@heroui/react";
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Save, Users, Music, Upload, X } from "lucide-react";
+import { Plus, Trash2, Save, Users, Upload, X } from "lucide-react";
 import { apiClient } from "@/lib/api";
 
 interface BandMember {

@@ -35,7 +35,7 @@ import EditBandPage from "./pages/bandmanager/edit-band";
 import CreateBandProductPage from "./pages/bandmanager/create-product";
 import ManageProductsPage from "./pages/bandmanager/manage-products";
 import SchedulePage from "./pages/bandmanager/schedule";
-import AnalyticsPage from "./pages/bandmanager/analytics";
+import AnalyticsBandPage from "./pages/bandmanager/analytics";
 import EditProductPage from "./pages/bandmanager/edit-product";
 
 import BandBookingsPage from "./pages/bandmanager/bookings";
@@ -68,7 +68,7 @@ function App() {
         <Route element={<ManageProductsPage />} path="/bandmanager/manage-products" />
         <Route element={<EditProductPage />} path="/bandmanager/edit-product/:productId" />
         <Route element={<SchedulePage />} path="/bandmanager/schedule" />
-        <Route element={<AnalyticsPage />} path="/bandmanager/analytics" />
+        <Route element={<AnalyticsBandPage />} path="/bandmanager/analytics" />
 
         <Route element={<SentOffersPage />} path="sent-offers" />
         <Route element={<MyOrdersPage />} path="/orders" />

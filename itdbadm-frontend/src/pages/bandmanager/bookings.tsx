@@ -18,7 +18,6 @@ import {
   XCircle,
   Clock,
   User,
-  DollarSign,
   AlertCircle,
 } from "lucide-react";
 
@@ -174,7 +173,7 @@ export default function BandBookingsPage() {
             <span className="text-2xl font-bold text-success flex items-center gap-1">
               {formatCurrency(booking.price)}
             </span>
-            
+
             {booking.status === "Pending" && (
               <div className="flex gap-2 mt-2 w-full md:w-auto">
                 <Button

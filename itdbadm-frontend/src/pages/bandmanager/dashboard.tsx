@@ -5,12 +5,10 @@ import {
     Users,
     Package,
     Calendar,
-    TrendingUp,
     DollarSign,
-    Music,
-    Edit,
-    Plus,
-    BarChart3
+    BarChart3,
+    ShoppingCart,
+    Star
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { apiClient } from "@/lib/api";
@@ -23,6 +21,24 @@ interface BandStats {
     revenueChange: number;
 }
 
+interface RecentActivity {
+    type: 'order' | 'booking' | 'review';
+    title: string;
+    description: string;
+    timestamp: string;
+    amount?: number;
+    status?: string;
+}
+
+interface PerformanceMetrics {
+    salesRate: number;
+    bookingConversion: number;
+    inventoryHealth: number;
+    topSellingProduct?: string;
+    totalUnitsSold: number;
+    avgBookingPrice: number;
+}
+
 export default function BandManagerDashboard() {
     const navigate = useNavigate();
     const [stats, setStats] = useState<BandStats>({
@@ -32,29 +48,90 @@ export default function BandManagerDashboard() {
         revenue: 0,
         revenueChange: 0
     });
+    const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
+    const [performance, setPerformance] = useState<PerformanceMetrics>({
+        salesRate: 0,
+        bookingConversion: 0,
+        inventoryHealth: 0,
+        topSellingProduct: "N/A",
+        totalUnitsSold: 0,
+        avgBookingPrice: 0
+    });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchBandStats();
+        fetchDashboardData();
     }, []);
 
-    const fetchBandStats = async () => {
+    const fetchDashboardData = async () => {
         try {
-            // fetch band
-            const response = await fetch(`${apiClient.baseURL}/band-manager/stats`, {
+            // Fetch band stats
+            const statsResponse = await fetch(`${apiClient.baseURL}/band-manager/stats`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
                 },
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                setStats(data);
+            if (statsResponse.ok) {
+                const statsData = await statsResponse.json();
+                setStats(statsData);
             }
+
+            // Fetch recent activity
+            const activityResponse = await fetch(`${apiClient.baseURL}/band-manager/recent-activity`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                },
+            });
+
+            if (activityResponse.ok) {
+                const activityData = await activityResponse.json();
+                setRecentActivity(activityData);
+            }
+
+            // Fetch performance metrics
+            const performanceResponse = await fetch(`${apiClient.baseURL}/band-manager/performance`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                },
+            });
+
+            if (performanceResponse.ok) {
+                const performanceData = await performanceResponse.json();
+                setPerformance(performanceData);
+            }
+
         } catch (error) {
-            console.error("Error fetching band stats:", error);
+            console.error("Error fetching dashboard data:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+
+    const getActivityIcon = (type: string) => {
+        switch (type) {
+            case 'order':
+                return <ShoppingCart className="h-4 w-4 text-blue-600" />;
+            case 'booking':
+                return <Calendar className="h-4 w-4 text-green-600" />;
+            case 'review':
+                return <Star className="h-4 w-4 text-yellow-600" />;
+            default:
+                return <Package className="h-4 w-4 text-gray-600" />;
+        }
+    };
+
+    const getActivityColor = (type: string) => {
+        switch (type) {
+            case 'order':
+                return "bg-blue-100";
+            case 'booking':
+                return "bg-green-100";
+            case 'review':
+                return "bg-yellow-100";
+            default:
+                return "bg-gray-100";
         }
     };
 
@@ -195,50 +272,82 @@ export default function BandManagerDashboard() {
                         </CardHeader>
                         <CardBody>
                             <div className="space-y-4">
-                                {[1, 2, 3].map((item) => (
-                                    <div key={item} className="flex items-center space-x-3 p-3 border rounded-lg">
-                                        <div className="p-2 bg-blue-100 rounded">
-                                            <Package className="h-4 w-4 text-blue-600" />
+                                {recentActivity.length > 0 ? (
+                                    recentActivity.slice(0, 5).map((activity, index) => (
+                                        <div key={index} className="flex items-center space-x-3 p-3 border rounded-lg">
+                                            <div className={`p-2 ${getActivityColor(activity.type)} rounded`}>
+                                                {getActivityIcon(activity.type)}
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="font-medium">{activity.title}</p>
+                                                <p className="text-sm text-gray-600">{activity.description}</p>
+                                                <p className="text-xs text-gray-500">{activity.timestamp}</p>
+                                            </div>
+                                            {activity.amount && (
+                                                <Badge color="success" size="sm">
+                                                    +¥{activity.amount.toLocaleString()}
+                                                </Badge>
+                                            )}
                                         </div>
-                                        <div className="flex-1">
-                                            <p className="font-medium">New order received</p>
-                                            <p className="text-sm text-gray-600">2 hours ago</p>
-                                        </div>
-                                        <Badge color="success" size="sm">+¥2,500</Badge>
-                                    </div>
-                                ))}
+                                    ))
+                                ) : (
+                                    <p className="text-gray-500 text-center py-4">No recent activity</p>
+                                )}
                             </div>
                         </CardBody>
                     </Card>
 
                     {/* Performance Metrics */}
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="flex flex-row items-center justify-between">
                             <h2 className="text-xl font-semibold">Performance</h2>
+                            <Button
+                                size="sm"
+                                color="primary"
+                                onPress={() => navigate("/bandmanager/analytics")}
+                                startContent={<BarChart3 className="h-4 w-4" />}
+                            >
+                                View Analytics
+                            </Button>
                         </CardHeader>
                         <CardBody>
-                            <div className="space-y-4">
+                            <div className="space-y-6">
                                 <div>
                                     <div className="flex justify-between mb-1">
-                                        <span className="text-sm">Product Sales</span>
-                                        <span className="text-sm font-medium">75%</span>
+                                        <span className="text-sm">Sales Rate</span>
+                                        <span className="text-sm font-medium">{performance.salesRate}%</span>
                                     </div>
-                                    <Progress value={75} color="primary" />
+                                    <Progress value={performance.salesRate} color="primary" />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        {performance.totalUnitsSold} units sold
+                                    </p>
                                 </div>
                                 <div>
                                     <div className="flex justify-between mb-1">
                                         <span className="text-sm">Booking Conversion</span>
-                                        <span className="text-sm font-medium">60%</span>
+                                        <span className="text-sm font-medium">{performance.bookingConversion}%</span>
                                     </div>
-                                    <Progress value={60} color="secondary" />
+                                    <Progress value={performance.bookingConversion} color="secondary" />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Avg: ¥{performance.avgBookingPrice?.toLocaleString()}
+                                    </p>
                                 </div>
                                 <div>
                                     <div className="flex justify-between mb-1">
-                                        <span className="text-sm">Customer Satisfaction</span>
-                                        <span className="text-sm font-medium">90%</span>
+                                        <span className="text-sm">Inventory Health</span>
+                                        <span className="text-sm font-medium">{performance.inventoryHealth}%</span>
                                     </div>
-                                    <Progress value={90} color="success" />
+                                    <Progress value={performance.inventoryHealth} color="success" />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Stock efficiency
+                                    </p>
                                 </div>
+                                {performance.topSellingProduct && (
+                                    <div className="pt-4 border-t">
+                                        <p className="text-sm font-medium mb-1">Top Selling Product</p>
+                                        <p className="text-sm text-gray-600">{performance.topSellingProduct}</p>
+                                    </div>
+                                )}
                             </div>
                         </CardBody>
                     </Card>

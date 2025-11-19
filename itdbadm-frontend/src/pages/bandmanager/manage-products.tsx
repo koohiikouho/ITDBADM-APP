@@ -25,7 +25,6 @@ import {
     Edit,
     Trash2,
     Search,
-    Package,
     Archive
 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -50,13 +49,13 @@ export default function ManageProductsPage() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
-    
+
     // Stock Modal State
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [newStock, setNewStock] = useState("0");
     const [updatingStock, setUpdatingStock] = useState(false);
-    
+
     const productsPerPage = 10;
 
     useEffect(() => {
@@ -119,7 +118,7 @@ export default function ManageProductsPage() {
 
     const handleUpdateStock = async () => {
         if (!selectedProduct) return;
-        
+
         const stockVal = parseInt(newStock);
         if (isNaN(stockVal) || stockVal < 0) {
             alert("Please enter a valid stock quantity");
@@ -128,28 +127,28 @@ export default function ManageProductsPage() {
 
         setUpdatingStock(true);
         try {
-             const token = localStorage.getItem("accessToken");
-             const response = await fetch(`${apiClient.baseURL}/band-manager/products/${selectedProduct.product_id}/stock`, {
-                 method: "PATCH",
-                 headers: {
-                     "Authorization": `Bearer ${token}`,
-                     "Content-Type": "application/json"
-                 },
-                 body: JSON.stringify({ stock: stockVal })
-             });
+            const token = localStorage.getItem("accessToken");
+            const response = await fetch(`${apiClient.baseURL}/band-manager/products/${selectedProduct.product_id}/stock`, {
+                method: "PATCH",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ stock: stockVal })
+            });
 
-             if (response.ok) {
-                 // Update local state
-                 setProducts(products.map(p => 
-                     p.product_id === selectedProduct.product_id 
-                     ? { ...p, stock: stockVal } 
-                     : p
-                 ));
-                 onClose();
-             } else {
-                 const err = await response.json();
-                 alert(`Failed to update stock: ${err.error}`);
-             }
+            if (response.ok) {
+                // Update local state
+                setProducts(products.map(p =>
+                    p.product_id === selectedProduct.product_id
+                        ? { ...p, stock: stockVal }
+                        : p
+                ));
+                onClose();
+            } else {
+                const err = await response.json();
+                alert(`Failed to update stock: ${err.error}`);
+            }
         } catch (e) {
             console.error(e);
             alert("Error updating stock");
@@ -324,8 +323,8 @@ export default function ManageProductsPage() {
                         </ModalBody>
                         <ModalFooter>
                             <Button variant="light" onPress={onClose}>Cancel</Button>
-                            <Button 
-                                color="primary" 
+                            <Button
+                                color="primary"
                                 onPress={handleUpdateStock}
                                 isLoading={updatingStock}
                             >

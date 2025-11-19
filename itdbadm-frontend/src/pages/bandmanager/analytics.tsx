@@ -1,68 +1,63 @@
 import DefaultLayout from "@/layouts/default";
-import {
-    Card,
-    CardBody,
-    CardHeader,
-    Select,
-    SelectItem
-} from "@heroui/react";
+import { Card, CardBody, CardHeader, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Badge } from "@heroui/react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, TrendingUp, Package, Users, DollarSign } from "lucide-react";
 import { useState, useEffect } from "react";
-import {
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-    PieChart,
-    Pie,
-    Cell,
-    LineChart,
-    Line
-} from 'recharts';
 import { apiClient } from "@/lib/api";
 
 interface AnalyticsData {
-    revenue: {
-        monthly: Array<{ month: string; revenue: number }>;
-        byProduct: Array<{ product: string; revenue: number }>;
+    revenueData: Array<{
+        month: string;
+        revenue: number;
+    }>;
+    productPerformance: Array<{
+        name: string;
+        units_sold: number;
+        revenue: number;
+        current_stock: number;
+    }>;
+    bookingAnalytics: {
+        [key: string]: {
+            count: number;
+            avg_price: number;
+        };
     };
-    bookings: {
-        monthly: Array<{ month: string; bookings: number }>;
-        status: Array<{ status: string; count: number }>;
-    };
-    products: {
-        topSelling: Array<{ product: string; sales: number }>;
-        categories: Array<{ category: string; count: number }>;
+    customerInsights: {
+        unique_customers: number;
+        total_orders: number;
+        avg_order_value: number;
     };
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
-
-export default function AnalyticsPage() {
-    const [data, setData] = useState<AnalyticsData | null>(null);
+export default function BandAnalytics() {
+    const navigate = useNavigate();
+    const [analytics, setAnalytics] = useState<AnalyticsData>({
+        revenueData: [],
+        productPerformance: [],
+        bookingAnalytics: {},
+        customerInsights: {
+            unique_customers: 0,
+            total_orders: 0,
+            avg_order_value: 0
+        }
+    });
     const [loading, setLoading] = useState(true);
-    const [timeRange, setTimeRange] = useState("30");
 
     useEffect(() => {
         fetchAnalytics();
-    }, [timeRange]);
+    }, []);
 
     const fetchAnalytics = async () => {
         try {
-            const response = await fetch(
-                `${apiClient.baseURL}/band-manager/analytics?range=${timeRange}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-                    },
-                }
-            );
+            const response = await fetch(`${apiClient.baseURL}/band-manager/analytics`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                },
+            });
 
             if (response.ok) {
-                const analyticsData = await response.json();
-                setData(analyticsData);
+                const data = await response.json();
+                setAnalytics(data);
             }
         } catch (error) {
             console.error("Error fetching analytics:", error);
@@ -70,6 +65,13 @@ export default function AnalyticsPage() {
             setLoading(false);
         }
     };
+
+    const formatCurrency = (amount: number) => {
+        return `¥${amount.toLocaleString()}`;
+    };
+
+    // Calculate total revenue safely
+    const totalRevenue = analytics.revenueData.reduce((sum, item) => sum + (item.revenue || 0), 0);
 
     if (loading) {
         return (
@@ -81,128 +83,191 @@ export default function AnalyticsPage() {
         );
     }
 
-    if (!data) {
-        return (
-            <DefaultLayout>
-                <div className="flex justify-center items-center py-16">
-                    <div className="text-lg">No analytics data available</div>
-                </div>
-            </DefaultLayout>
-        );
-    }
-
     return (
         <DefaultLayout>
             <div className="max-w-7xl mx-auto p-6">
-                <div className="flex justify-between items-center mb-6">
-                    <div>
-                        <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-                        <p className="text-gray-600">Track your band's performance and sales</p>
-                    </div>
-                    <Select
-                        selectedKeys={[timeRange]}
-                        onSelectionChange={(keys) => setTimeRange(Array.from(keys)[0] as string)}
-                        className="w-40"
+                {/* Header */}
+                <div className="mb-8">
+                    <Button
+                        variant="light"
+                        onPress={() => navigate("/bandmanager/dashboard")}
+                        startContent={<ArrowLeft className="h-4 w-4" />}
+                        className="mb-4"
                     >
-                        <SelectItem key="7">Last 7 days</SelectItem>
-                        <SelectItem key="30">Last 30 days</SelectItem>
-                        <SelectItem key="90">Last 90 days</SelectItem>
-                    </Select>
+                        Back to Dashboard
+                    </Button>
+                    <h1 className="text-3xl font-bold">Band Analytics</h1>
+                    <p className="text-gray-600">Detailed insights into your band's performance</p>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    {/* Revenue Chart */}
-                    <Card>
-                        <CardHeader>
-                            <h2 className="text-xl font-semibold">Revenue Trend</h2>
-                        </CardHeader>
-                        <CardBody>
-                            <ResponsiveContainer width="100%" height={300}>
-                                <LineChart data={data.revenue.monthly}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="month" />
-                                    <YAxis />
-                                    <Tooltip />
-                                    <Line type="monotone" dataKey="revenue" stroke="#0088FE" />
-                                </LineChart>
-                            </ResponsiveContainer>
+                {/* Overview Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <Card className="border">
+                        <CardBody className="p-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm text-gray-600">Total Revenue</p>
+                                    <p className="text-2xl font-bold">
+                                        {formatCurrency(totalRevenue)}
+                                    </p>
+                                </div>
+                                <div className="p-3 bg-blue-100 rounded-full">
+                                    <DollarSign className="h-6 w-6 text-blue-600" />
+                                </div>
+                            </div>
                         </CardBody>
                     </Card>
 
-                    {/* Product Sales */}
-                    <Card>
-                        <CardHeader>
-                            <h2 className="text-xl font-semibold">Product Sales</h2>
-                        </CardHeader>
-                        <CardBody>
-                            <ResponsiveContainer width="100%" height={300}>
-                                <BarChart data={data.products.topSelling}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="product" />
-                                    <YAxis />
-                                    <Tooltip />
-                                    <Bar dataKey="sales" fill="#00C49F" />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </CardBody>
-                    </Card>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Revenue by Product */}
-                    <Card>
-                        <CardHeader>
-                            <h2 className="text-xl font-semibold">Revenue by Product</h2>
-                        </CardHeader>
-                        <CardBody>
-                            <ResponsiveContainer width="100%" height={300}>
-                                <PieChart>
-                                    <Pie
-                                        data={data.revenue.byProduct}
-                                        dataKey="revenue"
-                                        nameKey="product"
-                                        cx="50%"
-                                        cy="50%"
-                                        outerRadius={100}
-                                        label
-                                    >
-                                        {data.revenue.byProduct.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip />
-                                </PieChart>
-                            </ResponsiveContainer>
+                    <Card className="border">
+                        <CardBody className="p-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm text-gray-600">Unique Customers</p>
+                                    <p className="text-2xl font-bold">
+                                        {analytics.customerInsights.unique_customers || 0}
+                                    </p>
+                                </div>
+                                <div className="p-3 bg-green-100 rounded-full">
+                                    <Users className="h-6 w-6 text-green-600" />
+                                </div>
+                            </div>
                         </CardBody>
                     </Card>
 
-                    {/* Booking Status */}
-                    <Card>
-                        <CardHeader>
-                            <h2 className="text-xl font-semibold">Booking Status</h2>
-                        </CardHeader>
-                        <CardBody>
-                            <ResponsiveContainer width="100%" height={300}>
-                                <PieChart>
-                                    <Pie
-                                        data={data.bookings.status}
-                                        dataKey="count"
-                                        nameKey="status"
-                                        cx="50%"
-                                        cy="50%"
-                                        outerRadius={100}
-                                        label
-                                    >
-                                        {data.bookings.status.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip />
-                                </PieChart>
-                            </ResponsiveContainer>
+                    <Card className="border">
+                        <CardBody className="p-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm text-gray-600">Total Orders</p>
+                                    <p className="text-2xl font-bold">
+                                        {analytics.customerInsights.total_orders || 0}
+                                    </p>
+                                </div>
+                                <div className="p-3 bg-purple-100 rounded-full">
+                                    <Package className="h-6 w-6 text-purple-600" />
+                                </div>
+                            </div>
+                        </CardBody>
+                    </Card>
+
+                    <Card className="border">
+                        <CardBody className="p-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm text-gray-600">Avg Order Value</p>
+                                    <p className="text-2xl font-bold">
+                                        {formatCurrency(analytics.customerInsights.avg_order_value || 0)}
+                                    </p>
+                                </div>
+                                <div className="p-3 bg-orange-100 rounded-full">
+                                    <TrendingUp className="h-6 w-6 text-orange-600" />
+                                </div>
+                            </div>
                         </CardBody>
                     </Card>
                 </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Revenue Trend */}
+                    <Card>
+                        <CardHeader>
+                            <h2 className="text-xl font-semibold">Revenue Trend (Last 6 Months)</h2>
+                        </CardHeader>
+                        <CardBody>
+                            {analytics.revenueData.length > 0 ? (
+                                <div className="space-y-4">
+                                    {analytics.revenueData.map((item, index) => (
+                                        <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                                            <span className="font-medium">{item.month}</span>
+                                            <Badge color="success" variant="flat">
+                                                {formatCurrency(item.revenue || 0)}
+                                            </Badge>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-gray-500 text-center py-4">No revenue data available</p>
+                            )}
+                        </CardBody>
+                    </Card>
+
+                    {/* Booking Analytics */}
+                    <Card>
+                        <CardHeader>
+                            <h2 className="text-xl font-semibold">Booking Analytics</h2>
+                        </CardHeader>
+                        <CardBody>
+                            {Object.keys(analytics.bookingAnalytics).length > 0 ? (
+                                <div className="space-y-4">
+                                    {Object.entries(analytics.bookingAnalytics).map(([status, data]) => (
+                                        <div key={status} className="flex items-center justify-between p-3 border rounded-lg">
+                                            <div>
+                                                <span className="font-medium capitalize">{status}</span>
+                                                <p className="text-sm text-gray-600">
+                                                    {data.count} booking{data.count !== 1 ? 's' : ''}
+                                                </p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="font-medium">{formatCurrency(data.avg_price || 0)}</p>
+                                                <p className="text-sm text-gray-600">avg. price</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-gray-500 text-center py-4">No booking data available</p>
+                            )}
+                        </CardBody>
+                    </Card>
+                </div>
+
+                {/* Product Performance */}
+                <Card className="mt-8">
+                    <CardHeader>
+                        <h2 className="text-xl font-semibold">Product Performance</h2>
+                    </CardHeader>
+                    <CardBody>
+                        {analytics.productPerformance.length > 0 ? (
+                            <Table aria-label="Product performance table">
+                                <TableHeader>
+                                    <TableColumn>PRODUCT</TableColumn>
+                                    <TableColumn>UNITS SOLD</TableColumn>
+                                    <TableColumn>REVENUE</TableColumn>
+                                    <TableColumn>CURRENT STOCK</TableColumn>
+                                </TableHeader>
+                                <TableBody>
+                                    {analytics.productPerformance.map((product, index) => (
+                                        <TableRow key={index}>
+                                            <TableCell>
+                                                <div className="font-medium">{product.name}</div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="flat" color="primary">
+                                                    {product.units_sold || 0}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="font-medium">
+                                                    {formatCurrency(product.revenue || 0)}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge
+                                                    variant="flat"
+                                                    color={(product.current_stock || 0) > 10 ? "success" : (product.current_stock || 0) > 0 ? "warning" : "danger"}
+                                                >
+                                                    {product.current_stock || 0}
+                                                </Badge>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        ) : (
+                            <p className="text-gray-500 text-center py-4">No product performance data available</p>
+                        )}
+                    </CardBody>
+                </Card>
             </div>
         </DefaultLayout>
     );

@@ -3,6 +3,16 @@ import { dbPool } from "../db";
 import mysql from "mysql2/promise";
 import { jwt } from "@elysiajs/jwt";
 import { deleteFromCloudinary, extractPublicId, uploadToCloudinary } from "../config/cloudinary";
+import { RowDataPacket } from "mysql2";
+
+interface RecentActivity {
+    type: 'order' | 'booking' | 'review';
+    title: string;
+    description: string;
+    timestamp: string;
+    amount?: number;
+    status?: string;
+}
 
 export const bandManagerController = new Elysia({ prefix: "/band-manager" })
     .use(
@@ -960,6 +970,358 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
             }),
         }
     )
+
+    // GET /band-manager/recent-activity
+    .get("/recent-activity", async ({ headers, set, jwt }) => {
+        const token = headers.authorization?.split(" ")[1];
+        const payload = await jwt.verify(token);
+
+        if (!payload) {
+            set.status = 401;
+            return { error: "Unauthorized" };
+        }
+
+        const userId = payload.id;
+
+        try {
+            const [bandRows] = await dbPool.execute<mysql.RowDataPacket[]>(
+                "SELECT band_id FROM bands WHERE manager_id = ? AND is_deleted = 0",
+                [userId]
+            );
+
+            if (bandRows.length === 0) {
+                return [];
+            }
+
+            const bandId = bandRows[0]?.band_id;
+
+            // Get recent orders for this band's products
+            const [orderRows] = await dbPool.execute<mysql.RowDataPacket[]>(`
+            SELECT 
+                o.order_id,
+                o.order_date,
+                o.price as amount,
+                u.username as customer_name,
+                JSON_ARRAYAGG(p.name) as product_names,
+                'order' as type
+            FROM orders o
+            JOIN users u ON o.user_id = u.user_id
+            JOIN orders_products op ON o.order_id = op.order_id
+            JOIN products p ON op.product_id = p.product_id
+            WHERE p.band_id = ? AND o.status != 'Cancelled'
+            GROUP BY o.order_id, o.order_date, o.price, u.username
+            ORDER BY o.order_date DESC
+            LIMIT 10
+        `, [bandId]);
+
+            // Get recent booking offers
+            const [bookingRows] = await dbPool.execute<mysql.RowDataPacket[]>(`
+            SELECT 
+                offer_id,
+                booking_date,
+                price as amount,
+                description,
+                status,
+                'booking' as type
+            FROM booking_offers 
+            WHERE band_id = ?
+            ORDER BY date_created DESC
+            LIMIT 10
+        `, [bandId]);
+
+            const activities: RecentActivity[] = [];
+
+            // Process orders
+            orderRows.forEach((row: any) => {
+                activities.push({
+                    type: 'order',
+                    title: 'New Order Received',
+                    description: `Order from ${row.customer_name} for ${row.product_names.join(', ')}`,
+                    timestamp: new Date(row.order_date).toLocaleDateString(),
+                    amount: parseFloat(row.amount)
+                });
+            });
+
+            // Process bookings
+            bookingRows.forEach((row: any) => {
+                activities.push({
+                    type: 'booking',
+                    title: `Booking ${row.status}`,
+                    description: `Booking request for ${new Date(row.booking_date).toLocaleDateString()}`,
+                    timestamp: new Date(row.booking_date).toLocaleDateString(),
+                    amount: parseFloat(row.amount),
+                    status: row.status
+                });
+            });
+
+            // Sort by timestamp (most recent first) and limit to 10
+            activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+            return activities.slice(0, 10);
+
+        } catch (error) {
+            console.error("Error fetching recent activity:", error);
+            set.status = 500;
+            return { error: "Internal Server Error while retrieving recent activity" };
+        }
+    })
+
+    // GET /band-manager/performance - Updated with factual data
+    .get("/performance", async ({ headers, set, jwt }) => {
+        const token = headers.authorization?.split(" ")[1];
+        const payload = await jwt.verify(token);
+
+        if (!payload) {
+            set.status = 401;
+            return { error: "Unauthorized" };
+        }
+
+        const userId = payload.id;
+
+        try {
+            const [bandRows] = await dbPool.execute<mysql.RowDataPacket[]>(
+                "SELECT band_id FROM bands WHERE manager_id = ? AND is_deleted = 0",
+                [userId]
+            );
+
+            if (bandRows.length === 0) {
+                return {
+                    salesRate: 0,
+                    bookingConversion: 0,
+                    inventoryHealth: 0,
+                    totalUnitsSold: 0,
+                    avgBookingPrice: 0
+                };
+            }
+
+            const bandId = bandRows[0]?.band_id;
+
+            // Calculate sales rate (percentage of inventory sold)
+            const [salesRateRows] = await dbPool.execute<mysql.RowDataPacket[]>(`
+        SELECT 
+            COALESCE(SUM(op.quantity), 0) as total_sold,
+            COALESCE(SUM(i.quantity), 0) as total_inventory
+        FROM products p
+        LEFT JOIN inventory i ON p.product_id = i.product_id
+        LEFT JOIN orders_products op ON p.product_id = op.product_id
+        LEFT JOIN orders o ON op.order_id = o.order_id AND o.status != 'Cancelled'
+        WHERE p.band_id = ? AND p.is_deleted = 0
+        `, [bandId]);
+
+            const totalSold = salesRateRows[0]?.total_sold || 0;
+            const totalInventory = salesRateRows[0]?.total_inventory || 0;
+            const totalStock = totalSold + totalInventory;
+            const salesRate = totalStock > 0 ? Math.round((totalSold / totalStock) * 100) : 0;
+
+            // Calculate booking conversion rate
+            const [bookingRows] = await dbPool.execute<mysql.RowDataPacket[]>(`
+        SELECT 
+            COUNT(*) as total_offers,
+            SUM(CASE WHEN status = 'Accepted' THEN 1 ELSE 0 END) as accepted_offers,
+            AVG(CASE WHEN status = 'Accepted' THEN price ELSE NULL END) as avg_accepted_price
+        FROM booking_offers 
+        WHERE band_id = ?
+        `, [bandId]);
+
+            const totalOffers = bookingRows[0]?.total_offers || 0;
+            const acceptedOffers = bookingRows[0]?.accepted_offers || 0;
+            const bookingConversion = totalOffers > 0 ? Math.round((acceptedOffers / totalOffers) * 100) : 0;
+            const avgBookingPrice = parseFloat(bookingRows[0]?.avg_accepted_price) || 0;
+
+            // Calculate inventory health (percentage of products with stock > 0)
+            const [inventoryRows] = await dbPool.execute<mysql.RowDataPacket[]>(`
+        SELECT 
+            COUNT(*) as total_products,
+            SUM(CASE WHEN i.quantity > 0 THEN 1 ELSE 0 END) as in_stock_products
+        FROM products p
+        LEFT JOIN inventory i ON p.product_id = i.product_id
+        WHERE p.band_id = ? AND p.is_deleted = 0
+        `, [bandId]);
+
+            const totalProducts = inventoryRows[0]?.total_products || 0;
+            const inStockProducts = inventoryRows[0]?.in_stock_products || 0;
+            const inventoryHealth = totalProducts > 0 ? Math.round((inStockProducts / totalProducts) * 100) : 0;
+
+            // Get top selling product
+            const [topProductRows] = await dbPool.execute<mysql.RowDataPacket[]>(`
+        SELECT 
+            p.name,
+            SUM(op.quantity) as total_sold
+        FROM products p
+        JOIN orders_products op ON p.product_id = op.product_id
+        JOIN orders o ON op.order_id = o.order_id AND o.status != 'Cancelled'
+        WHERE p.band_id = ? AND p.is_deleted = 0
+        GROUP BY p.product_id, p.name
+        ORDER BY total_sold DESC
+        LIMIT 1
+        `, [bandId]);
+
+            const topSellingProduct = topProductRows.length > 0 ? topProductRows[0]?.name : undefined;
+
+            return {
+                salesRate,
+                bookingConversion,
+                inventoryHealth,
+                totalUnitsSold: totalSold,
+                avgBookingPrice,
+                topSellingProduct
+            };
+
+        } catch (error) {
+            console.error("Error fetching performance metrics:", error);
+            set.status = 500;
+            return { error: "Internal Server Error while retrieving performance metrics" };
+        }
+    })
+
+    // GET /band-manager/analytics - Enhanced with more factual data
+    .get("/analytics", async ({ headers, set, jwt }) => {
+        const token = headers.authorization?.split(" ")[1];
+        const payload = await jwt.verify(token);
+
+        if (!payload) {
+            set.status = 401;
+            return { error: "Unauthorized" };
+        }
+
+        const userId = payload.id;
+
+        try {
+            const [bandRows] = await dbPool.execute<mysql.RowDataPacket[]>(
+                "SELECT band_id FROM bands WHERE manager_id = ? AND is_deleted = 0",
+                [userId]
+            );
+
+            if (bandRows.length === 0) {
+                return {
+                    revenueData: [],
+                    productPerformance: [],
+                    bookingAnalytics: {},
+                    customerInsights: {},
+                    inventoryAnalysis: {},
+                    salesTrends: []
+                };
+            }
+
+            const bandId = bandRows[0]?.band_id;
+
+            // Revenue data for the last 6 months
+            const [revenueRows] = await dbPool.execute<mysql.RowDataPacket[]>(`
+        SELECT 
+            DATE_FORMAT(o.order_date, '%Y-%m') as month,
+            SUM(op.quantity * p.price) as revenue,
+            SUM(op.quantity) as units_sold
+        FROM orders o
+        JOIN orders_products op ON o.order_id = op.order_id
+        JOIN products p ON op.product_id = p.product_id
+        WHERE p.band_id = ? 
+            AND o.status != 'Cancelled'
+            AND o.order_date >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+        GROUP BY DATE_FORMAT(o.order_date, '%Y-%m')
+        ORDER BY month
+        `, [bandId]);
+
+            // Product performance with more details
+            const [productRows] = await dbPool.execute<mysql.RowDataPacket[]>(`
+        SELECT 
+            p.product_id,
+            p.name,
+            p.category,
+            p.price,
+            SUM(COALESCE(op.quantity, 0)) as units_sold,
+            SUM(COALESCE(op.quantity, 0) * p.price) as revenue,
+            COALESCE(i.quantity, 0) as current_stock,
+            CASE 
+            WHEN COALESCE(i.quantity, 0) = 0 THEN 'Out of Stock'
+            WHEN COALESCE(i.quantity, 0) <= 10 THEN 'Low Stock'
+            ELSE 'In Stock'
+            END as stock_status
+        FROM products p
+        LEFT JOIN orders_products op ON p.product_id = op.product_id
+        LEFT JOIN orders o ON op.order_id = o.order_id AND o.status != 'Cancelled'
+        LEFT JOIN inventory i ON p.product_id = i.product_id
+        WHERE p.band_id = ? AND p.is_deleted = 0
+        GROUP BY p.product_id, p.name, p.category, p.price, i.quantity
+        ORDER BY revenue DESC
+        `, [bandId]);
+
+            // Booking analytics with timeline
+            const [bookingRows] = await dbPool.execute<mysql.RowDataPacket[]>(`
+        SELECT 
+            status,
+            COUNT(*) as count,
+            AVG(price) as avg_price,
+            MIN(booking_date) as earliest_booking,
+            MAX(booking_date) as latest_booking
+        FROM booking_offers 
+        WHERE band_id = ?
+        GROUP BY status
+        `, [bandId]);
+
+            // Customer insights with purchase frequency
+            const [customerRows] = await dbPool.execute<mysql.RowDataPacket[]>(`
+        SELECT 
+            COUNT(DISTINCT o.user_id) as unique_customers,
+            COUNT(DISTINCT o.order_id) as total_orders,
+            AVG(op.quantity * p.price) as avg_order_value,
+            MAX(o.order_date) as last_order_date
+        FROM orders o
+        JOIN orders_products op ON o.order_id = op.order_id
+        JOIN products p ON op.product_id = p.product_id
+        WHERE p.band_id = ? AND o.status != 'Cancelled'
+        `, [bandId]);
+
+            // Inventory analysis
+            const [inventoryRows] = await dbPool.execute<mysql.RowDataPacket[]>(`
+        SELECT 
+            COUNT(*) as total_products,
+            SUM(CASE WHEN i.quantity = 0 THEN 1 ELSE 0 END) as out_of_stock,
+            SUM(CASE WHEN i.quantity > 0 AND i.quantity <= 10 THEN 1 ELSE 0 END) as low_stock,
+            SUM(CASE WHEN i.quantity > 10 THEN 1 ELSE 0 END) as healthy_stock,
+            AVG(i.quantity) as avg_stock_level
+        FROM products p
+        LEFT JOIN inventory i ON p.product_id = i.product_id
+        WHERE p.band_id = ? AND p.is_deleted = 0
+        `, [bandId]);
+
+            // Sales trends by product category
+            const [categoryRows] = await dbPool.execute<mysql.RowDataPacket[]>(`
+        SELECT 
+            p.category,
+            SUM(op.quantity) as units_sold,
+            SUM(op.quantity * p.price) as revenue,
+            COUNT(DISTINCT p.product_id) as product_count
+        FROM products p
+        LEFT JOIN orders_products op ON p.product_id = op.product_id
+        LEFT JOIN orders o ON op.order_id = o.order_id AND o.status != 'Cancelled'
+        WHERE p.band_id = ? AND p.is_deleted = 0
+        GROUP BY p.category
+        ORDER BY revenue DESC
+        `, [bandId]);
+
+            return {
+                revenueData: revenueRows,
+                productPerformance: productRows,
+                bookingAnalytics: bookingRows.reduce((acc: any, row: any) => {
+                    acc[row.status] = {
+                        count: row.count,
+                        avg_price: parseFloat(row.avg_price) || 0,
+                        earliest_booking: row.earliest_booking,
+                        latest_booking: row.latest_booking
+                    };
+                    return acc;
+                }, {}),
+                customerInsights: customerRows[0] || {},
+                inventoryAnalysis: inventoryRows[0] || {},
+                salesTrends: categoryRows
+            };
+
+        } catch (error) {
+            console.error("Error fetching analytics:", error);
+            set.status = 500;
+            return { error: "Internal Server Error while retrieving analytics" };
+        }
+    })
 
     // GET /band-manager/orders - Get all orders containing band's products
     .get("/orders", async ({ headers, set, jwt }) => {
