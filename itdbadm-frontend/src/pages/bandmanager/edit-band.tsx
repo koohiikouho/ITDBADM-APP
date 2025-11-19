@@ -48,8 +48,26 @@ export default function EditBandPage() {
 
             if (response.ok) {
                 const data = await response.json();
-                setBandData(data);
-                setPfpPreview(data.pfp_string);
+                
+                // Sanitize data: Convert nulls to empty strings
+                // Handle member_list parsing if it comes as a string
+                let members = [];
+                if (Array.isArray(data.member_list)) {
+                    members = data.member_list;
+                } else if (typeof data.member_list === 'string') {
+                    try { members = JSON.parse(data.member_list); } catch (e) {}
+                }
+
+                setBandData({
+                    ...data,
+                    genre: data.genre || "",
+                    description: data.description || "",
+                    iframe_string: data.iframe_string || "",
+                    pfp_string: data.pfp_string || "",
+                    member_list: members
+                });
+                
+                setPfpPreview(data.pfp_string || "");
             }
         } catch (error) {
             console.error("Error fetching band data:", error);
@@ -61,17 +79,33 @@ export default function EditBandPage() {
     const handleSave = async () => {
         setSaving(true);
         try {
+            // Create a clean payload strictly matching the backend schema
+            const payload = {
+                band_id: bandData?.band_id,
+                name: bandData?.name,
+                genre: bandData?.genre,
+                description: bandData?.description,
+                iframe_string: bandData?.iframe_string,
+                pfp_string: bandData?.pfp_string,
+                member_list: bandData?.member_list
+            };
+
             const response = await fetch(`${apiClient.baseURL}/band-manager/band`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
                 },
-                body: JSON.stringify(bandData),
+                body: JSON.stringify(payload), // Send cleaned payload
             });
 
             if (response.ok) {
                 alert("Band updated successfully!");
+            } else {
+                // Add error handling to see why it fails
+                const errorData = await response.json();
+                console.error("Update failed:", errorData);
+                alert("Failed to update band. Please check your input.");
             }
         } catch (error) {
             console.error("Error updating band:", error);

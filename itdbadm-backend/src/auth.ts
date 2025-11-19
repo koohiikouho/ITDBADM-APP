@@ -16,7 +16,7 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     "/signup",
     async ({ body, jwt, set }) => {
       // check if user already exists
-      const { userName, email, password, currency, userType } = body;
+      const { userName, email, password, currency, userType, branchId } = body;
 
       const [rows] = await dbPool.query(
         "SELECT user_id FROM users WHERE username = ?",
@@ -35,6 +35,23 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
 
       const userId = (result as any).insertId;
 
+      // If the user is a Band Manager (role_id = 4) and a branch was selected
+      // Update the automatically created band (created by the DB trigger) with the selected branch
+      if (userType === 4 && branchId) {
+        try {
+          // The trigger creates the band immediately after user insertion
+          // So we can update it right away
+          await dbPool.query(
+            "UPDATE bands SET branch_id = ? WHERE manager_id = ?",
+            [branchId, userId]
+          );
+        } catch (error) {
+          console.error("Error updating band branch:", error);
+          // We don't fail the whole request, but we log the error.
+          // The band still exists with the default branch from the trigger (-1).
+        }
+      }
+
       const token = await jwt.sign({ id: userId, role_id: userType });
 
       return { message: "User registered successfully", token };
@@ -52,6 +69,12 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
           .Transform(t.Union([t.Number(), t.String()]))
           .Decode((value) => Number(value))
           .Encode((value) => value),
+        // Optional branchId for Band Managers
+        branchId: t.Optional(
+          t.Transform(t.Union([t.Number(), t.String()]))
+          .Decode((value) => Number(value))
+          .Encode((value) => value)
+        ),
       }),
     }
   )

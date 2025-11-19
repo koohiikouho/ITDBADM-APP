@@ -85,7 +85,7 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
             }
 
             const userId = payload.id;
-            const { band_id, name, genre, description, iframe_string, pfp_string, member_list } = body;
+            const { band_id, name, genre, description, iframe_string, member_list } = body;
 
             const connection = await dbPool.getConnection();
             await connection.beginTransaction();
@@ -105,7 +105,7 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
                 // update band basic info
                 const updateBandQuery = `
           UPDATE bands 
-          SET name = ?, genre = ?, description = ?, iframe_string = ?, pfp_string = ?
+          SET name = ?, genre = ?, description = ?, iframe_string = ?
           WHERE band_id = ?
         `;
 
@@ -114,7 +114,6 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
                     genre,
                     description,
                     iframe_string,
-                    pfp_string,
                     band_id
                 ]);
 
@@ -150,16 +149,17 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
             body: t.Object({
                 band_id: t.Numeric(),
                 name: t.String(),
-                genre: t.String(),
-                description: t.String(),
-                iframe_string: t.String(),
-                pfp_string: t.String(),
-                member_list: t.Array(
+                // Allow String OR Null for these fields
+                genre: t.Union([t.String(), t.Null()]),
+                description: t.Union([t.String(), t.Null()]),
+                iframe_string: t.Union([t.String(), t.Null()]),
+                pfp_string: t.Union([t.String(), t.Null()]),
+                member_list: t.Optional(t.Array(
                     t.Object({
                         member_name: t.String(),
                         band_role: t.String()
                     })
-                )
+                ))
             })
         }
     )
