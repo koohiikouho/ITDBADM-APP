@@ -40,6 +40,12 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    // Helper function to safely format numbers
+    const formatCurrency = (value: any) => {
+        const num = Number(value);
+        return isNaN(num) ? '0.00' : num.toFixed(2);
+    };
+
     useEffect(() => {
         fetchStats();
     }, []);
@@ -48,6 +54,7 @@ export default function AdminDashboard() {
         try {
             setLoading(true);
             const data = await apiClient.get("/admin/stats");
+            console.log("Dashboard stats:", data);
             setStats(data);
         } catch (err) {
             console.error("Error fetching admin stats:", err);
@@ -130,7 +137,7 @@ export default function AdminDashboard() {
                             <div>
                                 <p className="text-sm text-default-600">Total Revenue</p>
                                 <p className="text-2xl font-bold">
-                                    ¥{(stats?.revenue_stats.total_revenue || 0).toLocaleString()}
+                                    ¥{(Number(stats?.revenue_stats.total_revenue) || 0).toLocaleString()}
                                 </p>
                             </div>
                         </CardBody>
@@ -206,7 +213,8 @@ export default function AdminDashboard() {
                                 <div className="flex justify-between items-center">
                                     <div>
                                         <p className="text-default-600">Average Order Value</p>
-                                        <p className="text-2xl font-bold">¥{stats?.revenue_stats.avg_order_value?.toFixed(2)}</p>
+                                        {/* FIXED LINE - This was causing the error */}
+                                        <p className="text-2xl font-bold">¥{formatCurrency(stats?.revenue_stats.avg_order_value)}</p>
                                     </div>
                                     <TrendingUp className="text-default-400" size={32} />
                                 </div>
