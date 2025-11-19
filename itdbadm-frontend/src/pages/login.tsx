@@ -146,7 +146,7 @@ export default function LoginPage() {
           {/* Header */}
           <div className="text-center">
             <h2
-              className={`text-2xl font-bold ${themeClasses.text.primary} mb-2`}
+              className={`text-2xl font-bold ${themeClasses.text.primary} mb-2 `}
             >
               Sign in to your account
             </h2>
@@ -257,7 +257,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${themeClasses.button.primary} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+              className={`cursor-pointer w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${themeClasses.button.primary} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {loading ? (
                 <div className="flex items-center">

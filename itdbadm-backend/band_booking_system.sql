@@ -96,7 +96,7 @@ CREATE TABLE `audit_user_log` (
   `action` varchar(10) DEFAULT NULL,
   `changed_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`user_log_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -105,7 +105,7 @@ CREATE TABLE `audit_user_log` (
 
 LOCK TABLES `audit_user_log` WRITE;
 /*!40000 ALTER TABLE `audit_user_log` DISABLE KEYS */;
-INSERT INTO `audit_user_log` VALUES (1,10,3,0,'CREATE','2025-11-16 18:02:47'),(2,11,3,0,'CREATE','2025-11-16 18:17:16'),(3,12,3,0,'CREATE','2025-11-17 05:58:30'),(4,13,4,0,'CREATE','2025-11-17 15:36:23'),(5,14,4,0,'CREATE','2025-11-17 19:39:38');
+INSERT INTO `audit_user_log` VALUES (1,10,3,0,'CREATE','2025-11-16 18:02:47'),(2,11,3,0,'CREATE','2025-11-16 18:17:16'),(3,12,3,0,'CREATE','2025-11-17 05:58:30'),(4,13,4,0,'CREATE','2025-11-17 15:36:23'),(5,14,4,0,'CREATE','2025-11-17 19:39:38'),(7,16,3,0,'CREATE','2025-11-19 09:09:35'),(9,18,4,0,'CREATE','2025-11-19 09:20:11'),(10,19,4,0,'CREATE','2025-11-19 09:31:10'),(11,20,4,0,'CREATE','2025-11-19 09:48:12'),(12,21,3,0,'CREATE','2025-11-19 09:48:48');
 /*!40000 ALTER TABLE `audit_user_log` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -131,7 +131,7 @@ CREATE TABLE `band_members` (
 
 LOCK TABLES `band_members` WRITE;
 /*!40000 ALTER TABLE `band_members` DISABLE KEYS */;
-INSERT INTO `band_members` VALUES (1,'Hitori Gotoh','Guitarist'),(1,'Ikuyo Kita','Vocalist'),(1,'Nijika Ijichi','Drummer'),(1,'Ryo Yamada','Bassist'),(2,'Azusa Nakano','Guitarist'),(2,'Mio Akiyama','Bassist'),(2,'Ritsu Tainaka','Drummer'),(2,'Tsumugi Kotobuki','Keyboardist'),(2,'Yui Hirasawa','Vocalist/Guitarist'),(3,'Arisa Ichigaya','Keyboardist'),(3,'Kasumi Toyama','Vocalist/Guitarist'),(3,'Rimi Ushigome','Bassist'),(3,'Saaya Yamabuki','Drummer'),(3,'Tae Hanazono','Guitarist'),(4,'Ako Udagawa','Drummer'),(4,'Lisa Imai','Bassist'),(4,'Rinko Shirokane','Keyboardist'),(4,'Sayo Hikawa','Guitarist'),(4,'Yukina Minato','Vocalist'),(5,'Himari Uehara','Bassist'),(5,'Moca Aoba','Guitarist'),(5,'Ran Mitake','Vocalist/Guitarist'),(5,'Tomoe Udagawa','Drummer'),(5,'Tsugumi Hazawa','Keyboardist'),(6,'Eli Ayase','Vocalist'),(6,'Hanayo Koizumi','Vocalist'),(6,'Honoka Kousaka','Leader/Vocalist'),(6,'Kotori Minami','Vocalist'),(6,'Maki Nishikino','Composer/Keyboardist'),(6,'Nico Yazawa','Vocalist'),(6,'Nozomi Tojo','Vocalist'),(6,'Rin Hoshizora','Vocalist'),(6,'Umi Sonoda','Vocalist');
+INSERT INTO `band_members` VALUES (1,'Hitori Gotoh','Guitarist'),(1,'Ikuyo Kita','Vocalist'),(1,'Nijika Ijichi','Drummer'),(1,'Ryo Yamada','Bassist'),(2,'Azusa Nakano','Guitarist'),(2,'Mio Akiyama','Bassist'),(2,'Ritsu Tainaka','Drummer'),(2,'Tsumugi Kotobuki','Keyboardist'),(2,'Yui Hirasawa','Vocalist/Guitarist'),(3,'Arisa Ichigaya','Keyboardist'),(3,'Kasumi Toyama','Vocalist/Guitarist'),(3,'Rimi Ushigome','Bassist'),(3,'Saaya Yamabuki','Drummer'),(3,'Tae Hanazono','Guitarist'),(4,'Ako Udagawa','Drummer'),(4,'Lisa Imai','Bassist'),(4,'Rinko Shirokane','Keyboardist'),(4,'Sayo Hikawa','Guitarist'),(4,'Yukina Minato','Vocalist'),(5,'Himari Uehara','Bassist'),(5,'Moca Aoba','Guitarist'),(5,'Ran Mitake','Vocalist/Guitarist'),(5,'Tomoe Udagawa','Drummer'),(5,'Tsugumi Hazawa','Keyboardist'),(6,'Eli Ayase','Vocalist'),(6,'Hanayo Koizumi','Vocalist'),(6,'Honoka Kousaka','Leader/Vocalist'),(6,'Kotori Minami','Vocalist'),(6,'Maki Nishikino','Composer/Keyboardist'),(6,'Nico Yazawa','Vocalist'),(6,'Nozomi Tojo','Vocalist'),(6,'Rin Hoshizora','Vocalist'),(6,'Umi Sonoda','Vocalist'),(12,'Ron','Tweaker');
 /*!40000 ALTER TABLE `band_members` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -157,7 +157,7 @@ CREATE TABLE `bands` (
   KEY `branch_id` (`branch_id`),
   CONSTRAINT `bands_ibfk_1` FOREIGN KEY (`manager_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `bands_ibfk_2` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`branch_id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -166,7 +166,7 @@ CREATE TABLE `bands` (
 
 LOCK TABLES `bands` WRITE;
 /*!40000 ALTER TABLE `bands` DISABLE KEYS */;
-INSERT INTO `bands` VALUES (1,2,1,'Kessoku Band','Rock','Indie rock band from Bocchi the Rock!',0,'<iframe style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/artist/2nvl0N9GwyX69RRBMEZ4OD?utm_source=generator\" width=\"100%\" height=\"152\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>','https://i.discogs.com/BMjajOwTBf2TAm2Z-Oe_pSPqFjRvfpnK3AAEJf_rIdo/rs:fit/g:sm/q:90/h:337/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9BLTEyMjgz/NTQ5LTE2NzM1MzIx/MDMtNzM1OS5qcGVn.jpeg'),(2,3,1,'Ho-kago Tea Time','Pop Rock','Light music club band from K-On!',0,'<iframe style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/artist/1cXxia1Q2VDTjWe8X2Jydm?utm_source=generator\" width=\"100%\" height=\"152\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>','https://lh3.googleusercontent.com/L2SgucZkIkjqnEvtLBFozDV7m9M___tuujMT3YzsWsHR25dKxhsvIv6WnQbnEjpz7fW-cXcxFEt9ygM=w2880-h1200-p-l90-rj'),(3,4,2,'Poppin’Party','J-Pop','Cheerful band from BanG Dream!',0,'<iframe style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/artist/2XzrQN7hxZibYdVEbl0nO6?utm_source=generator\" width=\"100%\" height=\"152\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>','https://i.scdn.co/image/ab6761610000e5ebffa7657a93aa88492492172b'),(4,5,2,'Roselia','Symphonic Rock','Elegant and intense sound from BanG Dream!',0,'<iframe style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/artist/1bljHdc9g7V7ZLkYuf4yfy?utm_source=generator\" width=\"100%\" height=\"152\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>','https://cdn-images.dzcdn.net/images/artist/f34338bc7a51e42027647a98d2cc8fbb/1900x1900-000000-81-0-0.jpg'),(5,6,1,'Afterglow','Alt Rock','Gritty rock band from BanG Dream!',0,'<iframe style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/artist/2XzrQN7hxZibYdVEbl0nO6?utm_source=generator\" width=\"100%\" height=\"152\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>','https://yt3.googleusercontent.com/7yd5xj95hLzCM5SklLGc2vcQDPWc9O3RA3ITUh7GEBlN_BbncN1NnyyCaJ0i-eAuiDQ5If8qNw=s900-c-k-c0x00ffffff-no-rj'),(6,7,2,'μ’s','Idol Pop','School idol group from Love Live!',0,'<iframe style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/artist/2hYjPkmTry3LYVVSymws5i?utm_source=generator\" width=\"100%\" height=\"152\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>','https://img.animatetimes.com/news/visual/2012/1355147679_2_5.jpg');
+INSERT INTO `bands` VALUES (1,2,1,'Kessoku Band','Rock','Indie rock band from Bocchi the Rock!',0,'<iframe style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/artist/2nvl0N9GwyX69RRBMEZ4OD?utm_source=generator\" width=\"100%\" height=\"152\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>','https://i.discogs.com/BMjajOwTBf2TAm2Z-Oe_pSPqFjRvfpnK3AAEJf_rIdo/rs:fit/g:sm/q:90/h:337/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9BLTEyMjgz/NTQ5LTE2NzM1MzIx/MDMtNzM1OS5qcGVn.jpeg'),(2,3,1,'Ho-kago Tea Time','Pop Rock','Light music club band from K-On!',0,'<iframe style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/artist/1cXxia1Q2VDTjWe8X2Jydm?utm_source=generator\" width=\"100%\" height=\"152\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>','https://lh3.googleusercontent.com/L2SgucZkIkjqnEvtLBFozDV7m9M___tuujMT3YzsWsHR25dKxhsvIv6WnQbnEjpz7fW-cXcxFEt9ygM=w2880-h1200-p-l90-rj'),(3,4,2,'Poppin’Party','J-Pop','Cheerful band from BanG Dream!',0,'<iframe style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/artist/2XzrQN7hxZibYdVEbl0nO6?utm_source=generator\" width=\"100%\" height=\"152\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>','https://i.scdn.co/image/ab6761610000e5ebffa7657a93aa88492492172b'),(4,5,2,'Roselia','Symphonic Rock','Elegant and intense sound from BanG Dream!',0,'<iframe style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/artist/1bljHdc9g7V7ZLkYuf4yfy?utm_source=generator\" width=\"100%\" height=\"152\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>','https://cdn-images.dzcdn.net/images/artist/f34338bc7a51e42027647a98d2cc8fbb/1900x1900-000000-81-0-0.jpg'),(5,6,1,'Afterglow','Alt Rock','Gritty rock band from BanG Dream!',0,'<iframe style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/artist/2XzrQN7hxZibYdVEbl0nO6?utm_source=generator\" width=\"100%\" height=\"152\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>','https://yt3.googleusercontent.com/7yd5xj95hLzCM5SklLGc2vcQDPWc9O3RA3ITUh7GEBlN_BbncN1NnyyCaJ0i-eAuiDQ5If8qNw=s900-c-k-c0x00ffffff-no-rj'),(6,7,2,'μ’s','Idol Pop','School idol group from Love Live!',0,'<iframe style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/artist/2hYjPkmTry3LYVVSymws5i?utm_source=generator\" width=\"100%\" height=\"152\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>','https://img.animatetimes.com/news/visual/2012/1355147679_2_5.jpg'),(11,18,-1,'My New Band',NULL,NULL,0,NULL,NULL),(12,19,1,'Ron Band','Gooner Gnre','Sexd musix',0,'','https://res.cloudinary.com/dkuf0peg7/image/upload/v1763544759/band-12/profile/lkuercccvvhepregpp5t.png'),(13,20,2,'My New Band',NULL,NULL,0,NULL,NULL);
 /*!40000 ALTER TABLE `bands` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -251,7 +251,7 @@ CREATE TABLE `branches` (
 
 LOCK TABLES `branches` WRITE;
 /*!40000 ALTER TABLE `branches` DISABLE KEYS */;
-INSERT INTO `branches` VALUES (1,'Shibuya Music Hub','Tokyo, Shibuya 1-2-3','09012345678'),(2,'Akihabara Idol Center','Tokyo, Akihabara 4-5-6','08098765432'),(3,'Yokohama Livehouse','Kanagawa, Yokohama 7-8-9','07055558888');
+INSERT INTO `branches` VALUES (-1,'Unassigned','N/A','N/A'),(1,'Shibuya Music Hub','Tokyo, Shibuya 1-2-3','09012345678'),(2,'Akihabara Idol Center','Tokyo, Akihabara 4-5-6','08098765432'),(3,'Yokohama Livehouse','Kanagawa, Yokohama 7-8-9','07055558888');
 /*!40000 ALTER TABLE `branches` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -730,7 +730,7 @@ CREATE TABLE `users` (
   KEY `currency_id` (`currency_id`),
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`role_id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `users_ibfk_2` FOREIGN KEY (`currency_id`) REFERENCES `currencies` (`currency_id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -739,7 +739,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,1,'admin_master','admin@example.com','$2b$10$HSVVvu4RZ7u3cGk8XmiTcuCt8/CxmcrIE1XVaPKyuFzwNJyOeDHIu',3,0),(2,4,'ikuyo_kita_mgr','kita@kessoku.jp','hashed_pw',1,0),(3,4,'yui_mgr','yui@htt.jp','hashed_pw',1,0),(4,4,'kasumi_mgr','kasumi@pparty.jp','hashed_pw',1,0),(5,4,'yukina_mgr','yukina@roselia.jp','hashed_pw',1,0),(6,4,'ran_mgr','ran@afterglow.jp','hashed_pw',1,0),(7,4,'honoka_mgr','honoka@muse.jp','$2b$10$ajbnrWTldjqVPbR/YJMz9e1si64PZkMKClinjxAs36X8eJPhtklXS',1,0),(8,3,'otaku_fan1','fan1@example.com','hashed_pw',3,0),(9,3,'otaku_fan2','fan2@example.com','hashed_pw',1,0),(10,3,'ulol','ulol@umail.com','$2b$10$umUyvXpWDn6zmgDKAWtfo.DXzH8BLDjJ99.Y/XGtRI99Z6FER01jy',1,0),(11,3,'wow2123','ronfourieralonzo@gmail.com','$2b$10$qokda6eJ2LjQ0RGSZ.CATuXse0eCfF5GjOA5nHPdRmP.gZn.lafZ2',1,0),(12,3,'boomer2124','kaboom@boom.com','$2b$10$HSVVvu4RZ7u3cGk8XmiTcuCt8/CxmcrIE1XVaPKyuFzwNJyOeDHIu',1,0);
+INSERT INTO `users` VALUES (1,1,'admin_master','admin@example.com','$2b$10$HSVVvu4RZ7u3cGk8XmiTcuCt8/CxmcrIE1XVaPKyuFzwNJyOeDHIu',3,0),(2,4,'ikuyo_kita_mgr','kita@kessoku.jp','hashed_pw',1,0),(3,4,'yui_mgr','yui@htt.jp','hashed_pw',1,0),(4,4,'kasumi_mgr','kasumi@pparty.jp','hashed_pw',1,0),(5,4,'yukina_mgr','yukina@roselia.jp','hashed_pw',1,0),(6,4,'ran_mgr','ran@afterglow.jp','hashed_pw',1,0),(7,4,'honoka_mgr','honoka@muse.jp','$2b$10$ajbnrWTldjqVPbR/YJMz9e1si64PZkMKClinjxAs36X8eJPhtklXS',1,0),(8,3,'otaku_fan1','fan1@example.com','hashed_pw',3,0),(9,3,'otaku_fan2','fan2@example.com','hashed_pw',1,0),(10,3,'ulol','ulol@umail.com','$2b$10$umUyvXpWDn6zmgDKAWtfo.DXzH8BLDjJ99.Y/XGtRI99Z6FER01jy',1,0),(11,3,'wow2123','ronfourieralonzo@gmail.com','$2b$10$qokda6eJ2LjQ0RGSZ.CATuXse0eCfF5GjOA5nHPdRmP.gZn.lafZ2',1,0),(12,3,'boomer2124','kaboom@boom.com','$2b$10$HSVVvu4RZ7u3cGk8XmiTcuCt8/CxmcrIE1XVaPKyuFzwNJyOeDHIu',1,0),(16,3,'genz','genz@mail.com','$2b$10$oEQCiOPdk8u7hr9N8XbNC.vg5Q1pl0TrKLpAIVgaHiUxjHFvxJo3C',1,0),(18,4,'testband','bander@mail.com','$2b$10$WZHHz0WMIzilCLkLTeppperh6I0ey4LMTqZjeCmS3gm2.Irt5MLIy',1,0),(19,4,'pleaseSpeedIneedThis','nuts@sack.com','$2b$10$PNap4IQN5OzqncnBFXto8u8qjwqZOQuDym67SAnjoLTRA0X.OsUuK',1,0),(20,4,'pleaseNow','now@work.com','$2b$10$3EM29dgW.6628VuTVhfPRe.SjaB2XTzl2OebH6U63fYlbUoMGql.O',1,0),(21,3,'regular','show@regular.com','$2b$10$SsNwA9Z7ioJ.CQQ/xAwTV.YwVud1wO8vIAyLqgYVwiSZjabnjByK6',4,0);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -770,8 +770,12 @@ DELIMITER ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_auto_create_band` AFTER INSERT ON `users` FOR EACH ROW BEGIN
-	INSERT INTO bands (manager_id, branch_id, name)
-    VALUES (NEW.user_id, -1, "default_band");
+    -- Only create a band if the user is a Band Manager (role_id = 4)
+    IF NEW.role_id = 4 THEN
+        INSERT INTO bands (manager_id, branch_id, name)
+        -- Use NULL for branch_id instead of -1 to respect Foreign Key constraints
+        VALUES (NEW.user_id, -1, "My New Band");
+    END IF;
 END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1164,4 +1168,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-19 14:06:55
+-- Dump completed on 2025-11-19 17:49:38

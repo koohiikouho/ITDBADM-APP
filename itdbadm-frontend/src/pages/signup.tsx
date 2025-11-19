@@ -66,7 +66,7 @@ export default function SignUpPage() {
     { value: "2", label: "US Dollar (USD)", symbol: "$" },
     { value: "3", label: "Philippine Peso (PHP)", symbol: "₱" },
     { value: "1", label: "Japanese Yen (JPY)", symbol: "¥" },
-    { value: "4", label: "Turkish Lira (TRY)", symbol: "TRY" },
+    { value: "4", label: "Turkish Lira (TRY)", symbol: "₺" },
   ];
 
   const userTypes = [

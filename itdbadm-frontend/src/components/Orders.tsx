@@ -81,7 +81,20 @@ const Orders = () => {
       throw new Error(`Failed to fetch orders: ${response.statusText}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+
+    // Handle both array and object responses safely
+    if (Array.isArray(data)) {
+      return data;
+    } else if (data && Array.isArray(data.orders)) {
+      return data.orders;
+    } else if (data && data.message) {
+      // If it's a message like "Orders not found", return empty array
+      return [];
+    } else {
+      // Fallback for any other response format
+      return [];
+    }
   };
 
   useEffect(() => {
