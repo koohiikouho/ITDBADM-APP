@@ -32,21 +32,29 @@ export default function AdminAnalyticsPage() {
     const [loading, setLoading] = useState(true);
     const [timeRange, setTimeRange] = useState("all");
 
+    // Helper function to safely format numbers
+    const formatCurrency = (value: any) => {
+        const num = Number(value);
+        return isNaN(num) ? '0.00' : num.toFixed(2);
+    };
+
     useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                setLoading(true);
+                const data = await apiClient.get("/admin/stats");
+                console.log("Analytics data:", data);
+                console.log("Avg order value:", data?.revenue_stats?.avg_order_value);
+                console.log("Type:", typeof data?.revenue_stats?.avg_order_value);
+                setStats(data);
+            } catch (error) {
+                console.error("Error fetching analytics:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
         fetchStats();
     }, [timeRange]);
-
-    const fetchStats = async () => {
-        try {
-            setLoading(true);
-            const data = await apiClient.get("/admin/stats");
-            setStats(data);
-        } catch (error) {
-            console.error("Error fetching analytics:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     if (loading) {
         return (
@@ -77,10 +85,10 @@ export default function AdminAnalyticsPage() {
                             onChange={(e) => setTimeRange(e.target.value)}
                             className="w-40"
                         >
-                            <SelectItem key="7d" value="7d">Last 7 days</SelectItem>
-                            <SelectItem key="30d" value="30d">Last 30 days</SelectItem>
-                            <SelectItem key="90d" value="90d">Last 90 days</SelectItem>
-                            <SelectItem key="all" value="all">All time</SelectItem>
+                            <SelectItem key="7d" >Last 7 days</SelectItem>
+                            <SelectItem key="30d" >Last 30 days</SelectItem>
+                            <SelectItem key="90d" >Last 90 days</SelectItem>
+                            <SelectItem key="all" >All time</SelectItem>
                         </Select>
                     </div>
                 </div>
@@ -92,7 +100,7 @@ export default function AdminAnalyticsPage() {
                             <div>
                                 <p className="text-sm text-default-600">Total Revenue</p>
                                 <p className="text-2xl font-bold">
-                                    ¥{(stats?.revenue_stats.total_revenue || 0).toLocaleString()}
+                                    ¥{(Number(stats?.revenue_stats.total_revenue) || 0).toLocaleString()}
                                 </p>
                             </div>
                             <DollarSign className="text-primary" size={24} />
@@ -145,8 +153,8 @@ export default function AdminAnalyticsPage() {
                                     <div key={stat.role_type} className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <div className={`w-3 h-3 rounded-full ${stat.role_type === 'Admin' ? 'bg-danger' :
-                                                    stat.role_type === 'BandManager' ? 'bg-primary' :
-                                                        stat.role_type === 'Staff' ? 'bg-warning' : 'bg-success'
+                                                stat.role_type === 'BandManager' ? 'bg-primary' :
+                                                    stat.role_type === 'Staff' ? 'bg-warning' : 'bg-success'
                                                 }`} />
                                             <span className="capitalize">{stat.role_type}s</span>
                                         </div>
@@ -155,8 +163,8 @@ export default function AdminAnalyticsPage() {
                                             <div className="w-20 bg-default-200 rounded-full h-2">
                                                 <div
                                                     className={`h-2 rounded-full ${stat.role_type === 'Admin' ? 'bg-danger' :
-                                                            stat.role_type === 'BandManager' ? 'bg-primary' :
-                                                                stat.role_type === 'Staff' ? 'bg-warning' : 'bg-success'
+                                                        stat.role_type === 'BandManager' ? 'bg-primary' :
+                                                            stat.role_type === 'Staff' ? 'bg-warning' : 'bg-success'
                                                         }`}
                                                     style={{
                                                         width: `${(stat.count / (stats.user_stats.reduce((acc, s) => acc + s.count, 0)) * 100)}%`
@@ -222,7 +230,7 @@ export default function AdminAnalyticsPage() {
                             <div className="space-y-6">
                                 <div className="text-center">
                                     <p className="text-3xl font-bold text-primary">
-                                        ¥{(stats?.revenue_stats.total_revenue || 0).toLocaleString()}
+                                        ¥{(Number(stats?.revenue_stats.total_revenue) || 0).toLocaleString()}
                                     </p>
                                     <p className="text-default-600">Total Revenue</p>
                                 </div>
@@ -232,7 +240,8 @@ export default function AdminAnalyticsPage() {
                                         <p className="text-sm text-default-600">Total Orders</p>
                                     </div>
                                     <div className="text-center p-4 bg-default-100 rounded-lg">
-                                        <p className="text-xl font-bold">¥{stats?.revenue_stats.avg_order_value?.toFixed(2)}</p>
+                                        {/* FIXED LINE - This was causing the error */}
+                                        <p className="text-xl font-bold">¥{formatCurrency(stats?.revenue_stats.avg_order_value)}</p>
                                         <p className="text-sm text-default-600">Avg Order Value</p>
                                     </div>
                                 </div>
@@ -288,7 +297,7 @@ export default function AdminAnalyticsPage() {
                                 <p className="text-default-600">Total Bands</p>
                             </div>
                             <div className="text-center p-4 bg-default-100 rounded-lg">
-                                <p className="text-2xl font-bold text-warning">{stats?.band_stats.total_bands - (stats?.band_stats.deleted_bands || 0)}</p>
+                                <p className="text-2xl font-bold text-foreground">{stats?.band_stats?.total_bands || 0}</p>
                                 <p className="text-default-600">Active Bands</p>
                             </div>
                             <div className="text-center p-4 bg-default-100 rounded-lg">
