@@ -31,7 +31,7 @@ export default function CreateProductPage() {
         price: "",
         description: "",
         category: "",
-        stock: "0", // Add stock field
+        stock: "0",
         images: [] as File[]
     });
 
@@ -104,40 +104,44 @@ export default function CreateProductPage() {
 
         setLoading(true);
         try {
-            const submitData = {
+            const token = localStorage.getItem("accessToken");
+
+            // Use FormData to handle file uploads
+            const formDataToSend = new FormData();
+            formDataToSend.append('name', formData.name);
+            formDataToSend.append('price', priceValue.toString());
+            formDataToSend.append('description', formData.description);
+            formDataToSend.append('category', formData.category);
+            formDataToSend.append('stock', stockValue.toString());
+
+            // Append images
+            formData.images.forEach((image) => {
+                formDataToSend.append('images', image);
+            });
+
+            console.log("Creating product with:", {
                 name: formData.name,
                 price: priceValue,
-                description: formData.description,
                 category: formData.category,
-                stock: stockValue, // Include stock
-            };
-
-            console.log("Submitting product data:", submitData);
-            console.log("For band:", band.name, "(ID:", band.band_id + ")");
-
-            const token = localStorage.getItem("accessToken");
-            console.log("Using token:", token ? "Present" : "Missing");
+                stock: stockValue,
+                imagesCount: formData.images.length
+            });
 
             const response = await fetch(`${apiClient.baseURL}/band-manager/products`, {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json",
+                    // Don't set Content-Type - let browser set it with boundary
                 },
-                body: JSON.stringify(submitData),
+                body: formDataToSend,
             });
-
-            console.log("Response status:", response.status);
-            console.log("Response headers:", Object.fromEntries(response.headers.entries()));
 
             if (response.ok) {
                 const result = await response.json();
-                console.log("Success response:", result);
                 alert("Product created successfully!");
                 navigate("/bandmanager/manage-products");
             } else {
                 const errorText = await response.text();
-                console.error("Server error response:", errorText);
                 let errorMessage = "Unknown error occurred";
 
                 try {
@@ -151,7 +155,7 @@ export default function CreateProductPage() {
             }
         } catch (error) {
             console.error("Network error creating product:", error);
-            alert("Network error: Unable to create product. Check console for details.");
+            alert("Network error: Unable to create product.");
         } finally {
             setLoading(false);
         }
@@ -159,11 +163,21 @@ export default function CreateProductPage() {
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
+            const filesArray = Array.from(e.target.files);
             setFormData({
                 ...formData,
-                images: Array.from(e.target.files)
+                images: [...formData.images, ...filesArray] // Append new files instead of replacing
             });
         }
+    };
+
+    const removeImage = (index: number) => {
+        const newImages = [...formData.images];
+        newImages.splice(index, 1);
+        setFormData({
+            ...formData,
+            images: newImages
+        });
     };
 
     if (bandLoading) {
@@ -278,7 +292,7 @@ export default function CreateProductPage() {
                             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                                 <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                                 <p className="text-sm text-gray-600 mb-2">
-                                    Drag and drop images here, or click to select
+                                    Drag and drop images here, or click to select multiple images
                                 </p>
                                 <input
                                     type="file"
@@ -297,9 +311,29 @@ export default function CreateProductPage() {
                                     Select Images
                                 </Button>
                                 {formData.images.length > 0 && (
-                                    <p className="text-sm text-green-600 mt-2">
-                                        {formData.images.length} image(s) selected
-                                    </p>
+                                    <div className="mt-4">
+                                        <p className="text-sm text-green-600 mb-2">
+                                            {formData.images.length} new image(s) selected
+                                        </p>
+                                        <div className="flex flex-wrap gap-2 justify-center">
+                                            {formData.images.map((file, index) => (
+                                                <div key={index} className="relative group">
+                                                    <img
+                                                        src={URL.createObjectURL(file)}
+                                                        alt={`Preview ${index + 1}`}
+                                                        className="w-16 h-16 object-cover rounded border-2 border-green-200"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeImage(index)}
+                                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
                                 )}
                             </div>
                         </div>

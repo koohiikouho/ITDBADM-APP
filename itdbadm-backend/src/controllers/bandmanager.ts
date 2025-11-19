@@ -2,6 +2,7 @@ import { Elysia, t } from "elysia";
 import { dbPool } from "../db";
 import mysql from "mysql2/promise";
 import { jwt } from "@elysiajs/jwt";
+import { deleteFromCloudinary, extractPublicId, uploadToCloudinary } from "../config/cloudinary";
 
 export const bandManagerController = new Elysia({ prefix: "/band-manager" })
     .use(
@@ -191,10 +192,11 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
         }
     })
 
-    // Create Product
+
+
     .post(
         "/products",
-        async ({ headers, set, jwt, body }) => {
+        async ({ headers, set, jwt, request }) => {
             const token = headers.authorization?.split(" ")[1];
             const payload = await jwt.verify(token);
 
@@ -204,11 +206,26 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
             }
 
             const userId = payload.id;
-            const { name, price, description, category, stock } = body;
 
-            // Handle both string and number price
-            const priceValue = typeof price === 'string' ? parseFloat(price) : price;
-            const stockValue = typeof stock === 'string' ? parseInt(stock) : stock;
+            // Parse form data first
+            const formData = await request.formData();
+
+            // Extract text fields from formData
+            const name = formData.get('name') as string;
+            const price = formData.get('price') as string;
+            const description = formData.get('description') as string;
+            const category = formData.get('category') as string;
+            const stock = formData.get('stock') as string;
+            const imageFiles = formData.getAll('images') as File[];
+
+            // Validate required fields
+            if (!name || !price || !category || !stock) {
+                set.status = 400;
+                return { error: "Missing required fields" };
+            }
+
+            const priceValue = parseFloat(price);
+            const stockValue = parseInt(stock);
 
             if (isNaN(priceValue) || priceValue <= 0) {
                 set.status = 400;
@@ -219,12 +236,6 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
                 set.status = 400;
                 return { error: "Invalid stock quantity" };
             }
-
-            // temp image data will update cloudinary later
-            const imageUrls = [
-                "https://via.placeholder.com/500x500.png?text=Product+Image",
-                "https://via.placeholder.com/500x500.png?text=Product+Image+2"
-            ];
 
             const connection = await dbPool.getConnection();
             await connection.beginTransaction();
@@ -242,31 +253,53 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
 
                 const bandId = bandRows[0]?.band_id;
 
+                let imageUrls: string[] = [];
+
+                // Cloudinary upload
+                if (imageFiles && imageFiles.length > 0) {
+                    for (const file of imageFiles) {
+                        if (file.size > 0) {
+                            const arrayBuffer = await file.arrayBuffer();
+                            const buffer = Buffer.from(arrayBuffer);
+
+                            try {
+                                const imageUrl = await uploadToCloudinary(buffer, `band-${bandId}/products`);
+                                imageUrls.push(imageUrl);
+                            } catch (uploadError) {
+                                console.error("Cloudinary upload error:", uploadError);
+                            }
+                        }
+                    }
+                }
+
+                if (imageUrls.length === 0) {
+                    imageUrls = ["https://res.cloudinary.com/dkuf0peg7/image/upload/v1763529474/band-6/products/kbc3gvzcnhbjxb39gohs.jpg"];
+                }
+
                 const imageData = {
                     url: imageUrls
                 };
 
-                // Insert product - use the parsed price value
                 const insertQuery = `
-                    INSERT INTO products (band_id, name, price, description, category, image)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                `;
+            INSERT INTO products (band_id, name, price, description, category, image)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `;
 
                 const [result] = await connection.execute<mysql.OkPacket>(insertQuery, [
                     bandId,
                     name,
-                    priceValue, // Use the parsed number
+                    priceValue,
                     description,
                     category,
                     JSON.stringify(imageData)
                 ]);
 
-                // Add to inventory with specified stock quantity
+                // Add to inventory
                 const inventoryQuery = `
-                    INSERT INTO inventory (branch_id, product_id, quantity)
-                    VALUES (1, ?, ?)
-                    ON DUPLICATE KEY UPDATE quantity = quantity + ?
-                `;
+            INSERT INTO inventory (branch_id, product_id, quantity)
+            VALUES (1, ?, ?)
+            ON DUPLICATE KEY UPDATE quantity = quantity + ?
+        `;
 
                 await connection.execute(inventoryQuery, [result.insertId, stockValue, stockValue]);
                 await connection.commit();
@@ -274,7 +307,8 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
                 set.status = 201;
                 return {
                     message: "Product created successfully",
-                    product_id: result.insertId
+                    product_id: result.insertId,
+                    images: imageUrls
                 };
 
             } catch (error) {
@@ -285,22 +319,12 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
             } finally {
                 connection.release();
             }
-        },
-        {
-            body: t.Object({
-                name: t.String(),
-                price: t.Union([t.String(), t.Number()]), // Accept both string and number
-                description: t.String(),
-                category: t.String(),
-                stock: t.Union([t.String(), t.Number()]), // Add stock field
-            })
         }
     )
 
-    // Update Product
     .put(
         "/products/:id",
-        async ({ headers, set, jwt, params, body }) => {
+        async ({ headers, set, jwt, params, request }) => {
             const token = headers.authorization?.split(" ")[1];
             const payload = await jwt.verify(token);
 
@@ -311,10 +335,43 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
 
             const userId = payload.id;
             const productId = params.id;
-            const { name, price, description, category, stock } = body;
 
-            const stockValue = typeof stock === 'string' ? parseInt(stock) : stock;
+            // Parse form data first
+            const formData = await request.formData();
 
+            // Extract text fields from formData
+            const name = formData.get('name') as string;
+            const price = formData.get('price') as string;
+            const description = formData.get('description') as string;
+            const category = formData.get('category') as string;
+            const stock = formData.get('stock') as string;
+            const imageFiles = formData.getAll('images') as File[];
+
+            // NEW: Extract existingImages and removedImages
+            const existingImagesJson = formData.get('existingImages') as string;
+            const removedImagesJson = formData.get('removedImages') as string;
+
+            let existingImages: string[] = [];
+            let removedImages: string[] = [];
+
+            try {
+                if (existingImagesJson) {
+                    existingImages = JSON.parse(existingImagesJson);
+                }
+                if (removedImagesJson) {
+                    removedImages = JSON.parse(removedImagesJson);
+                }
+            } catch (error) {
+                console.error("Error parsing image arrays:", error);
+            }
+
+            // Validate required fields
+            if (!name || !price || !category || !stock) {
+                set.status = 400;
+                return { error: "Missing required fields" };
+            }
+
+            const stockValue = parseInt(stock);
             if (isNaN(stockValue) || stockValue < 0) {
                 set.status = 400;
                 return { error: "Invalid stock quantity" };
@@ -326,7 +383,7 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
             try {
                 // Verify user owns this product
                 const [authRows] = await connection.execute<mysql.RowDataPacket[]>(
-                    `SELECT p.product_id, p.image
+                    `SELECT p.product_id, p.image, p.band_id
                     FROM products p 
                     JOIN bands b ON p.band_id = b.band_id 
                     WHERE p.product_id = ? AND b.manager_id = ?`,
@@ -338,11 +395,61 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
                     return { error: "You are not authorized to edit this product" };
                 }
 
-                // default placeholder
-                const existingImage = authRows[0]?.image;
-                const imageData = existingImage
-                    ? (typeof existingImage === 'string' ? JSON.parse(existingImage) : existingImage)
-                    : { url: ["https://via.placeholder.com/500x500.png?text=Product+Image"] };
+                const bandId = authRows[0]?.band_id;
+                let imageData;
+
+                // Get current images from database
+                const currentImage = authRows[0]?.image;
+                const currentUrls = currentImage
+                    ? (typeof currentImage === 'string' ? JSON.parse(currentImage).url : currentImage.url)
+                    : [];
+
+                // Start with existing images that should remain
+                let finalImageUrls = [...existingImages];
+
+                // Upload new images if any
+                if (imageFiles && imageFiles.length > 0 && imageFiles[0]!.size > 0) {
+                    const newImageUrls: string[] = [];
+
+                    for (const file of imageFiles) {
+                        if (file.size > 0) {
+                            const arrayBuffer = await file.arrayBuffer();
+                            const buffer = Buffer.from(arrayBuffer);
+
+                            try {
+                                const imageUrl = await uploadToCloudinary(buffer, `band-${bandId}/products`);
+                                newImageUrls.push(imageUrl);
+                            } catch (uploadError) {
+                                console.error("Cloudinary upload error:", uploadError);
+                            }
+                        }
+                    }
+
+                    // Add new images to the final array
+                    finalImageUrls = [...finalImageUrls, ...newImageUrls];
+                }
+
+                // Delete removed images from Cloudinary
+                if (removedImages.length > 0) {
+                    for (const removedImageUrl of removedImages) {
+                        try {
+                            const publicId = extractPublicId(removedImageUrl);
+                            if (publicId) {
+                                await deleteFromCloudinary(publicId);
+                            }
+                        } catch (deleteError) {
+                            console.error("Error deleting image from Cloudinary:", deleteError);
+                            // Continue even if deletion fails
+                        }
+                    }
+                }
+
+                // Ensure we have at least one image
+                if (finalImageUrls.length === 0) {
+                    finalImageUrls = ["https://res.cloudinary.com/dkuf0peg7/image/upload/v1763529474/band-6/products/kbc3gvzcnhbjxb39gohs.jpg"];
+                }
+
+                imageData = { url: finalImageUrls };
 
                 // Update product
                 const updateQuery = `
@@ -368,8 +475,8 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
                 `;
 
                 await connection.execute(updateInventoryQuery, [stockValue, productId]);
-
                 await connection.commit();
+
                 return { message: "Product updated successfully" };
 
             } catch (error) {
@@ -380,18 +487,9 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
             } finally {
                 connection.release();
             }
-        },
-        {
-            body: t.Object({
-                name: t.String(),
-                price: t.String(),
-                description: t.String(),
-                category: t.String(),
-                stock: t.Union([t.String(), t.Number()]), // Add stock field
-            })
         }
     )
-    
+
     // Update Product Stock Only
     .patch(
         "/products/:id/stock",
@@ -419,7 +517,7 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
 
             try {
                 // Verify ownership
-                 const [authRows] = await connection.execute<mysql.RowDataPacket[]>(
+                const [authRows] = await connection.execute<mysql.RowDataPacket[]>(
                     `SELECT p.product_id 
                     FROM products p 
                     JOIN bands b ON p.band_id = b.band_id 

@@ -10,7 +10,7 @@ import {
 } from "@heroui/react";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Save } from "lucide-react";
+import { Save, Upload } from "lucide-react";
 import { apiClient } from "@/lib/api";
 
 interface Product {
@@ -36,6 +36,9 @@ export default function EditProductPage() {
         description: "",
         category: "",
         stock: "0",
+        images: [] as File[],
+        existingImages: [] as string[],
+        removedImages: [] as string[] // NEW: Track removed images
     });
 
     const categories = [
@@ -87,6 +90,9 @@ export default function EditProductPage() {
                     description: productData.description || "",
                     category: productData.category || "",
                     stock: stock.toString(),
+                    images: [],
+                    existingImages: productData.image?.url || [],
+                    removedImages: [] // Reset removed images
                 });
             } else {
                 console.error("Error fetching product:", response.status);
@@ -100,13 +106,41 @@ export default function EditProductPage() {
         }
     };
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const filesArray = Array.from(e.target.files);
+            setFormData({
+                ...formData,
+                images: [...formData.images, ...filesArray] // Append new files instead of replacing
+            });
+        }
+    };
+
+    const removeExistingImage = (index: number) => {
+        const newExistingImages = [...formData.existingImages];
+        const removedImage = newExistingImages.splice(index, 1)[0];
+        setFormData({
+            ...formData,
+            existingImages: newExistingImages,
+            removedImages: [...formData.removedImages, removedImage] // Track removed image
+        });
+    };
+
+    const removeNewImage = (index: number) => {
+        const newImages = [...formData.images];
+        newImages.splice(index, 1);
+        setFormData({
+            ...formData,
+            images: newImages
+        });
+    };
+
     const handleSubmit = async () => {
         if (!formData.name || !formData.price || !formData.category || !formData.stock) {
             alert("Please fill in all required fields");
             return;
         }
 
-        // Validate price and stock
         const priceValue = parseFloat(formData.price);
         const stockValue = parseInt(formData.stock);
 
@@ -123,19 +157,41 @@ export default function EditProductPage() {
         setLoading(true);
         try {
             const token = localStorage.getItem("accessToken");
+
+            const formDataToSend = new FormData();
+            formDataToSend.append('name', formData.name);
+            formDataToSend.append('price', priceValue.toString());
+            formDataToSend.append('description', formData.description);
+            formDataToSend.append('category', formData.category);
+            formDataToSend.append('stock', stockValue.toString());
+
+            // NEW: Send the existing images that should remain
+            formDataToSend.append('existingImages', JSON.stringify(formData.existingImages));
+
+            // NEW: Send the removed images
+            formDataToSend.append('removedImages', JSON.stringify(formData.removedImages));
+
+            // Append new images if any
+            formData.images.forEach((image: File) => {
+                formDataToSend.append('images', image);
+            });
+
+            console.log("Sending form data:", {
+                name: formData.name,
+                price: priceValue,
+                category: formData.category,
+                stock: stockValue,
+                existingImages: formData.existingImages,
+                removedImages: formData.removedImages,
+                newImagesCount: formData.images.length
+            });
+
             const response = await fetch(`${apiClient.baseURL}/band-manager/products/${productId}`, {
                 method: "PUT",
                 headers: {
                     "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
-                    name: formData.name,
-                    price: priceValue.toString(), // Ensure string format
-                    description: formData.description,
-                    category: formData.category,
-                    stock: stockValue // Send as number
-                }),
+                body: formDataToSend,
             });
 
             if (response.ok) {
@@ -153,7 +209,6 @@ export default function EditProductPage() {
         }
     };
 
-    // Add debug logging to see what's happening
     useEffect(() => {
         console.log("Current formData:", formData);
         console.log("Current product:", product);
@@ -230,6 +285,92 @@ export default function EditProductPage() {
                             placeholder="Enter product description"
                             minRows={4}
                         />
+
+                        {/* Existing Images Display */}
+                        {formData.existingImages.length > 0 && (
+                            <div>
+                                <label className="block text-sm font-medium mb-2">
+                                    Current Images ({formData.existingImages.length})
+                                </label>
+                                <div className="flex flex-wrap gap-2 mb-4">
+                                    {formData.existingImages.map((imageUrl, index) => (
+                                        <div key={index} className="relative group">
+                                            <img
+                                                src={imageUrl}
+                                                alt={`Product ${index + 1}`}
+                                                className="w-20 h-20 object-cover rounded border-2 border-gray-200"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeExistingImage(index)}
+                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <p className="text-sm text-gray-500 mb-4">
+                                    Click × to remove images. New images will be added to these.
+                                </p>
+                            </div>
+                        )}
+
+                        {/* New Image Upload */}
+                        <div>
+                            <label className="block text-sm font-medium mb-2">
+                                Add New Images
+                            </label>
+                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                                <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                                <p className="text-sm text-gray-600 mb-2">
+                                    Drag and drop images here, or click to select multiple images
+                                </p>
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="hidden"
+                                    id="image-upload"
+                                />
+                                <Button
+                                    as="label"
+                                    htmlFor="image-upload"
+                                    variant="flat"
+                                    size="sm"
+                                >
+                                    Select Images
+                                </Button>
+
+                                {/* New Images Preview */}
+                                {formData.images.length > 0 && (
+                                    <div className="mt-4">
+                                        <p className="text-sm text-green-600 mb-2">
+                                            {formData.images.length} new image(s) selected
+                                        </p>
+                                        <div className="flex flex-wrap gap-2 justify-center">
+                                            {formData.images.map((file, index) => (
+                                                <div key={index} className="relative group">
+                                                    <img
+                                                        src={URL.createObjectURL(file)}
+                                                        alt={`New preview ${index + 1}`}
+                                                        className="w-16 h-16 object-cover rounded border-2 border-green-200"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeNewImage(index)}
+                                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
 
                         <div className="flex gap-4 justify-end">
                             <Button
