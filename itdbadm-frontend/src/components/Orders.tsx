@@ -351,7 +351,7 @@ const Orders = () => {
                       ORD-{order.id.toString().padStart(3, "0")}
                     </h3>
                     <p className="text-sm text-gray-600">
-                      {formatPrice(order.order_date)}
+                      {formatDate(order.order_date)}
                     </p>
                   </div>
                 </div>

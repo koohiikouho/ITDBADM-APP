@@ -333,64 +333,159 @@ export const cartsController = new Elysia({ prefix: "/carts" })
       }
 
       try {
-        // Call the stored procedure
-        const [result] = await dbPool.execute<any>(
-            `CALL sp_place_order(?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-                userId,
-                contact_information,
-                first_name,
-                last_name,
-                address,
-                city,
-                country,
-                postal_code
-            ]
-        );
+        // Start a transaction
+        const connection = await dbPool.getConnection();
+        await connection.beginTransaction();
 
-        // The result from a CALL statement is an array of result sets.
-        // The first element (result[0]) contains the rows returned by our SELECT statement at the end of the SP.
-        const rows = result[0];
-        
-        if (!rows || rows.length === 0) {
-            throw new Error("Failed to create order");
-        }
+        try {
+          // 1. Get user's cart items
+          const cartQuery =
+            "SELECT product_id, quantity FROM carts WHERE user_id = ?";
+          const [cartRows] = await connection.execute<mysql.RowDataPacket[]>(
+            cartQuery,
+            [userId]
+          );
 
-        const orderData = rows[0];
-
-        set.status = 201;
-        return {
-            message: "Order placed successfully",
-            order_id: orderData.order_id,
-            shipping_id: orderData.shipping_id,
-            total_price: orderData.total_price
-        };
-
-    } catch (error: any) {
-        console.error("Error placing order:", error);
-        
-        // Handle the specific "Cart is empty" error we signaled in SQL
-        if (error.sqlMessage === 'Cart is empty') {
+          if (cartRows.length === 0) {
             set.status = 400;
             return { error: "Cart is empty" };
-        }
+          }
 
+          // 2. Calculate total price and validate products
+          let totalPrice = 0;
+          const productIds = cartRows.map((row) => row.product_id);
+
+          const productQuery = `
+            SELECT product_id, price, is_deleted, name 
+            FROM products 
+            WHERE product_id IN (${productIds.join(",")})
+          `;
+          const [productRows] = await connection.execute<mysql.RowDataPacket[]>(
+            productQuery
+          );
+
+          const productMap = new Map();
+          productRows.forEach((product) => {
+            productMap.set(product.product_id, product);
+          });
+
+          // Validate all products and calculate total
+          for (const cartItem of cartRows) {
+            const product = productMap.get(cartItem.product_id);
+
+            if (!product) {
+              throw new Error(
+                `Product with ID ${cartItem.product_id} not found`
+              );
+            }
+
+            if (product.is_deleted) {
+              throw new Error(
+                `Product "${product.name}" is no longer available`
+              );
+            }
+
+            totalPrice += parseFloat(product.price) * cartItem.quantity;
+          }
+
+          // 3. Create order record
+          const orderQuery = `
+            INSERT INTO orders (user_id, order_date, status, price, description) 
+            VALUES (?, NOW(), 'Ongoing', ?, ?)
+          `;
+          const orderDescription = `Order placed by ${first_name} ${last_name}`;
+
+          const [orderResult] = await connection.execute<mysql.OkPacket>(
+            orderQuery,
+            [userId, totalPrice, orderDescription]
+          );
+
+          const orderId = orderResult.insertId;
+
+          // 4. Create shipping information
+          const shippingQuery = `
+            INSERT INTO shipping_information 
+            (order_id, contact_information, first_name, last_name, address, city, country, postal_code) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `;
+
+          const [shippingResult] = await connection.execute<mysql.OkPacket>(
+            shippingQuery,
+            [
+              orderId,
+              contact_information,
+              first_name,
+              last_name,
+              address,
+              city,
+              country,
+              postal_code,
+            ]
+          );
+
+          const shippingId = shippingResult.insertId;
+
+          // 5. Update order with shipping_id
+          const updateOrderQuery =
+            "UPDATE orders SET shipping_id = ? WHERE order_id = ?";
+          await connection.execute(updateOrderQuery, [shippingId, orderId]);
+
+          // 6. Create order_products records
+          const orderProductsQuery = `
+            INSERT INTO orders_products (order_id, product_id, quantity) 
+            VALUES (?, ?, ?)
+          `;
+
+          for (const cartItem of cartRows) {
+            await connection.execute(orderProductsQuery, [
+              orderId,
+              cartItem.product_id,
+              cartItem.quantity,
+            ]);
+          }
+
+          // 7. Clear user's cart
+          const clearCartQuery = "DELETE FROM carts WHERE user_id = ?";
+          await connection.execute(clearCartQuery, [userId]);
+
+          // Commit transaction
+          await connection.commit();
+
+          set.status = 201;
+          return {
+            message: "Order placed successfully",
+            order_id: orderId,
+            shipping_id: shippingId,
+            total_price: totalPrice,
+            items_ordered: cartRows.length,
+          };
+        } catch (error) {
+          // Rollback transaction on error
+          await connection.rollback();
+          throw error;
+        } finally {
+          connection.release();
+        }
+      } catch (error) {
+        console.error("Error placing order:", error);
         set.status = 500;
         return {
-            error: "Internal Server Error while placing order",
-        };    
-    }
-      
-      },
-      {
-        body: t.Object({
-          contact_information: t.String(),
-          first_name: t.String(),
-          last_name: t.String(),
-          address: t.String(),
-          city: t.String(),
-          country: t.String(),
-          postal_code: t.String(),
-        }),
+          error:
+            error instanceof Error
+              ? error.message
+              : "Internal Server Error while placing order",
+        };
       }
+    },
+    {
+      body: t.Object({
+        contact_information: t.String(),
+        first_name: t.String(),
+        last_name: t.String(),
+        address: t.String(),
+        city: t.String(),
+        country: t.String(),
+        postal_code: t.String(),
+      }),
+    }
   );

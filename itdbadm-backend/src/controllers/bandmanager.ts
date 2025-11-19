@@ -284,13 +284,14 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
                 FROM products p
                 JOIN bands b ON p.band_id = b.band_id
                 LEFT JOIN inventory i ON p.product_id = i.product_id AND i.branch_id = 1
-                WHERE b.manager_id = ? AND p.is_deleted = 0
+                WHERE b.manager_id = ?
                 ORDER BY p.product_id DESC
             `;
 
       const [rows] = await dbPool.execute<mysql.RowDataPacket[]>(query, [
         userId,
       ]);
+
       return rows;
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -1131,20 +1132,29 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
       // Calculate sales rate (percentage of inventory sold)
       const [salesRateRows] = await dbPool.execute<mysql.RowDataPacket[]>(
         `
-        SELECT 
-            COALESCE(SUM(op.quantity), 0) as total_sold,
-            COALESCE(SUM(i.quantity), 0) as total_inventory
+        SELECT COALESCE(SUM(i.quantity), 0) as total_inventory
         FROM products p
-        LEFT JOIN inventory i ON p.product_id = i.product_id
-        LEFT JOIN orders_products op ON p.product_id = op.product_id
-        LEFT JOIN orders o ON op.order_id = o.order_id AND o.status != 'Cancelled'
+        JOIN inventory i ON p.product_id = i.product_id
         WHERE p.band_id = ? AND p.is_deleted = 0
         `,
         [bandId]
       );
 
-      const totalSold = salesRateRows[0]?.total_sold || 0;
-      const totalInventory = salesRateRows[0]?.total_inventory || 0;
+      // 2. Calculate Total Sold (Historical sales, including deleted products)
+      const [salesRows] = await dbPool.execute<mysql.RowDataPacket[]>(
+        `
+        SELECT COALESCE(SUM(op.quantity), 0) as total_sold
+        FROM orders_products op
+        JOIN products p ON op.product_id = p.product_id
+        JOIN orders o ON op.order_id = o.order_id
+        WHERE p.band_id = ? AND o.status != 'Cancelled'
+        `,
+        [bandId]
+      );
+
+      const totalInventory = parseFloat(salesRateRows[0]?.total_inventory || 0);
+      const totalSold = parseFloat(salesRows[0]?.total_sold || 0);
+
       const totalStock = totalSold + totalInventory;
       const salesRate =
         totalStock > 0 ? Math.round((totalSold / totalStock) * 100) : 0;

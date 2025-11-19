@@ -8,11 +8,12 @@ import {
   ArrowLeft,
   Music,
   User as UserIcon,
-  Globe, // Import an icon for Branch
+  Globe,
+  Lock as LockIcon, // Import lock icon for disabled state
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@heroui/use-theme";
-import { apiClient } from "@/lib/api"; // Ensure we use the API client if available, or fetch directly
+import { apiClient } from "@/lib/api";
 
 interface Branch {
   branch_id: number;
@@ -49,12 +50,17 @@ export default function SignUpPage() {
         const response = await fetch(apiClient.baseURL + "/branch/");
         if (response.ok) {
           const data = await response.json();
-          setBranches(data);
+          // Filter out branches with "Unassigned" in the name
+          const filteredBranches = data.filter(
+            (branch: Branch) =>
+              !branch.branch_name.toLowerCase().includes("unassigned")
+          );
+          setBranches(filteredBranches);
           // Set default branch if available
-          if (data.length > 0) {
+          if (filteredBranches.length > 0) {
             setFormData((prev) => ({
               ...prev,
-              branchId: data[0].branch_id.toString(),
+              branchId: filteredBranches[0].branch_id.toString(),
             }));
           }
         }
@@ -86,6 +92,16 @@ export default function SignUpPage() {
       description: "I manage a band and want to sell merchandise",
     },
   ];
+
+  // Automatically set currency to JPY when Band Manager is selected
+  const handleUserTypeChange = (userType: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      userType,
+      // Lock currency to JPY (value "1") if Band Manager is selected
+      currency: userType === "4" ? "1" : prev.currency,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,13 +195,6 @@ export default function SignUpPage() {
     }));
   };
 
-  const handleUserTypeChange = (userType: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      userType,
-    }));
-  };
-
   const handleBack = () => {
     navigate(-1);
   };
@@ -201,10 +210,12 @@ export default function SignUpPage() {
       primary: theme === "dark" ? "text-white" : "text-gray-900",
       secondary: theme === "dark" ? "text-gray-300" : "text-gray-600",
       muted: theme === "dark" ? "text-gray-400" : "text-gray-500",
+      disabled: theme === "dark" ? "text-gray-500" : "text-gray-400",
     },
     border: theme === "dark" ? "border-gray-600" : "border-gray-300",
     input: {
       background: theme === "dark" ? "bg-gray-700" : "bg-white",
+      backgroundDisabled: theme === "dark" ? "bg-gray-800" : "bg-gray-100",
       border: theme === "dark" ? "border-gray-600" : "border-gray-300",
       focus:
         theme === "dark"
@@ -229,6 +240,9 @@ export default function SignUpPage() {
         : "text-blue-600 hover:text-blue-500",
     cardHover: theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-50",
   };
+
+  // Check if currency is locked (Band Manager selected)
+  const isCurrencyLocked = formData.userType === "4";
 
   return (
     <div
@@ -417,21 +431,52 @@ export default function SignUpPage() {
                   className={`block text-sm font-medium ${themeClasses.text.primary} mb-1`}
                 >
                   Preferred currency
+                  {isCurrencyLocked && (
+                    <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">
+                      (Locked to JPY for Band Managers)
+                    </span>
+                  )}
                 </label>
-                <select
-                  id="currency"
-                  name="currency"
-                  value={formData.currency}
-                  onChange={handleSelectChange}
-                  disabled={loading}
-                  className={`block w-full px-3 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  {currencies.map((currency) => (
-                    <option key={currency.value} value={currency.value}>
-                      {currency.label}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  {isCurrencyLocked && (
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <LockIcon
+                        className={`h-5 w-5 ${themeClasses.text.muted}`}
+                      />
+                    </div>
+                  )}
+                  <select
+                    id="currency"
+                    name="currency"
+                    value={formData.currency}
+                    onChange={handleSelectChange}
+                    disabled={loading || isCurrencyLocked}
+                    className={`block w-full ${isCurrencyLocked ? "pl-10" : "pl-3"} pr-3 py-2 ${
+                      isCurrencyLocked
+                        ? themeClasses.input.backgroundDisabled
+                        : themeClasses.input.background
+                    } border ${themeClasses.input.border} rounded-md ${
+                      themeClasses.input.placeholder
+                    } focus:outline-none focus:ring-2 ${
+                      themeClasses.input.focus
+                    } transition-colors ${
+                      isCurrencyLocked
+                        ? "cursor-not-allowed text-gray-500"
+                        : "cursor-pointer"
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {currencies.map((currency) => (
+                      <option key={currency.value} value={currency.value}>
+                        {currency.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {isCurrencyLocked && (
+                  <p className={`text-xs ${themeClasses.text.muted} mt-1`}>
+                    Band Managers must use Japanese Yen (JPY) for transactions
+                  </p>
+                )}
               </div>
 
               {/* Password Input */}
