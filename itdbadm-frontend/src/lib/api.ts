@@ -1,7 +1,7 @@
 import { JWTManager } from "./jwtUtils";
 
 class ApiClient {
-  baseURL: string = "http://localhost:3000";
+  baseURL: string = String("http://localhost:3000");
 
   private async request(endpoint: string, options: RequestInit = {}) {
     const token = JWTManager.getToken();

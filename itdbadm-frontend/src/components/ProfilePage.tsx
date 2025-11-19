@@ -102,7 +102,7 @@ export default function ProfilePage() {
         currency_id: data.currency_id?.toString() || "2",
       }));
     } catch (err) {
-      console.error("Failed to fetch profile", err);      
+      console.error("Failed to fetch profile", err);
     } finally {
       setIsLoading(false);
     }
@@ -110,7 +110,7 @@ export default function ProfilePage() {
 
   const fetchBranches = async () => {
     try {
-      const res = await fetch("http://localhost:3000/branch/");
+      const res = await fetch(apiClient.baseURL + "/branch/");
       if (res.ok) {
         const data = await res.json();
         setBranches(

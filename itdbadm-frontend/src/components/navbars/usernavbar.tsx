@@ -101,7 +101,7 @@ export const UserNavbar = () => {
   const fetchBranches = async () => {
     try {
       setBranchesLoading(true);
-      const response = await fetch("http://localhost:3000/branch/");
+      const response = await fetch(apiClient.baseURL + "/branch/");
 
       if (!response.ok) {
         throw new Error(`Failed to fetch branches: ${response.statusText}`);
