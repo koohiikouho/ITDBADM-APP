@@ -144,8 +144,8 @@ export const adminController = new Elysia({ prefix: "/admin" })
         LEFT JOIN booking_offers bo ON u.user_id = bo.user_id
         GROUP BY u.user_id
         ORDER BY u.user_id DESC
-        LIMIT ? OFFSET ?
-      `, [limit, offset]);
+        LIMIT ${limit} OFFSET ${offset}
+      `);
 
             const [total] = await dbPool.execute<mysql.RowDataPacket[]>(`
         SELECT COUNT(*) as total FROM users WHERE is_deleted = 0
