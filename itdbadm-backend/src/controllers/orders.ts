@@ -65,9 +65,10 @@ export const ordersController = new Elysia({ prefix: "/orders" })
         ordersQuery
       );
 
+      // Return empty array instead of object when no orders found
       if (ordersRows.length === 0) {
         set.status = 200;
-        return { message: "Orders not found" };
+        return []; // ← FIX: Return empty array instead of object
       }
 
       // For each order, get the associated products

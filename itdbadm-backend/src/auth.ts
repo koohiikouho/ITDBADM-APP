@@ -76,7 +76,10 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
       if (user.password_hashed === "hashed_pw") {
         // accept "hashed_pw" as the actual password
         if (password === "hashed_pw") {
-          const token = await jwt.sign({ id: user.user_id, role_id: user.role_id });
+          const token = await jwt.sign({
+            id: user.user_id,
+            role_id: user.role_id,
+          });
           return { message: "Signed in successfully", accessToken: token };
         } else {
           set.status = 400;

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@heroui/use-theme";
+import { apiClient } from "@/lib/api";
 
 export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -34,7 +35,7 @@ export default function SignUpPage() {
     { value: "2", label: "US Dollar (USD)", symbol: "$" },
     { value: "3", label: "Philippine Peso (PHP)", symbol: "₱" },
     { value: "1", label: "Japanese Yen (JPY)", symbol: "¥" },
-    { value: "4", label: "Vietnamese Dong (VND)", symbol: "₫" },
+    { value: "4", label: "Turkish Lira (TRY)", symbol: "₺" },
   ];
 
   const userTypes = [
@@ -79,7 +80,7 @@ export default function SignUpPage() {
     try {
       console.log("Sign up attempt:", formData);
 
-      const response = await fetch("http://localhost:3000/auth/signup", {
+      const response = await fetch(apiClient.baseURL + "/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

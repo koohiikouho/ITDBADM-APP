@@ -60,23 +60,55 @@ const OffersPage = () => {
           throw new Error(`Failed to fetch offers: ${response.statusText}`);
         }
 
-        const data: ApiOffer[] = await response.json();
+        const data = await response.json();
 
-        // Transform API data to match Offer type
-        const transformedOffers: Offer[] = data.map((offer) => ({
-          id: `OFF-${offer.offer_id.toString().padStart(3, "0")}`,
-          bandName: offer.name, // Use the band name from the API response
-          bookingDate: offer.booking_date,
-          description: offer.description,
-          price: parseFloat(offer.price),
-          status: mapStatusToOfferStatus(offer.status),
-          filedDate: offer.date_created,
-        }));
+        // SAFETY CHECK: Ensure data is an array
+        if (!data) {
+          setOffers([]);
+          return;
+        }
+
+        // Handle different response formats safely
+        let offersData: ApiOffer[] = [];
+
+        if (Array.isArray(data)) {
+          offersData = data;
+        } else if (data && Array.isArray(data.offers)) {
+          offersData = data.offers;
+        } else if (data && data.message) {
+          // If it's a message like "No offers found", return empty array
+          setOffers([]);
+          return;
+        } else {
+          // Fallback for any other response format
+          setOffers([]);
+          return;
+        }
+
+        // Transform API data to match Offer type with safety checks
+        const transformedOffers: Offer[] = offersData
+          .filter(
+            (offer): offer is ApiOffer =>
+              offer &&
+              typeof offer.offer_id === "number" &&
+              typeof offer.name === "string"
+          )
+          .map((offer) => ({
+            id: `OFF-${offer.offer_id.toString().padStart(3, "0")}`,
+            bandName: offer.name || "Unknown Band", // Fallback for missing band name
+            bookingDate: offer.booking_date || new Date().toISOString(), // Fallback for missing date
+            description: offer.description || "No description provided",
+            price: parseFloat(offer.price) || 0, // Fallback for invalid price
+            status: mapStatusToOfferStatus(offer.status),
+            filedDate: offer.date_created || new Date().toISOString(), // Fallback for missing date
+          }));
 
         setOffers(transformedOffers);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load offers");
         console.error("Error fetching offers:", err);
+        // Ensure offers is always an array even on error
+        setOffers([]);
       } finally {
         setLoading(false);
       }
@@ -127,7 +159,13 @@ const OffersPage = () => {
       }
 
       // Remove the offer from local state
-      setOffers((prev) => prev.filter((offer) => offer.id !== offerId));
+      setOffers((prev) => {
+        // SAFETY CHECK: Ensure prev is an array
+        if (!Array.isArray(prev)) {
+          return [];
+        }
+        return prev.filter((offer) => offer.id !== offerId);
+      });
       setShowRetractModal(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete offer");
@@ -156,28 +194,31 @@ const OffersPage = () => {
   };
 
   const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "JPY",
-    }).format(amount);
+    try {
+      return new Date(dateString).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch (error) {
+      console.error("Invalid date:", dateString);
+      return "Invalid date";
+    }
   };
 
   const isRetractable = (status: OfferStatus): boolean => {
     return status === "pending";
   };
 
-  const filteredOffers =
-    statusFilter === "all"
-      ? offers
-      : offers.filter((offer) => offer.status === statusFilter);
+  // SAFETY CHECK: Ensure offers is always treated as an array
+  const safeOffers = Array.isArray(offers) ? offers : [];
+
+  const filteredOffers = (() => {
+    if (statusFilter === "all") {
+      return safeOffers;
+    }
+    return safeOffers.filter((offer) => offer.status === statusFilter);
+  })();
 
   const statusOptions: { value: OfferStatus | "all"; label: string }[] = [
     { value: "all", label: "All Offers" },
@@ -186,6 +227,15 @@ const OffersPage = () => {
     { value: "rejected", label: "Rejected" },
     { value: "retracted", label: "Retracted" },
   ];
+
+  // Calculate statistics safely
+  const totalOffers = safeOffers.length;
+  const pendingOffers = safeOffers.filter(
+    (offer) => offer.status === "pending"
+  ).length;
+  const acceptedOffers = safeOffers.filter(
+    (offer) => offer.status === "accepted"
+  ).length;
 
   if (loading) {
     return (
@@ -234,6 +284,55 @@ const OffersPage = () => {
           </p>
         </div>
 
+        {/* Stats Summary */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-lg p-4">
+            <div className="flex items-center">
+              <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                <MusicalNoteIcon className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Total Offers
+                </p>
+                <p className="text-2xl font-bold text-black dark:text-white">
+                  {totalOffers}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-lg p-4">
+            <div className="flex items-center">
+              <div className="p-2 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
+                <MusicalNoteIcon className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Pending
+                </p>
+                <p className="text-2xl font-bold text-black dark:text-white">
+                  {pendingOffers}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-lg p-4">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+                <MusicalNoteIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Accepted
+                </p>
+                <p className="text-2xl font-bold text-black dark:text-white">
+                  {acceptedOffers}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Filter */}
         <div className="bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-lg p-4 mb-6">
           <div className="flex items-center space-x-4">
@@ -254,7 +353,7 @@ const OffersPage = () => {
               ))}
             </select>
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              Showing {filteredOffers.length} of {offers.length} offers
+              Showing {filteredOffers.length} of {safeOffers.length} offers
             </span>
           </div>
         </div>
