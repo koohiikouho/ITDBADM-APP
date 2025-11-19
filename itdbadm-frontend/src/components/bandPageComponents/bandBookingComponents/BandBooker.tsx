@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardBody,
@@ -20,14 +20,13 @@ import {
 } from "lucide-react";
 import { today, getLocalTimeZone } from "@internationalized/date";
 import type { DateValue } from "@internationalized/date";
-import { useParams } from "react-router-dom"; // Import useParams
+import { useParams } from "react-router-dom";
 import { apiClient } from "@/lib/api";
 
 interface OfferFormProps {
   className?: string;
   onSubmit?: (data: OfferFormData) => void;
   bandName?: string;
-  currency?: string;
 }
 
 interface OfferFormData {
@@ -41,18 +40,47 @@ const OfferForm: React.FC<OfferFormProps> = ({
   className,
   onSubmit,
   bandName = "the band",
-  currency = String(localStorage.getItem("selectedCurrency")),
 }) => {
-  const { bandId } = useParams(); // Get bandId from URL params
+  const { bandId } = useParams();
+  const [currentCurrency, setCurrentCurrency] = useState<string>("JPY");
   const [formData, setFormData] = useState<OfferFormData>({
     date: null,
     price: "",
     description: "",
-    currency: String(localStorage.getItem("selectedCurrency")),
+    currency: "JPY",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Get currency from localStorage on component mount and set up storage listener
+  useEffect(() => {
+    const updateCurrency = () => {
+      const storedCurrency = localStorage.getItem("selectedCurrency") || "JPY";
+      setCurrentCurrency(storedCurrency);
+      setFormData((prev) => ({
+        ...prev,
+        currency: storedCurrency,
+      }));
+    };
+
+    // Initial load
+    updateCurrency();
+
+    // Listen for storage changes (if currency changes in another tab/component)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "selectedCurrency") {
+        updateCurrency();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
 
   const currencies = {
     USD: {
@@ -82,7 +110,7 @@ const OfferForm: React.FC<OfferFormProps> = ({
   };
 
   const selectedCurrency =
-    currencies[currency as keyof typeof currencies] || currencies.USD;
+    currencies[currentCurrency as keyof typeof currencies] || currencies.JPY;
 
   const getCurrencyIcon = () => {
     const IconComponent = selectedCurrency.icon;
@@ -124,11 +152,9 @@ const OfferForm: React.FC<OfferFormProps> = ({
         event_details: formData.description,
       };
 
-      // Make API call
+      // Make API call - use the current currency from state
       const response = await fetch(
-        apiClient.baseURL +
-          "/bookings/send/" +
-          localStorage.getItem("selectedCurrency"),
+        apiClient.baseURL + "/bookings/send/" + currentCurrency,
         {
           method: "POST",
           headers: {
@@ -158,7 +184,7 @@ const OfferForm: React.FC<OfferFormProps> = ({
         date: null,
         price: "",
         description: "",
-        currency: "",
+        currency: currentCurrency,
       });
     } catch (error) {
       console.error("Error creating booking offer:", error);
@@ -243,12 +269,14 @@ const OfferForm: React.FC<OfferFormProps> = ({
             }
             endContent={
               <div className="pointer-events-none flex items-center">
-                <span className="text-default-400 text-small">{currency}</span>
+                <span className="text-default-400 text-small">
+                  {currentCurrency}
+                </span>
               </div>
             }
             description={`Example: ${selectedCurrency.symbol}${selectedCurrency.example}`}
             min="0"
-            step={currency === "JPY" ? "1" : "0.01"}
+            step={currentCurrency === "JPY" ? "1" : "0.01"}
             isRequired
           />
 

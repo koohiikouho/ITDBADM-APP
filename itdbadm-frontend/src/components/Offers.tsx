@@ -6,6 +6,8 @@ import {
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import type { Offer, OfferStatus } from "../types/offer";
+import { apiClient } from "@/lib/api";
+import { formatPrice } from "@/lib/currencyFormatter";
 
 // API Response Type
 interface ApiOffer {
@@ -38,13 +40,18 @@ const OffersPage = () => {
           throw new Error("No access token found. Please log in.");
         }
 
-        const response = await fetch("http://localhost:3000/bookings/user", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          apiClient.baseURL +
+            "/bookings/user?currency=" +
+            localStorage.getItem("selectedCurrency"),
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (!response.ok) {
           if (response.status === 401) {
@@ -304,7 +311,7 @@ const OffersPage = () => {
                         Price
                       </label>
                       <p className="text-lg font-semibold text-black dark:text-white">
-                        {formatCurrency(offer.price)}
+                        {formatPrice(offer.price, "symbol")}
                       </p>
                     </div>
                   </div>

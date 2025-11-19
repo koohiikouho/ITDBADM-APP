@@ -16,39 +16,54 @@ export const bookingsController = new Elysia({ prefix: "/bookings" })
   // User booking routes
 
   // Get all bookings by a user
-  .get("/user", async ({ headers, set, jwt }) => {
-    const token = headers.authorization?.split(" ")[1];
-    const payload = await jwt.verify(token);
+  .get(
+    "/user",
+    async ({ headers, set, jwt, query }) => {
+      const token = headers.authorization?.split(" ")[1];
+      const payload = await jwt.verify(token);
 
-    if (!payload) {
-      set.status = 401;
-      return { error: "Unauthorized" };
-    }
-
-    const userId = payload.id;
-
-    try {
-      const query = `SELECT b.name, bo.offer_id, bo.band_id, bo.booking_date, bo.description, bo.price, bo.status, bo.date_created FROM booking_offers bo JOIN bands b ON b.band_id=bo.band_id WHERE bo.user_id = ?`;
-
-      const [rows] = await dbPool.execute<mysql.RowDataPacket[]>(query, [
-        userId,
-      ]);
-
-      if (rows.length === 0) {
-        set.status = 200;
-        return { message: "No bookings found for this user." };
+      if (!payload) {
+        set.status = 401;
+        return { error: "Unauthorized" };
       }
 
-      set.status = 200;
-      return rows;
-    } catch (error) {
-      console.error("Error fetching user bookings:", error);
-      set.status = 500;
-      return {
-        message: "Internal Server Error while retrieving user bookings.",
-      };
+      const userId = payload.id;
+      const currency = (query as { currency?: string }).currency || "JPY"; // Get currency from query params
+
+      try {
+        const query = `SELECT b.name, bo.offer_id, bo.band_id, bo.booking_date, bo.description, bo.price, bo.status, bo.date_created FROM booking_offers bo JOIN bands b ON b.band_id=bo.band_id WHERE bo.user_id = ?`;
+
+        const [rows] = await dbPool.execute<mysql.RowDataPacket[]>(query, [
+          userId,
+        ]);
+
+        if (rows.length === 0) {
+          set.status = 200;
+          return { message: "No bookings found for this user." };
+        }
+
+        // Convert prices for all rows
+        const convertedRows = rows.map((row) => ({
+          ...row,
+          price: FrankfurterService.convert(row.price, currency).amount,
+        }));
+
+        set.status = 200;
+        return convertedRows;
+      } catch (error) {
+        console.error("Error fetching user bookings:", error);
+        set.status = 500;
+        return {
+          message: "Internal Server Error while retrieving user bookings.",
+        };
+      }
+    },
+    {
+      query: t.Object({
+        currency: t.Optional(t.String()),
+      }),
     }
-  })
+  )
 
   // Delete a booking made by the owner user
   .delete("/:offer_id", async ({ headers, set, jwt, params }) => {
