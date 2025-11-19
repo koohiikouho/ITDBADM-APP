@@ -137,6 +137,7 @@ export default function CreateProductPage() {
 
             if (response.ok) {
                 const result = await response.json();
+                console.log("Created product:", result);
                 alert("Product created successfully!");
                 navigate("/bandmanager/manage-products");
             } else {
