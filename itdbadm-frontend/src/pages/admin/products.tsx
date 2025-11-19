@@ -149,13 +149,7 @@ export default function AdminProductsPage() {
                                 <p className="text-default-600">Manage products across all bands</p>
                             </div>
                         </div>
-                        <Button
-                            color="primary"
-                            startContent={<Plus size={18} />}
-                            onPress={() => setIsCreateModalOpen(true)}
-                        >
-                            Add Product
-                        </Button>
+
                     </div>
                 </div>
 
@@ -231,7 +225,7 @@ export default function AdminProductsPage() {
                                         </TableCell>
                                         <TableCell>
                                             <span className={`font-semibold ${product.stock === 0 ? 'text-danger' :
-                                                    product.stock < 10 ? 'text-warning' : 'text-success'
+                                                product.stock < 10 ? 'text-warning' : 'text-success'
                                                 }`}>
                                                 {product.stock}
                                             </span>
