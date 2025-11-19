@@ -468,33 +468,7 @@ const IndexPageComponent: React.FC = () => {
             animate="visible"
             transition={{ delay: 1.6 }}
             className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-2"
-          >
-            <motion.button
-              onClick={shopNow}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              className="cursor-pointer bg-gradient-to-r from-blue-600 to-purple-700 text-white font-semibold px-6 sm:px-10 py-3 sm:py-4 rounded-lg text-base sm:text-lg hover:shadow-xl transition-all duration-300 shadow-lg w-full sm:w-auto"
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 600,
-              }}
-            >
-              Shop Now
-            </motion.button>
-
-            <motion.button
-              onClick={exploreBands}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              className="cursor-pointer border-2 border-white text-white font-semibold px-6 sm:px-10 py-3 sm:py-4 rounded-lg text-base sm:text-lg hover:bg-white/10 transition-all duration-300 backdrop-blur-sm w-full sm:w-auto"
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 600,
-              }}
-            >
-              Explore Bands
-            </motion.button>
-          </motion.div>
+          ></motion.div>
         </div>
       </div>
     </div>

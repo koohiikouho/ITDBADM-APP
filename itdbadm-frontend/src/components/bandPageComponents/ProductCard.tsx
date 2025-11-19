@@ -3,6 +3,7 @@ import { Pagination } from "@heroui/react";
 import { Card, CardHeader, CardBody, CardFooter, Image } from "@heroui/react";
 import { useNavigate } from "react-router-dom";
 import { formatPrice } from "@/lib/currencyFormatter";
+import { apiClient } from "@/lib/api";
 
 interface Product {
   product_id: number;
@@ -138,11 +139,13 @@ const ProductGrid: React.FC<ProductGridProps> = ({ bandId }) => {
 
         console.log(
           "Fetching products from:",
-          `http://localhost:3000/bands/products/${cleanBandId}/${localStorage.getItem("selectedCurrency")}`
+          apiClient.baseURL +
+            `/bands/products/${cleanBandId}/${localStorage.getItem("selectedCurrency")}`
         );
 
         const response = await fetch(
-          `http://localhost:3000/bands/products/${cleanBandId}/${localStorage.getItem("selectedCurrency")}`,
+          apiClient.baseURL +
+            `/bands/products/${cleanBandId}/${localStorage.getItem("selectedCurrency")}`,
           {
             method: "GET",
             headers: {

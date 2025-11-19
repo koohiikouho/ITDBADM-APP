@@ -144,7 +144,7 @@ const OffersPage = () => {
 
       // Use DELETE method instead of PATCH
       const response = await fetch(
-        `http://localhost:3000/bookings/${numericId}`,
+        apiClient.baseURL + `/bookings/${numericId}`,
         {
           method: "DELETE",
           headers: {

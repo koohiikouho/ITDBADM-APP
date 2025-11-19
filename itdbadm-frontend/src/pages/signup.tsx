@@ -24,10 +24,10 @@ export default function SignUpPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Add state for branches
   const [branches, setBranches] = useState<Branch[]>([]);
-  
+
   const [formData, setFormData] = useState({
     userName: "",
     email: "",
@@ -35,7 +35,7 @@ export default function SignUpPage() {
     confirmPassword: "",
     currency: "1", // Default currency (JPY)
     userType: "3", // '3' for fan or '4' for bandManager
-    branchId: "",  // New field for branch selection
+    branchId: "", // New field for branch selection
     agreeToTerms: false,
   });
 
@@ -46,13 +46,16 @@ export default function SignUpPage() {
   useEffect(() => {
     const fetchBranches = async () => {
       try {
-        const response = await fetch("http://localhost:3000/branch/");
+        const response = await fetch(apiClient.baseURL + "/branch/");
         if (response.ok) {
           const data = await response.json();
           setBranches(data);
           // Set default branch if available
           if (data.length > 0) {
-            setFormData(prev => ({ ...prev, branchId: data[0].branch_id.toString() }));
+            setFormData((prev) => ({
+              ...prev,
+              branchId: data[0].branch_id.toString(),
+            }));
           }
         }
       } catch (err) {
@@ -130,7 +133,7 @@ export default function SignUpPage() {
         payload.branchId = parseInt(formData.branchId);
       }
 
-      const response = await fetch("http://localhost:3000/auth/signup", {
+      const response = await fetch(apiClient.baseURL + "/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -190,7 +193,10 @@ export default function SignUpPage() {
   // Theme-based styles (copied from your original file for consistency)
   const themeClasses = {
     background: theme === "dark" ? "bg-gray-900" : "bg-gray-50",
-    card: theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
+    card:
+      theme === "dark"
+        ? "bg-gray-800 border-gray-700"
+        : "bg-white border-gray-200",
     text: {
       primary: theme === "dark" ? "text-white" : "text-gray-900",
       secondary: theme === "dark" ? "text-gray-300" : "text-gray-600",
@@ -200,30 +206,52 @@ export default function SignUpPage() {
     input: {
       background: theme === "dark" ? "bg-gray-700" : "bg-white",
       border: theme === "dark" ? "border-gray-600" : "border-gray-300",
-      focus: theme === "dark" ? "focus:ring-blue-500 focus:border-blue-500" : "focus:ring-blue-500 focus:border-blue-500",
-      placeholder: theme === "dark" ? "placeholder-gray-400" : "placeholder-gray-500",
+      focus:
+        theme === "dark"
+          ? "focus:ring-blue-500 focus:border-blue-500"
+          : "focus:ring-blue-500 focus:border-blue-500",
+      placeholder:
+        theme === "dark" ? "placeholder-gray-400" : "placeholder-gray-500",
     },
     button: {
-      primary: theme === "dark" ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-600 hover:bg-blue-700",
-      secondary: theme === "dark" ? "text-gray-300 hover:text-white" : "text-gray-500 hover:text-gray-700",
+      primary:
+        theme === "dark"
+          ? "bg-blue-600 hover:bg-blue-700"
+          : "bg-blue-600 hover:bg-blue-700",
+      secondary:
+        theme === "dark"
+          ? "text-gray-300 hover:text-white"
+          : "text-gray-500 hover:text-gray-700",
     },
-    link: theme === "dark" ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-500",
+    link:
+      theme === "dark"
+        ? "text-blue-400 hover:text-blue-300"
+        : "text-blue-600 hover:text-blue-500",
     cardHover: theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-50",
   };
 
   return (
-    <div className={`min-h-screen ${themeClasses.background} flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-colors duration-200`}>
+    <div
+      className={`min-h-screen ${themeClasses.background} flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-colors duration-200`}
+    >
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <button onClick={handleBack} className={`flex items-center text-sm ${themeClasses.button.secondary} mb-6 transition-colors cursor-pointer`}>
+        <button
+          onClick={handleBack}
+          className={`flex items-center text-sm ${themeClasses.button.secondary} mb-6 transition-colors cursor-pointer`}
+        >
           <ArrowLeft className="h-4 w-4 mr-1" />
           Back to previous page
         </button>
       </div>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className={`${themeClasses.card} py-8 px-6 shadow-sm rounded-lg border ${themeClasses.border} transition-colors duration-200`}>
+        <div
+          className={`${themeClasses.card} py-8 px-6 shadow-sm rounded-lg border ${themeClasses.border} transition-colors duration-200`}
+        >
           <div className="text-center">
-            <h2 className={`text-2xl font-bold ${themeClasses.text.primary} mb-2`}>
+            <h2
+              className={`text-2xl font-bold ${themeClasses.text.primary} mb-2`}
+            >
               Create your account
             </h2>
             <p className={`${themeClasses.text.secondary} text-sm`}>
@@ -241,7 +269,10 @@ export default function SignUpPage() {
             <div className="space-y-4">
               {/* Name Fields */}
               <div>
-                <label htmlFor="userName" className={`block text-sm font-medium ${themeClasses.text.primary} mb-1`}>
+                <label
+                  htmlFor="userName"
+                  className={`block text-sm font-medium ${themeClasses.text.primary} mb-1`}
+                >
                   Username
                 </label>
                 <div className="relative">
@@ -261,7 +292,10 @@ export default function SignUpPage() {
 
               {/* Email Input */}
               <div>
-                <label htmlFor="email" className={`block text-sm font-medium ${themeClasses.text.primary} mb-1`}>
+                <label
+                  htmlFor="email"
+                  className={`block text-sm font-medium ${themeClasses.text.primary} mb-1`}
+                >
                   Email address
                 </label>
                 <div className="relative">
@@ -284,7 +318,9 @@ export default function SignUpPage() {
 
               {/* User Type Selection */}
               <div>
-                <label className={`block text-sm font-medium ${themeClasses.text.primary} mb-3`}>
+                <label
+                  className={`block text-sm font-medium ${themeClasses.text.primary} mb-3`}
+                >
                   I am a...
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -298,14 +334,18 @@ export default function SignUpPage() {
                             ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                             : `${themeClasses.input.border} ${themeClasses.cardHover}`
                         } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
-                        onClick={() => !loading && handleUserTypeChange(type.value)}
+                        onClick={() =>
+                          !loading && handleUserTypeChange(type.value)
+                        }
                       >
                         <input
                           type="radio"
                           name="userType"
                           value={type.value}
                           checked={formData.userType === type.value}
-                          onChange={() => !loading && handleUserTypeChange(type.value)}
+                          onChange={() =>
+                            !loading && handleUserTypeChange(type.value)
+                          }
                           className="sr-only"
                           disabled={loading}
                         />
@@ -317,7 +357,8 @@ export default function SignUpPage() {
                                 : themeClasses.text.muted
                             }`}
                           />
-                          <span className={`text-sm font-medium ${
+                          <span
+                            className={`text-sm font-medium ${
                               formData.userType === type.value
                                 ? "text-blue-600"
                                 : themeClasses.text.primary
@@ -335,7 +376,10 @@ export default function SignUpPage() {
               {/* Branch Selection - ONLY FOR BAND MANAGERS */}
               {formData.userType === "4" && (
                 <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                  <label htmlFor="branchId" className={`block text-sm font-medium ${themeClasses.text.primary} mb-1`}>
+                  <label
+                    htmlFor="branchId"
+                    className={`block text-sm font-medium ${themeClasses.text.primary} mb-1`}
+                  >
                     Select Branch
                   </label>
                   <div className="relative">
@@ -350,7 +394,9 @@ export default function SignUpPage() {
                       disabled={loading}
                       className={`block w-full pl-10 pr-3 py-2 ${themeClasses.input.background} border ${themeClasses.input.border} rounded-md ${themeClasses.input.placeholder} focus:outline-none focus:ring-2 ${themeClasses.input.focus} transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
-                      <option value="" disabled>Select a branch location</option>
+                      <option value="" disabled>
+                        Select a branch location
+                      </option>
                       {branches.map((branch) => (
                         <option key={branch.branch_id} value={branch.branch_id}>
                           {branch.branch_name}
@@ -366,7 +412,10 @@ export default function SignUpPage() {
 
               {/* Currency Selection */}
               <div>
-                <label htmlFor="currency" className={`block text-sm font-medium ${themeClasses.text.primary} mb-1`}>
+                <label
+                  htmlFor="currency"
+                  className={`block text-sm font-medium ${themeClasses.text.primary} mb-1`}
+                >
                   Preferred currency
                 </label>
                 <select
@@ -387,7 +436,10 @@ export default function SignUpPage() {
 
               {/* Password Input */}
               <div>
-                <label htmlFor="password" className={`block text-sm font-medium ${themeClasses.text.primary} mb-1`}>
+                <label
+                  htmlFor="password"
+                  className={`block text-sm font-medium ${themeClasses.text.primary} mb-1`}
+                >
                   Password
                 </label>
                 <div className="relative">
@@ -412,7 +464,11 @@ export default function SignUpPage() {
                     disabled={loading}
                     className={`absolute inset-y-0 right-0 pr-3 flex items-center ${themeClasses.text.muted} hover:${theme === "dark" ? "text-gray-200" : "text-gray-600"} transition-colors disabled:opacity-50`}
                   >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
                   </button>
                 </div>
                 <p className={`text-xs ${themeClasses.text.muted} mt-1`}>
@@ -422,7 +478,10 @@ export default function SignUpPage() {
 
               {/* Confirm Password */}
               <div>
-                <label htmlFor="confirmPassword" className={`block text-sm font-medium ${themeClasses.text.primary} mb-1`}>
+                <label
+                  htmlFor="confirmPassword"
+                  className={`block text-sm font-medium ${themeClasses.text.primary} mb-1`}
+                >
                   Confirm password
                 </label>
                 <div className="relative">
@@ -446,7 +505,11 @@ export default function SignUpPage() {
                     disabled={loading}
                     className={`absolute inset-y-0 right-0 pr-3 flex items-center ${themeClasses.text.muted} hover:${theme === "dark" ? "text-gray-200" : "text-gray-600"} transition-colors disabled:opacity-50`}
                   >
-                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -466,8 +529,24 @@ export default function SignUpPage() {
                 />
               </div>
               <div className="ml-3 text-sm">
-                <label htmlFor="agreeToTerms" className={themeClasses.text.secondary}>
-                  I agree to the <a href="#" className={`${themeClasses.link} transition-colors font-medium`}>Terms and Conditions</a> and <a href="#" className={`${themeClasses.link} transition-colors font-medium`}>Privacy Policy</a>
+                <label
+                  htmlFor="agreeToTerms"
+                  className={themeClasses.text.secondary}
+                >
+                  I agree to the{" "}
+                  <a
+                    href="#"
+                    className={`${themeClasses.link} transition-colors font-medium`}
+                  >
+                    Terms and Conditions
+                  </a>{" "}
+                  and{" "}
+                  <a
+                    href="#"
+                    className={`${themeClasses.link} transition-colors font-medium`}
+                  >
+                    Privacy Policy
+                  </a>
                 </label>
               </div>
             </div>
@@ -489,7 +568,13 @@ export default function SignUpPage() {
 
             <div className="text-center">
               <p className={`${themeClasses.text.secondary} text-sm`}>
-                Already have an account? <a href="/login" className={`${themeClasses.link} transition-colors font-medium`}>Sign in</a>
+                Already have an account?{" "}
+                <a
+                  href="/login"
+                  className={`${themeClasses.link} transition-colors font-medium`}
+                >
+                  Sign in
+                </a>
               </p>
             </div>
           </form>

@@ -2,6 +2,7 @@ import AnimatedContent from "@/components/AnimatedContent";
 import BandBookBody from "@/components/bandPageComponents/bandBookingComponents/BandBookBody";
 import BandInfoHead from "@/components/bandPageComponents/bandInfoHead";
 import DefaultLayout from "@/layouts/default";
+import { apiClient } from "@/lib/api";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
@@ -38,9 +39,9 @@ export default function BookPage() {
           throw new Error("No band ID found in URL");
         }
 
-        console.log("Fetching from:", `http://localhost:3000/bands/${bandId}`);
+        console.log("Fetching from:", apiClient.baseURL + `/bands/${bandId}`);
 
-        const response = await fetch(`http://localhost:3000/bands/${bandId}`);
+        const response = await fetch(apiClient.baseURL + `/bands/${bandId}`);
 
         if (!response.ok) {
           throw new Error(`Failed to fetch band data: ${response.status}`);
