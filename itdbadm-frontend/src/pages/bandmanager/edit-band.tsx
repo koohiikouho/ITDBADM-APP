@@ -10,7 +10,7 @@ import {
     SelectItem
 } from "@heroui/react";
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Save, Users, Music } from "lucide-react";
+import { Plus, Trash2, Save, Users, Music, Upload, X } from "lucide-react";
 import { apiClient } from "@/lib/api";
 
 interface BandMember {
@@ -32,7 +32,9 @@ export default function EditBandPage() {
     const [bandData, setBandData] = useState<BandData | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [uploadingPfp, setUploadingPfp] = useState(false);
     const [newMember, setNewMember] = useState({ name: "", role: "" });
+    const [pfpPreview, setPfpPreview] = useState<string>("");
 
     useEffect(() => {
         fetchBandData();
@@ -40,7 +42,6 @@ export default function EditBandPage() {
 
     const fetchBandData = async () => {
         try {
-            // fetch band
             const response = await fetch(`${apiClient.baseURL}/band-manager/band`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -50,6 +51,7 @@ export default function EditBandPage() {
             if (response.ok) {
                 const data = await response.json();
                 setBandData(data);
+                setPfpPreview(data.pfp_string);
             }
         } catch (error) {
             console.error("Error fetching band data:", error);
@@ -78,6 +80,101 @@ export default function EditBandPage() {
             alert("Error updating band");
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handlePfpUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('Please select a valid image file');
+            return;
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image size should be less than 5MB');
+            return;
+        }
+
+        setUploadingPfp(true);
+
+        try {
+            const formData = new FormData();
+            formData.append('pfp', file);
+
+            const token = localStorage.getItem("accessToken");
+            const response = await fetch(`${apiClient.baseURL}/band-manager/band/pfp`, {
+                method: "PUT",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                body: formData,
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+
+                // Update both the band data and preview
+                if (bandData) {
+                    setBandData({
+                        ...bandData,
+                        pfp_string: result.pfp_url
+                    });
+                }
+                setPfpPreview(result.pfp_url);
+
+                alert("Profile picture updated successfully!");
+            } else {
+                const errorData = await response.json();
+                alert(`Error uploading profile picture: ${errorData.error}`);
+            }
+        } catch (error) {
+            console.error("Error uploading profile picture:", error);
+            alert("Error uploading profile picture");
+        } finally {
+            setUploadingPfp(false);
+            // Clear the file input
+            event.target.value = '';
+        }
+    };
+
+    const removePfp = async () => {
+        if (!bandData) return;
+
+        if (!confirm("Are you sure you want to remove the profile picture?")) return;
+
+        try {
+            const token = localStorage.getItem("accessToken");
+            const response = await fetch(`${apiClient.baseURL}/band-manager/band/pfp`, {
+                method: "PUT",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                body: new FormData(), // Empty form data to trigger removal
+            });
+
+            if (response.ok) {
+                const defaultPfp = ""; // Or set to a default image URL
+
+                if (bandData) {
+                    setBandData({
+                        ...bandData,
+                        pfp_string: defaultPfp
+                    });
+                }
+                setPfpPreview(defaultPfp);
+
+                alert("Profile picture removed successfully!");
+            } else {
+                const errorData = await response.json();
+                alert(`Error removing profile picture: ${errorData.error}`);
+            }
+        } catch (error) {
+            console.error("Error removing profile picture:", error);
+            alert("Error removing profile picture");
         }
     };
 
@@ -141,6 +238,70 @@ export default function EditBandPage() {
                             <h2 className="text-xl font-semibold">Basic Information</h2>
                         </CardHeader>
                         <CardBody className="space-y-4">
+                            {/* Profile Picture Upload */}
+                            <div className="space-y-4">
+                                <label className="block text-sm font-medium">Profile Picture</label>
+                                <div className="flex items-start gap-6">
+                                    {/* Profile Picture Preview */}
+                                    <div className="relative">
+                                        {pfpPreview ? (
+                                            <div className="relative group">
+                                                <img
+                                                    src={pfpPreview}
+                                                    alt="Band profile"
+                                                    className="w-32 h-32 rounded-lg object-cover border-2 border-gray-200"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={removePfp}
+                                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                    <X className="h-3 w-3" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="w-32 h-32 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
+                                                <Upload className="h-8 w-8 text-gray-400" />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Upload Controls */}
+                                    <div className="flex-1 space-y-3">
+                                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                                            <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                                            <p className="text-sm text-gray-600 mb-2">
+                                                Upload a new profile picture
+                                            </p>
+                                            <p className="text-xs text-gray-500 mb-3">
+                                                JPG, PNG, WEBP • Max 5MB
+                                            </p>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handlePfpUpload}
+                                                className="hidden"
+                                                id="pfp-upload"
+                                                disabled={uploadingPfp}
+                                            />
+                                            <Button
+                                                as="label"
+                                                htmlFor="pfp-upload"
+                                                variant="flat"
+                                                size="sm"
+                                                isLoading={uploadingPfp}
+                                                isDisabled={uploadingPfp}
+                                            >
+                                                {uploadingPfp ? "Uploading..." : "Choose Image"}
+                                            </Button>
+                                        </div>
+                                        {uploadingPfp && (
+                                            <p className="text-sm text-blue-600">Uploading profile picture...</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
                             <Input
                                 label="Band Name"
                                 value={bandData.name}
@@ -161,13 +322,6 @@ export default function EditBandPage() {
                                 onChange={(e) => setBandData({ ...bandData, description: e.target.value })}
                                 placeholder="Describe your band"
                                 minRows={4}
-                            />
-
-                            <Input
-                                label="Profile Image URL"
-                                value={bandData.pfp_string}
-                                onChange={(e) => setBandData({ ...bandData, pfp_string: e.target.value })}
-                                placeholder="Enter image URL"
                             />
 
                             <Textarea

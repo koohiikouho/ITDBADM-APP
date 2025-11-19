@@ -154,6 +154,99 @@ export const bandManagerController = new Elysia({ prefix: "/band-manager" })
         }
     )
 
+
+    .put(
+        "/band/pfp",
+        async ({ headers, set, jwt, request }) => {
+            const token = headers.authorization?.split(" ")[1];
+            const payload = await jwt.verify(token);
+
+            if (!payload) {
+                set.status = 401;
+                return { error: "Unauthorized" };
+            }
+
+            const userId = payload.id;
+
+            // form data
+            const formData = await request.formData();
+            const imageFile = formData.get('pfp') as File;
+
+            if (!imageFile || imageFile.size === 0) {
+                set.status = 400;
+                return { error: "No image file provided" };
+            }
+
+            const connection = await dbPool.getConnection();
+            await connection.beginTransaction();
+
+            try {
+                // get current pfp
+                const [bandRows] = await connection.execute<mysql.RowDataPacket[]>(
+                    "SELECT band_id, pfp_string FROM bands WHERE manager_id = ? AND is_deleted = 0",
+                    [userId]
+                );
+
+                if (bandRows.length === 0) {
+                    set.status = 404;
+                    return { error: "No band found for this manager" };
+                }
+
+                const bandId = bandRows[0]?.band_id;
+                const currentPfp = bandRows[0]?.pfp_string;
+
+                // delete old profile picture from Cloudinary if it exists and is from Cloudinary
+                if (currentPfp && currentPfp.includes('cloudinary')) {
+                    try {
+                        const publicId = extractPublicId(currentPfp);
+                        if (publicId) {
+                            await deleteFromCloudinary(publicId);
+                        }
+                    } catch (deleteError) {
+                        console.error("Error deleting old profile picture:", deleteError);
+                        // Continue with upload even if deletion fails
+                    }
+                }
+
+                // upload new profile picture to Cloudinary
+                const arrayBuffer = await imageFile.arrayBuffer();
+                const buffer = Buffer.from(arrayBuffer);
+
+                let imageUrl: string;
+                try {
+                    imageUrl = await uploadToCloudinary(buffer, `band-${bandId}/profile`);
+                } catch (uploadError) {
+                    console.error("Cloudinary upload error:", uploadError);
+                    set.status = 500;
+                    return { error: "Failed to upload image to Cloudinary" };
+                }
+
+                // Update database
+                const updateQuery = `
+                    UPDATE bands 
+                    SET pfp_string = ?
+                    WHERE band_id = ? AND manager_id = ?
+                `;
+
+                await connection.execute(updateQuery, [imageUrl, bandId, userId]);
+                await connection.commit();
+
+                return {
+                    message: "Profile picture updated successfully",
+                    pfp_url: imageUrl
+                };
+
+            } catch (error) {
+                await connection.rollback();
+                console.error("Error updating profile picture:", error);
+                set.status = 500;
+                return { error: "Internal Server Error while updating profile picture" };
+            } finally {
+                connection.release();
+            }
+        }
+    )
+
     .get("/products", async ({ headers, set, jwt }) => {
         const token = headers.authorization?.split(" ")[1];
         const payload = await jwt.verify(token);
