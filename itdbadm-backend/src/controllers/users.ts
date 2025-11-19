@@ -188,85 +188,35 @@ export const usersController = new Elysia({ prefix: "/users" })
       const userId = payload.id;
       const { username, email, password, currency_id } = body;
 
-      const connection = await dbPool.getConnection();
-      await connection.beginTransaction();
-
       try {
-        // 1. Validate Username Uniqueness
-        if (username) {
-          const [existingUser] = await connection.execute<
-            mysql.RowDataPacket[]
-          >("SELECT user_id FROM users WHERE username = ? AND user_id != ?", [
-            username,
-            userId,
-          ]);
-          if (existingUser.length > 0) {
-            set.status = 409;
-            return { error: "Username already taken" };
-          }
-        }
-
-        // 2. Validate Email Uniqueness (if changed)
-        if (email) {
-          const [existingEmail] = await connection.execute<
-            mysql.RowDataPacket[]
-          >("SELECT user_id FROM users WHERE email = ? AND user_id != ?", [
-            email,
-            userId,
-          ]);
-          if (existingEmail.length > 0) {
-            set.status = 409;
-            return { error: "Email already in use" };
-          }
-        }
-
-        // 3. Build Update Query dynamically
-        let updates: string[] = [];
-        let values: any[] = [];
-
-        if (username) {
-          updates.push("username = ?");
-          values.push(username);
-        }
-        if (email) {
-          updates.push("email = ?");
-          values.push(email);
-        }
-        if (currency_id) {
-          updates.push("currency_id = ?");
-          values.push(currency_id);
-        }
+        // hash password if provided
+        let hashedPassword = null;
         if (password) {
-          if (password.length < 6) {
-            set.status = 400;
-            return { error: "Password must be at least 6 characters long" };
-          }
-          const hashedPassword = await bcrypt.hash(password, 10);
-          updates.push("password_hashed = ?");
-          values.push(hashedPassword);
+            if (password.length < 6) {
+                set.status = 400;
+                return { error: "Password must be at least 6 characters long" };
+            }
+            hashedPassword = await bcrypt.hash(password, 10);
         }
 
-        if (updates.length === 0) {
-          connection.release();
-          return { message: "No changes detected" };
-        }
-
-        const updateQuery = `UPDATE users SET ${updates.join(
-          ", "
-        )} WHERE user_id = ?`;
-        values.push(userId);
-
-        await connection.execute(updateQuery, values);
-        await connection.commit();
+        // Execute the stored procedure
+        await dbPool.execute(
+          `CALL sp_update_user_profile(?, ?, ?, ?, ?)`,
+          [
+            userId, 
+            username || null, 
+            email || null, 
+            hashedPassword, 
+            currency_id || null
+          ]
+        );
 
         return { message: "Profile updated successfully" };
+
       } catch (error) {
-        await connection.rollback();
         console.error("Error updating profile:", error);
         set.status = 500;
         return { error: "Internal Server Error during profile update" };
-      } finally {
-        connection.release();
       }
     },
     {
