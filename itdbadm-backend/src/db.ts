@@ -16,7 +16,7 @@ const config_manager = {
 
 const config_admin = {
   host: process.env.DB_HOST,
-  user: process.env.MANAGER_USER,
+  user: process.env.ADMIN_USER,
   database: process.env.DB_NAME,
   password: process.env.ADMIN_PASSWORD,
 };
